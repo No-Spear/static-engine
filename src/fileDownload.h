@@ -8,21 +8,31 @@
 #include <curl/urlapi.h>
 
 using std::string;
+
+struct ST_RESPONSE{
+
+    unsigned char* response;
+    size_t count;
+
+};
+
+
 class FileDownloader{
-
-
 
 public:
     FileDownloader();
-    CURL * curl;
-    CURLcode res; 
-    string fileDownload(string url);
-
-    
-    
+    string fileDownload(string url); 
 
 private:
+    
+    CURL * curl;
+    //CURLcode res; 
+
     void insertCnC(string url);
+    string encodeBase64(const std::string &url);
     void requestAnalysisFile(string fileName);
-    string getFileFromUrl(string url);
+    string saveFile(string encodingUrl, ST_RESPONSE Response);
+    ST_RESPONSE getFileFromUrl(string url);
+    static size_t write_buffer_callback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);    
 };
+
