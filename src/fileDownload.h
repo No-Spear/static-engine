@@ -11,8 +11,11 @@ using std::string;
 
 struct ST_RESPONSE{
 
-    unsigned char* response;
     size_t count;
+    string fileName;
+    string path;
+    unsigned char* response;
+    
 
 };
 
@@ -22,6 +25,7 @@ class FileDownloader{
 public:
     FileDownloader();
     string fileDownload(string url); 
+    
 
 private:
     
@@ -31,8 +35,6 @@ private:
     void insertCnC(string url);
     string encodeBase64(const std::string &url);
     void requestAnalysisFile(string fileName);
-    string saveFile(string encodingUrl, ST_RESPONSE Response);
     ST_RESPONSE getFileFromUrl(string url);
-    static size_t write_buffer_callback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);    
+    static size_t writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);    
 };
-

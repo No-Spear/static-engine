@@ -1,7 +1,4 @@
 #include "fileDownload.h"
-#include <vector>
-#include <memory.h>
-#include <unistd.h>
 
 string FileDownloader::encodeBase64(const std::string &url)
 {
@@ -43,13 +40,10 @@ string FileDownloader::fileDownload(string url)
     if(Response.count == 0){
         return "No File";//바꿀 예정
     }
-    string encodingUrl = encodeBase64(url);
-    std::cout << encodingUrl << std::endl;    
-    string path = saveFile(encodingUrl,Response);
+    std::cout << Response.path << std::endl;
     return "FILE";
+    
 }
-
-
 
 
 void FileDownloader::insertCnC(string url)
@@ -59,35 +53,12 @@ void FileDownloader::requestAnalysisFile(string fileName)
 {}    
 
 
-string FileDownloader::saveFile(string encodingUrl, ST_RESPONSE Response)
-{
-
-    std::ofstream writeFile;
-    string path = string("./temp/") + encodingUrl + string(".png");
-    std::cout << path << std::endl;
-    writeFile.open(path, std::ios::binary);
-
-
-    for(int i =0; i < Response.count; i++){
-        if(!writeFile.is_open()){
-            std::cout << "file can't open" <<std::endl;
-            writeFile.close();
-            break;
-        }   
-
-        writeFile.write(reinterpret_cast<const char*>(Response.response), Response.count);
-        
-    }
-    writeFile.close();  
-    return path;
-}
-
 ST_RESPONSE FileDownloader::getFileFromUrl(string url)
 {
     const char* surl = (const char *)url.c_str();
     ST_RESPONSE Response;
-    //const char* surl = "http://172.23.68.172:3000/download";
 
+    Response.fileName = encodeBase64(url);
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
     if (curl == nullptr)
@@ -101,7 +72,7 @@ ST_RESPONSE FileDownloader::getFileFromUrl(string url)
     
     curl_easy_setopt(curl, CURLOPT_URL, surl);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_buffer_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeBufferCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &Response);
 
     curl_slist* slist = nullptr;
@@ -131,7 +102,7 @@ ST_RESPONSE FileDownloader::getFileFromUrl(string url)
 }
 
 
-size_t FileDownloader::write_buffer_callback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response)
+size_t FileDownloader::writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response)
 {
     
     Response->count = size * nmemb;
@@ -141,7 +112,23 @@ size_t FileDownloader::write_buffer_callback(unsigned char* contents, size_t siz
         std::cout << Response->count << std::endl;
         return Response->count;
     }
-
     Response->response = contents;
+
+    std::ofstream writeFile;
+    string path = string("./temp/") + Response->fileName + string(".png");
+    Response->path = path;
+    writeFile.open(path, std::ios::binary | std::ios::app);
+
+
+    for(int i =0; i < Response->count; i++){
+        if(!writeFile.is_open()){
+            std::cout << "file can't open" <<std::endl;
+            writeFile.close();
+            break;
+        }   
+
+        writeFile.write(reinterpret_cast<const char*>(Response->response), Response->count);
+        
+    }
     return Response->count;
 }
