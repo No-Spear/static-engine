@@ -2,10 +2,14 @@
 #include <string>
 #include <iostream> 
 #include <fstream>
+#include <sstream>
+#include <vector>
+#include <time.h>
 #include <curl/curl.h>
 #include <curl/curlver.h>
 #include <curl/easy.h>
 #include <curl/urlapi.h>
+#include <mysql/mysql.h>
 
 using std::string;
 
@@ -23,7 +27,11 @@ struct ST_RESPONSE{
 class FileDownloader{
 
 public:
+    MYSQL* conn;
+    MYSQL_RES* result; 
+    MYSQL_ROW row;
     FileDownloader();
+    ~FileDownloader();
     string fileDownload(string url); 
     
 
@@ -33,8 +41,8 @@ private:
     //CURLcode res; 
 
     void insertCnC(string url);
-    string encodeBase64(const std::string &url);
-    void requestAnalysisFile(string fileName);
+    string getFileName(string url);
+    string requestAnalysisFile(string fileName);    
     ST_RESPONSE getFileFromUrl(string url);
     static size_t writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);    
 };
