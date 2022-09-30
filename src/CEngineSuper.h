@@ -36,6 +36,7 @@ typedef struct ST_ANALYZE_RESULT{
 class CEngineSuper{
 private:
     int m_nPriority;
+    
 public:
     CEngineSuper();
     ~CEngineSuper();
