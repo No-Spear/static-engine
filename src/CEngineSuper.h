@@ -40,6 +40,6 @@ private:
 public:
     CEngineSuper();
     ~CEngineSuper();
-    bool Analyze(ST_ANALYZE_PARAM input, ST_ANALYZE_RESULT output);
+    virtual bool Analyze(ST_ANALYZE_PARAM input, ST_ANALYZE_RESULT output)=0;
     int GetPriority();
 };
