@@ -28,7 +28,7 @@ class CDownloadFromUrlEngine : public CEngineSuper
 public:
     CDownloadFromUrlEngine();
     ~CDownloadFromUrlEngine();
-    ST_ANALYZE_RESULT Analyze(ST_ANALYZE_PARAM input, ST_ANALYZE_RESULT output);
+    bool Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output);
 
 private:
     

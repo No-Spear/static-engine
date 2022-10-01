@@ -8,18 +8,18 @@ CDownloadFromUrlEngine::~CDownloadFromUrlEngine()
 {
 }
 
-ST_ANALYZE_RESULT CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM input, ST_ANALYZE_RESULT output)
+bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
 {
 
-    for(int i =0; i < input.vecURLs.size(); i++){
-        ST_RESPONSE Response = getFileFromUrl(input.vecURLs[i]);
+    for(int i =0; i < input->vecURLs.size(); i++){
+        ST_RESPONSE Response = getFileFromUrl(input->vecURLs[i]);
         if(Response.count == 0){
-            return output;
+            return false;
         }
-        output.vecExtractedFiles.push_back(Response.path);
+        output->vecExtractedFiles.push_back(Response.path);
         std::cout << Response.path << std::endl;
     }
-    return output;
+    return true;
 
 }
 
