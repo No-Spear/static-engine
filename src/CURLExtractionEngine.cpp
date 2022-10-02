@@ -10,7 +10,7 @@ OOXml::OOXml(const char* docpath)
 // Documentation(OOXML) 소멸자
 OOXml::~OOXml()
 {
-    delete(this->document);
+
 }
 
 // 문서의 타입을 반환
@@ -25,6 +25,7 @@ bool OOXml::getUrlData(std::vector<std::string>& output)
     void* buf = NULL;
     size_t bufsize;
 
+    // URL을 추출하기 위해 정규표현식을 정의
     std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
@@ -45,6 +46,7 @@ bool OOXml::getUrlData(std::vector<std::string>& output)
     return true;
 }
 
+// 전달받은 문자열에서 URL만 추출하는 함수
 std::string OOXml::parsing(std::string input)
 {
     std::istringstream iss(input);
@@ -70,6 +72,7 @@ CURLExtractEngine::~CURLExtractEngine()
 
 }
 
+// CURLExtractEngine의 URL추출 함수
 bool CURLExtractEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::vector<std::string> urllist;
@@ -78,9 +81,17 @@ bool CURLExtractEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* outp
         if(!urlParsing(input->vecInputFiles[i], urllist))
             return false;
     }
+
     // 추출한 주소들을 각각 복사.
-    std::copy(urllist.begin(), urllist.end(), input->vecURLs.begin());
-    std::copy(urllist.begin(), urllist.end(), output->vecExtractedUrls.begin());
+    input->vecURLs.reserve(urllist.size() + input->vecURLs.size());
+    input->vecURLs.insert(input->vecURLs.end(), urllist.begin(), urllist.end());
+    // 추출한 주소들을 각각 복사.
+    output->vecExtractedUrls.reserve(urllist.size() + output->vecExtractedUrls.size());
+    output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urllist.begin(), urllist.end());
+
+    // Copy를 통한 복사(작동안됨)
+    // std::copy(urllist.begin(), urllist.end(), input->vecURLs.begin());
+    // std::copy(urllist.begin(), urllist.end(), output->vecExtractedUrls.begin());
     return true;
 }
 
