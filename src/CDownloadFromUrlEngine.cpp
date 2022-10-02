@@ -123,7 +123,7 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
     Response->response = contents;
 
     std::ofstream writeFile;
-    string path = string("./temp/") + Response->fileName
+    string path = string("./temp/") + Response->fileName;
 
     Response->path = path;
     writeFile.open(path, std::ios::binary | std::ios::app);
