@@ -57,6 +57,9 @@ std::string OOXml::parsing(std::string input)
     getline(iss, buffer, '"');
     // URL을 추출
     getline(iss, buffer, '"');
+    // 마지막에 !가 있다면 제거
+    if(buffer.back() == '!')
+        buffer.pop_back();
     return buffer;
 }
 
