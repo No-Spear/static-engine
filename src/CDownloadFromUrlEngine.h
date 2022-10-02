@@ -8,7 +8,6 @@
 #include <curl/curlver.h>
 #include <curl/easy.h>
 #include <curl/urlapi.h>
-#include <mysql/mysql.h>
 
 using std::string;
 
@@ -34,6 +33,7 @@ private:
     
     CURL * curl;
     string getFileName(string url);   
+    string getDomain(string url);
     ST_RESPONSE getFileFromUrl(string url);
     static size_t writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);
 

@@ -12,7 +12,7 @@ bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT 
 {
 
     for(int i =0; i < input->vecURLs.size(); i++){
-        ST_RESPONSE Response = getFileFromUrl(input->vecURLs[i]);
+        ST_RESPONSE Response = getFileFromUrl(getDomain(input->vecURLs[i]));
         if(Response.count == 0){
             return false;
         }
@@ -27,12 +27,42 @@ string CDownloadFromUrlEngine::getFileName(string url)
 {
     std::istringstream ss(url);
     string fileName;
-
-    while(getline(ss, fileName, '/'));
+    while(getline(ss, fileName, '/')){
+        
+    };
 
     return fileName;
 
 }
+
+string CDownloadFromUrlEngine::getDomain(string url)
+{
+    std::istringstream ss(url);
+    string tempUrl;
+    std::vector<string> domain;
+    string settingUrl;
+    int i = 0;
+    while(getline(ss,tempUrl, '/')){
+        if(1<i){
+            domain.push_back(tempUrl);
+        }
+        i++;
+
+    }
+
+    for(int x =0; x < domain.size(); x++){
+        settingUrl += domain[x];
+        if((x+1) == domain.size()){
+            break;
+        } 
+        settingUrl += "/";
+       
+    }
+
+    return settingUrl;
+
+}
+
 
 ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
 {
@@ -91,7 +121,6 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
 {
     
     Response->count = size * nmemb;
-    unsigned char* a[Response->count];
     if (Response->response == nullptr && Response->count <= 0)
     {
         std::cout << Response->count << std::endl;
@@ -111,11 +140,10 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
         return Response->count;
     }   
 
-    for(int i =0; i < Response->count; i++){
 
 
-        writeFile.write(reinterpret_cast<const char*>(Response->response), Response->count);
+    writeFile.write(reinterpret_cast<const char*>(Response->response), Response->count);
         
-    }
+
     return Response->count;
 }
