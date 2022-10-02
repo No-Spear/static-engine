@@ -58,7 +58,7 @@ string CDownloadFromUrlEngine::getDomain(string url)
         settingUrl += "/";
        
     }
-
+    std::cout << settingUrl << std::endl;
     return settingUrl;
 
 }
@@ -75,15 +75,12 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
     if (curl == nullptr)
     {
         std::cout << "init failed" << std::endl;
-        Response.count = 0;
-        Response.response = nullptr;
-        Response.fileName = nullptr;
-        Response.path = nullptr;
         return Response;
     }
 
     curl_easy_setopt(curl, CURLOPT_URL, surl);
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeBufferCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &Response);
 
@@ -95,12 +92,9 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
    
     CURLcode err_code = curl_easy_perform(curl);
     if (err_code !=CURLE_OK)
-    {
-        std::cout << "curl_esay_perform failed" <<std::endl;
-        Response.count = 0;
-        Response.response = nullptr;
-        Response.fileName = nullptr;
-        Response.path = nullptr;
+    {   
+        
+        std::cout << "No File or No URL" <<std::endl;
         return Response;
     }
 
@@ -129,7 +123,7 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
     Response->response = contents;
 
     std::ofstream writeFile;
-    string path = string("./temp/") + Response->fileName + string(".png");
+    string path = string("./temp/") + Response->fileName
 
     Response->path = path;
     writeFile.open(path, std::ios::binary | std::ios::app);
