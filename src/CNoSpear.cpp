@@ -1,6 +1,7 @@
 #include "CURLExtractionEngine.h"
 #include "CDownloadFromUrlEngine.h"
 #include "CScriptExtractionEngine.h"
+#include "CScriptAnalyzeEngine.h"
 #include "CNoSpear.h"
 
 // 정적엔진 CNoSpear 생성자.
@@ -9,7 +10,7 @@ CNoSpear::CNoSpear()
     this->m_Engines.push_back(new CURLExtractEngine());
     this->m_Engines.push_back(new CDownloadFromUrlEngine());
     this->m_Engines.push_back(new CScriptExtractionEngine());
-    // this->m_Engines.push_back(new C)
+    this->m_Engines.push_back(new CScriptAnalyzeEngine());
 }
 
 // 정적엔진 CNoSpear 소멸자
