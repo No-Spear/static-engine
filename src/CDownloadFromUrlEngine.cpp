@@ -1,6 +1,6 @@
 #include "CDownloadFromUrlEngine.h"
 
-CDownloadFromUrlEngine::CDownloadFromUrlEngine()
+CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2)
 {
 }
 
