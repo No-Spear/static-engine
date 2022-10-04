@@ -1,7 +1,7 @@
 #include "CEngineSuper.h"
-CEngineSuper::CEngineSuper()
+CEngineSuper::CEngineSuper(int m_nPriority)
 {
-
+    this->m_nPriority = m_nPriority;
 }
 CEngineSuper::~CEngineSuper()
 {
