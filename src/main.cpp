@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     url->Analyze(&input, &output);
     for(int i = 0; i< input.vecURLs.size(); i++)
         std::cout << input.vecURLs[i] << std::endl;
-    
+
     // const std::string url = string("https://4nul.org:3000/download");
     // ST_ANALYZE_PARAM * param = (ST_ANALYZE_PARAM *)malloc(sizeof(ST_ANALYZE_PARAM));
     // ST_ANALYZE_RESULT * result = (ST_ANALYZE_RESULT *)malloc(sizeof(ST_ANALYZE_RESULT));
