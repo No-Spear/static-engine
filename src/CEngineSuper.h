@@ -39,7 +39,7 @@ private:
     int m_nPriority;
     
 public:
-    CEngineSuper();
+    CEngineSuper(int m_nPriority);
     ~CEngineSuper();
     virtual bool Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)=0;
     int GetPriority();
