@@ -13,7 +13,6 @@
 class OOXml{
 protected:
     // const char* contentxml;                                     // 문서의 xml.rels의 위치,
-    std::string docname;                                        // 문서의 이름
     zip_t* document;                                            // zip 파일 형식으로 파일을 변환
 
     std::string parsing(std::string input);                     // 파싱한 문자열에서 URL을 추출한다.
@@ -45,7 +44,7 @@ public:
 class CURLExtractEngine : public CEngineSuper {
 private:
     OOXml* document;                                                        // 검사를 원하는 문서
-    std::vector<std::string> doctype;                                       // 문서의 타입
+    std::string doctype;                                                    // 문서의 타입
 
     void getDocumentInfo(const std::string docpath);                        // 문서의 위치로부터 문서 정보를 가져오기 위한 함수
     bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);   // URL을 파싱하기 위한 함수
