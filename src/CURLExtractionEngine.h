@@ -20,7 +20,7 @@ protected:
 public:
     OOXml(const char* docpath);                                 // 클래스 생성자
     ~OOXml();                                                   // 클래스 소멸자
-    virtual bool getUrlData(std::vector<std::string>& output);          // 파일에서 C&C URL을 가져온다.
+    virtual bool getUrlData(std::vector<std::string>& output);  // 파일에서 C&C URL을 가져온다.
 };
 
 /*
@@ -43,14 +43,14 @@ public:
 */
 class CURLExtractEngine : public CEngineSuper {
 private:
-    OOXml* document;                                                        // 검사를 원하는 문서
-    std::string doctype;                                                    // 문서의 타입
+    OOXml* document;                                                                                // 검사를 원하는 문서
+    std::string doctype;                                                                            // 문서의 타입
 
-    void getDocumentInfo(const std::string docpath);                        // 문서의 위치로부터 문서 정보를 가져오기 위한 함수
-    bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);   // URL을 파싱하기 위한 함수
+    void getDocumentInfo(const std::string docpath);                                                // 문서의 위치로부터 문서 정보를 가져오기 위한 함수
+    bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);      // URL을 파싱하기 위한 함수
 
 public:
-    CURLExtractEngine();                                                    // 클래스 생성자
-    ~CURLExtractEngine();                                                   // 클래스 소멸자
-    bool Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);       // 검사 함수
+    CURLExtractEngine();                                                                            // 클래스 생성자
+    ~CURLExtractEngine();                                                                           // 클래스 소멸자
+    bool Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);                               // 검사 함수
 };
