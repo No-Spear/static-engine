@@ -4,5 +4,8 @@
 # Complie File
 *.o
 
+# CNoSpearEngine
+CNoSpearEngine
+
 # 파일 다운로드관련 임시 폴더
 temp
