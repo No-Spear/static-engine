@@ -13,7 +13,7 @@ CURLExtractionEngine.o: CEngineSuper.h CURLExtractionEngine.h CURLExtractionEngi
 
 CDownloadFromUrlEngine.o: CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
 
-CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h main.cpp
+CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ main.cpp ${LDLIBS} ${libpath} ${incpath}
 
 CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CNoSpear.o
