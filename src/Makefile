@@ -13,10 +13,14 @@ CURLExtractionEngine.o: CEngineSuper.h CURLExtractionEngine.h CURLExtractionEngi
 
 CDownloadFromUrlEngine.o: CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
 
-CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CNoSpear.cpp
-	$(CC) -c -o $@ main.cpp ${LDLIBS} ${libpath} ${incpath}
+CScriptExtractionEngine.o: CEngineSuper.h CScriptExtractionEngine.h CScriptExtractionEngine.cpp
 
-CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CNoSpear.o
+# CScriptAnalyzeEngine.o: CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
+
+CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CNoSpear.cpp
+	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
+
+CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o $@
 
 clean:
