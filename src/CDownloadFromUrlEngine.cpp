@@ -16,11 +16,12 @@ bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT 
         if(Response.count == 0){
             return false;
         }
+        input->vecInputFiles.push_back(Response.path);
         output->vecExtractedFiles.push_back(Response.path);
         std::cout << Response.path << std::endl;
     }
-    return true;
 
+    return true;
 }
 
 string CDownloadFromUrlEngine::getFileName(string url)
