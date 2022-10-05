@@ -30,7 +30,6 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script)
     std::regex last(R"([\s]*</script>)");
     script = std::regex_replace(script, first, "");
     script = std::regex_replace(script, last, "");
-    std::cout << script << std::endl;
 }
 
 bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<std::string>& scriptlist)
