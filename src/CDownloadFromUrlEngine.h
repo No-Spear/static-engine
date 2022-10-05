@@ -8,6 +8,7 @@
 #include <curl/curlver.h>
 #include <curl/easy.h>
 #include <curl/urlapi.h>
+#include <mysql/mysql.h>
 
 using std::string;
 
@@ -30,8 +31,12 @@ public:
     bool Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output);
 
 private:
-    
+    MYSQL* conn;
+    MYSQL connect;
+    MYSQL_RES* result; 
+    MYSQL_ROW row;
     CURL * curl;
+    bool queryCnCUrl(string url);
     string getFileName(string url);   
     string getDomain(string url);
     ST_RESPONSE getFileFromUrl(string url);

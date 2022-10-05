@@ -2,16 +2,52 @@
 
 CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2)
 {
+    char DBHost[] = "localhost";
+    char DBUser[] = "root";
+    char DBPass[] = "DBPW1234";
+    char DBName[] = "VSERVER";
+    mysql_init(&connect);
+    conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
+    if(conn == NULL)
+    {
+        fprintf(stderr, "Mysql connection error : %s", mysql_error(&connect));
+    }
 }
 
 CDownloadFromUrlEngine::~CDownloadFromUrlEngine()
 {
+    mysql_close(conn);
+}
+
+bool CDownloadFromUrlEngine::queryCnCUrl(string url)
+{
+
+    url = "'" + url + "'";
+    string sql ="SELECT id from CnCTB where URL=" + url;
+
+
+
+    std::cout << sql << std::endl;
+    if(mysql_query(conn,sql.c_str()) !=0){
+        return false;
+    }
+
+    result = mysql_store_result(conn);
+    if ((row = mysql_fetch_row(result)) == NULL){
+        return false;
+    }
+
+    return true;
 }
 
 bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
 {
-
+    
     for(int i =0; i < input->vecURLs.size(); i++){
+        if(queryCnCUrl(input->vecURLs[i])){
+            continue;
+        }
+
         ST_RESPONSE Response = getFileFromUrl(getDomain(input->vecURLs[i]));
         if(Response.count == 0){
             return false;
