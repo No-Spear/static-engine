@@ -5,7 +5,7 @@
 *.o
 
 # CNoSpearEngine
-CNoSpearEngine
+CStatic-Engine
 
 # 파일 다운로드관련 임시 폴더
 temp
