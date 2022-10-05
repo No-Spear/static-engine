@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-o
-LDLIBS=-lzip -lcurl
+LDLIBS=-lzip -lcurl -lmysqlclient
 libpath=-L/home/arad4228/Desktop/zip/build
 incpath=-I/home/arad4228/Desktop/zip/src
 
@@ -15,12 +15,12 @@ CDownloadFromUrlEngine.o: CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromU
 
 CScriptExtractionEngine.o: CEngineSuper.h CScriptExtractionEngine.h CScriptExtractionEngine.cpp
 
-# CScriptAnalyzeEngine.o: CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
+CScriptAnalyzeEngine.o: CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
 
-CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CNoSpear.cpp
+CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CNoSpear.o
+CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o $@
 
 clean:
