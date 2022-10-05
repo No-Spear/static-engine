@@ -1,7 +1,7 @@
 #include "CURLExtractionEngine.h"
 #include "CDownloadFromUrlEngine.h"
 #include "CScriptExtractionEngine.h"
-// #include "CScriptAnalyzeEngine.h"
+#include "CScriptAnalyzeEngine.h"
 #include "CNoSpear.h"
 
 // 정적엔진 CNoSpear 생성자.
@@ -10,7 +10,7 @@ CNoSpear::CNoSpear()
     this->m_Engines.push_back(new CURLExtractEngine());
     this->m_Engines.push_back(new CDownloadFromUrlEngine());
     this->m_Engines.push_back(new CScriptExtractionEngine());
-    // this->m_Engines.push_back(new CScriptAnalyzeEngine());
+    this->m_Engines.push_back(new CScriptAnalyzeEngine());
 }
 
 // 정적엔진 CNoSpear 소멸자
@@ -46,5 +46,12 @@ int main(int argc, char** argv)
     ST_REPORT outReport;
     if(!staticEngine->Analyze(inputfile, outReport))
         return -1;
+    for(int i= 0; i< outReport.vecBehaviors.size(); i++)
+    {
+        std::cout << outReport.vecBehaviors[i].strName << std::endl;
+        std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
+        std::cout << outReport.vecBehaviors[i].nSeverity << std::endl;
+
+    }
     return 0;
 }
