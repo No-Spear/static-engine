@@ -23,5 +23,7 @@ private:
     std::vector<CEngineSuper*> m_Engines;
 
 public:
+    CNoSpear();
+    ~CNoSpear();
     bool Analyze(std::string strSampleFile, ST_REPORT& outReport);
 };
