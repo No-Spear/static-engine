@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <mysql/mysql.h>
 #include "CEngineSuper.h"
 
 /*
@@ -20,10 +21,16 @@ typedef struct ST_REPORT{
 */
 class CNoSpear {
 private:
+    MYSQL* conn;
+    MYSQL connect;
+    MYSQL_RES* result; 
+    MYSQL_ROW row;
     std::vector<CEngineSuper*> m_Engines;
+    std::string makeValue(ST_REPORT& outReport)
 
 public:
     CNoSpear();
     ~CNoSpear();
+    bool SaveResult(ST_REPORT& outReport);
     bool Analyze(std::string strSampleFile, ST_REPORT& outReport);
 };
