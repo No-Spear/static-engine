@@ -137,6 +137,20 @@ int main(int argc, char** argv)
     std::cout << report.strHash << std::endl;
     std::cout << report.strDectName << std::endl;
     std::cout << report.Serverity << std::endl;
+
+    int filedes;
+
+    if(filedes = open(FIFONAME,O_WRONLY)<0){
+        perror("failed to call fifo\n");
+        return 1;
+    }
+
+    int send = write(filedes, &report,sizeof(report));
+
+    if(send<0){
+        perror("failed to write fifo\n");
+        return 1;
+    }
     return 0;
-    return 0;
+
 }

@@ -1,8 +1,14 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <stdio.h>
+#include <unistd.h>
 #include <mysql/mysql.h>
-#include "CEngineSuper.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define FIFONAME "./fifo"
 
 /*
  * 서버로 결과를 전달하기 위해 사용하는 구조체
