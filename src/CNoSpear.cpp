@@ -80,6 +80,14 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
 
 }
 
+// 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
+std::string CNoSpear::extractFileHash(const std::string filepath)
+{
+    int slashlocation = filepath.find_last_of('/');
+    int dotlocation = filepath.find_last_of('.');
+    return filepath.substr(slashlocation+1, (dotlocation-slashlocation-1));
+}
+
 bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
 {
     // 입력과 결과관련 파라미터들을 정의
@@ -90,6 +98,8 @@ bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
 
     for(int i =0; i < this->m_Engines.size(); i++)
         this->m_Engines[i]->Analyze(&input, &output);
+
+    outReport.strHash.append(extractFileHash(strSampleFile));
     
     // 결과를 전달하기 위한 코드
     outReport.vecBehaviors.reserve(output.vecBehaviors.size() + outReport.vecBehaviors.size());
@@ -112,5 +122,21 @@ int main(int argc, char** argv)
         std::cout << outReport.vecBehaviors[i].nSeverity << std::endl;
 
     }
+
+    ST_SERVER_REPORT report;
+    strcpy(report.strHash, outReport.strHash.c_str());
+    int temp = 0;
+    for(int i =0; i< outReport.vecBehaviors.size(); i++)
+    {
+        temp += outReport.vecBehaviors[i].nSeverity;
+    }
+    report.Serverity = temp / outReport.vecBehaviors.size();
+    strcpy(report.strDectName, "Follina");
+
+    std::cout << "서버로 보낼 정보" << std::endl;
+    std::cout << report.strHash << std::endl;
+    std::cout << report.strDectName << std::endl;
+    std::cout << report.Serverity << std::endl;
+    return 0;
     return 0;
 }

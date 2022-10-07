@@ -16,6 +16,15 @@ typedef struct ST_REPORT{
 }ST_REPORT;
 
 /*
+ * 서버에게 파이프를 통해 결과를 전달하기 위해 사용하는 구조체
+*/
+typedef struct ST_SERVER_REPORT {
+    char strHash[64];                       // 파일의 위치
+    char strDectName[40];                   // 분석 결과
+    int Serverity;                          // 위험도(행위 분석 결과 평균)
+}ST_SERVER_REPORT;
+
+/*
  * 정적분석 엔진 클래스
  * URL추출, 파일 다운로드 엔진, Script추출엔진, Script분석 엔진으로 구성되어있다.
 */
@@ -26,7 +35,9 @@ private:
     MYSQL_RES* result; 
     MYSQL_ROW row;
     std::vector<CEngineSuper*> m_Engines;
-    std::string makeValue(ST_REPORT& outReport)
+
+    std::string makeValue(ST_REPORT& outReport);
+    std::string extractFileHash(std::string filepath);
 
 public:
     CNoSpear();
