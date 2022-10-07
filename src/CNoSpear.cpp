@@ -25,8 +25,8 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
 {
     std::string values = "(" + std::to_string(outReport.nSeverity);
     values = values + "," + "'" + outReport.strDetectName + "'";
-    values = values + "," + "'" + outReport.strDetectName + "'";
-    values = values + "," + "'" + outReport.strDetectName + "'";
+    values = values + "," + "'" + outReport.strHash + "'";
+    values = values + "," + "'" + outReport.strName + "'";
     std::string vecValues = ", '{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
         if(i == 0){
