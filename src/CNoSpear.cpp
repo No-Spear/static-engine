@@ -49,10 +49,10 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
 
 bool CNoSpear::SaveResult(ST_REPORT& outReport)
 {
-    char DBHost[] = "localhost";
-    char DBUser[] = "root";
-    char DBPass[] = "DBPW1234";
-    char DBName[] = "VSERVER";
+    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
+    char DBUser[] = "nospear";
+    char DBPass[] = "nospear";
+    char DBName[] = "anlysisResultDB";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
     if(conn == NULL)
