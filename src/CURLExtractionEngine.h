@@ -37,6 +37,21 @@ public:
 };
 
 /*
+ * OOXML객체중 PPSX에 대한 객체
+*/
+class Ppsx : public OOXml {
+private:
+    const char* contentxml;
+
+    std::string parsing(const std::string input);
+
+public:
+    Ppsx(const char* docpath);
+    ~Ppsx();
+    bool getUrlData(std::vector<std::string>& output);          // 파일에서 C&C URL을 가져온다.
+};
+
+/*
  * Document의 XML 데이터에서
  * URL을 추출을 위한 클래스
  * CEngineSuper를 상속받았다.
@@ -44,9 +59,8 @@ public:
 class CURLExtractEngine : public CEngineSuper {
 private:
     OOXml* document;                                                                                // 검사를 원하는 문서
-    std::string doctype;                                                                            // 문서의 타입
 
-    void getDocumentInfo(const std::string docpath);                                                // 문서의 위치로부터 문서 정보를 가져오기 위한 함수
+    std::string extractFileExe(const std::string docpath);                                          // 문서의 위치로부터 문서 타입을 가져오기 위한 함수
     bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);      // URL을 파싱하기 위한 함수
 
 public:
