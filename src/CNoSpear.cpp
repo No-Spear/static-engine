@@ -130,26 +130,34 @@ int main(int argc, char** argv)
     {
         temp += outReport.vecBehaviors[i].nSeverity;
     }
-    report.Serverity = temp / outReport.vecBehaviors.size();
-    strcpy(report.strDectName, "Follina");
+    
+    if(outReport.vecBehaviors.size() != 0)
+    {
+        report.Serverity = temp / outReport.vecBehaviors.size();
+        strcpy(report.strDectName, "Follina");
 
-    std::cout << "서버로 보낼 정보" << std::endl;
-    std::cout << report.strHash << std::endl;
-    std::cout << report.strDectName << std::endl;
-    std::cout << report.Serverity << std::endl;
+        std::cout << "서버로 보낼 정보" << std::endl;
+        std::cout << report.strHash << std::endl;
+        std::cout << report.strDectName << std::endl;
+        std::cout << report.Serverity << std::endl;
 
-    int filedes;
+        int filedes;
 
-    if(filedes = open(FIFONAME,O_WRONLY)<0){
-        perror("failed to call fifo\n");
-        return 1;
+        if(filedes = open(FIFONAME,O_WRONLY)<0){
+            perror("failed to call fifo\n");
+            return 1;
+        }
+
+        int send = write(filedes, &report,sizeof(report));
+
+        if(send<0){
+            perror("failed to write fifo\n");
+            return 1;
+        }
     }
-
-    int send = write(filedes, &report,sizeof(report));
-
-    if(send<0){
-        perror("failed to write fifo\n");
-        return 1;
+    else{
+        report.Serverity = 0;
+        return 0;
     }
     return 0;
 
