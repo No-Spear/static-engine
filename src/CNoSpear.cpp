@@ -75,9 +75,6 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
     }
     mysql_close(conn);
     return true;
-
-
-
 }
 
 // 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
@@ -108,21 +105,23 @@ bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
 }
 
 // 엔진에게 결과를 보내는 함수
-bool sendStaticEngineResult(const ST_SERVER_REPORT report)
+bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
 {
-    int filedes;
+    int filedes = atoi(pipe);
+    if(filedes = open(,O_WRONLY)<0)
+    {
+        std::cout << "failed to call fifo" << std::endl;
+        return false;
+    }
 
-        if(filedes = open(FIFONAME,O_WRONLY)<0){
-            std::cout << "failed to call fifo" << std::endl;
-            return false;
-        }
+    int send = write(filedes, &report,sizeof(report));
 
-        int send = write(filedes, &report,sizeof(report));
-
-        if(send<0){
-            std::cout << "failed to write fifo" << std::endl;
-            return false;
-        }
+    if(send<0)
+    {
+        std::cout << "failed to write fifo" << std::endl;
+        return false;
+    }
+    close(filedes);
     return true;
 }
 
@@ -158,7 +157,7 @@ int main(int argc, char** argv)
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
         std::cout << report.Serverity << std::endl;
-        if(!sendStaticEngineResult(report))
+        if(!sendStaticEngineResult(argv[2], report))
             return -1;
     }
     else{
@@ -169,7 +168,7 @@ int main(int argc, char** argv)
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
         std::cout << report.Serverity << std::endl;
-        if(!sendStaticEngineResult(report))
+        if(!sendStaticEngineResult(argv[2], report))
             return -1;
 
         return 0;
