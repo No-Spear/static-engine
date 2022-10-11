@@ -52,7 +52,7 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
     char DBUser[] = "nospear";
     char DBPass[] = "nospear!";
-    char DBName[] = "analysisResultDB";
+    char DBName[] = "analysisResultDB"; 
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
     if(conn == NULL)
@@ -107,6 +107,24 @@ bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
     return true;
 }
 
+// 엔진에게 결과를 보내는 함수
+bool sendStaticEngineResult(const ST_SERVER_REPORT report)
+{
+    int filedes;
+
+        if(filedes = open(FIFONAME,O_WRONLY)<0){
+            std::cout << "failed to call fifo" << std::endl;
+            return false;
+        }
+
+        int send = write(filedes, &report,sizeof(report));
+
+        if(send<0){
+            std::cout << "failed to write fifo" << std::endl;
+            return false;
+        }
+    return true;
+}
 
 int main(int argc, char** argv)
 {
@@ -140,23 +158,20 @@ int main(int argc, char** argv)
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
         std::cout << report.Serverity << std::endl;
-
-        int filedes;
-
-        if(filedes = open(FIFONAME,O_WRONLY)<0){
-            perror("failed to call fifo\n");
-            return 1;
-        }
-
-        int send = write(filedes, &report,sizeof(report));
-
-        if(send<0){
-            perror("failed to write fifo\n");
-            return 1;
-        }
+        if(!sendStaticEngineResult(report))
+            return -1;
     }
     else{
         report.Serverity = 0;
+        strcpy(report.strDectName, "Nomal");
+
+        std::cout << "서버로 보낼 정보" << std::endl;
+        std::cout << report.strHash << std::endl;
+        std::cout << report.strDectName << std::endl;
+        std::cout << report.Serverity << std::endl;
+        if(!sendStaticEngineResult(report))
+            return -1;
+
         return 0;
     }
     return 0;
