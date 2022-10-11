@@ -74,6 +74,13 @@ string CDownloadFromUrlEngine::getFileName(string url)
 
 string CDownloadFromUrlEngine::getDomain(string url)
 {
+    string encoded_slash = "\%2f";
+    while(1)
+    {     
+        if(url.find("\%2f") == string::npos)break;
+        
+        url.replace(url.find("\%2f"),encoded_slash.length(),"/");
+    }
     std::istringstream ss(url);
     string tempUrl;
     std::vector<string> domain;
