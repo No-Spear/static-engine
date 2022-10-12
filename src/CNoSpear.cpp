@@ -69,10 +69,6 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
         return false;
     }
 
-    result = mysql_store_result(conn);
-    if ((row = mysql_fetch_row(result)) == NULL){
-        return false;
-    }
     mysql_close(conn);
     return true;
 }
