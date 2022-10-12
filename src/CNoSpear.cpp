@@ -34,7 +34,7 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
         }else{
         vecValues = vecValues + ", [" + std::to_string(i) + "]Behavior :" + "{";    
         }
-        vecValues = vecValues + "serverity : " + std::to_string(outReport.vecBehaviors[i].nSeverity);
+        vecValues = vecValues + "serverity : " + std::to_string(outReport.vecBehaviors[i].Severity);
         vecValues = vecValues + "Desc : " + outReport.vecBehaviors[i].strDesc;
         vecValues = vecValues + "Name : " + outReport.vecBehaviors[i].strName;
         vecValues = vecValues + "}";
@@ -62,7 +62,7 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
 
     string values = makeValue(outReport);
 
-    string sql ="INSERT INTO analysisResultTable(severity,detectName,sha256,name,behaviors) VALUES" + values;
+    string sql ="INSERT INTO analysisResultTable(nseverity,detectName,sha256,name,behaviors) VALUES" + values;
 
     std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
@@ -97,6 +97,17 @@ bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
         this->m_Engines[i]->Analyze(&input, &output);
 
     outReport.strHash.append(extractFileHash(strSampleFile));
+
+    // NSeverity 결정
+    int temp = 0;
+    for(int i =0; i< output.vecBehaviors.size(); i++)
+    {
+        temp += output.vecBehaviors[i].Severity;
+    }
+    if( output.vecBehaviors.size() != 0)
+        outReport.nSeverity= temp / output.vecBehaviors.size();
+    else
+        outReport.nSeverity = 0;
     
     // 결과를 전달하기 위한 코드
     outReport.vecBehaviors.reserve(output.vecBehaviors.size() + outReport.vecBehaviors.size());
@@ -138,8 +149,7 @@ int main(int argc, char** argv)
     {
         std::cout << outReport.vecBehaviors[i].strName << std::endl;
         std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
-        std::cout << outReport.vecBehaviors[i].nSeverity << std::endl;
-
+        std::cout << outReport.vecBehaviors[i].Severity << std::endl;
     }
 
     ST_SERVER_REPORT report;
@@ -147,30 +157,30 @@ int main(int argc, char** argv)
     int temp = 0;
     for(int i =0; i< outReport.vecBehaviors.size(); i++)
     {
-        temp += outReport.vecBehaviors[i].nSeverity;
+        temp += outReport.vecBehaviors[i].Severity;
     }
     
     if(outReport.vecBehaviors.size() != 0)
     {
-        report.Severity = temp / outReport.vecBehaviors.size();
+        report.nSeverity = temp / outReport.vecBehaviors.size();
         strcpy(report.strDectName, "Follina");
 
         std::cout << "서버로 보낼 정보" << std::endl;
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
-        std::cout << report.Severity << std::endl;
+        std::cout << report.nSeverity << std::endl;
         std::cout << std::endl;
         if(!sendStaticEngineResult(argv[2], report))
             return -1;
     }
     else{
-        report.Severity = 0;
+        report.nSeverity = 0;
         strcpy(report.strDectName, "Nomal");
 
         std::cout << "서버로 보낼 정보" << std::endl;
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
-        std::cout << report.Severity << std::endl;
+        std::cout << report.nSeverity << std::endl;
         std::cout << std::endl;
         if(!sendStaticEngineResult(argv[2], report))
             return -1;

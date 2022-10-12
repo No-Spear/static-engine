@@ -9,7 +9,7 @@
 typedef struct ST_BEHAVIOR{
     std::string strName;    // 행위 이름
     std::string strDesc;    // 행위 설명
-    int nSeverity;          // 위험도
+    int Severity;          // 위험도
 }ST_BEHAVIOR;
 
 /*
