@@ -108,6 +108,8 @@ bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
         outReport.nSeverity= temp / output.vecBehaviors.size();
     else
         outReport.nSeverity = 0;
+
+    outReport.strDetectName.append("Follina");
     
     // 결과를 전달하기 위한 코드
     outReport.vecBehaviors.reserve(output.vecBehaviors.size() + outReport.vecBehaviors.size());
