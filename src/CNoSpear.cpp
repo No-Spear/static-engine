@@ -62,7 +62,7 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
 
     string values = makeValue(outReport);
 
-    string sql ="INSERT INTO ResultTB(serverity,detectName,sha256,name,behaviors) VALUES" + values;
+    string sql ="INSERT INTO analysisResultTable(serverity,detectName,sha256,name,behaviors) VALUES" + values;
 
     std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
@@ -132,6 +132,8 @@ int main(int argc, char** argv)
     ST_REPORT outReport;
     if(!staticEngine->Analyze(inputfile, outReport))
         return -1;
+        
+    staticEngine->SaveResult(outReport);
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
     {
         std::cout << outReport.vecBehaviors[i].strName << std::endl;
