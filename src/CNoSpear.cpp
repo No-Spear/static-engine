@@ -152,24 +152,26 @@ int main(int argc, char** argv)
     
     if(outReport.vecBehaviors.size() != 0)
     {
-        report.Serverity = temp / outReport.vecBehaviors.size();
+        report.Severity = temp / outReport.vecBehaviors.size();
         strcpy(report.strDectName, "Follina");
 
         std::cout << "서버로 보낼 정보" << std::endl;
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
-        std::cout << report.Serverity << std::endl;
+        std::cout << report.Severity << std::endl;
+        std::cout << std::endl;
         if(!sendStaticEngineResult(argv[2], report))
             return -1;
     }
     else{
-        report.Serverity = 0;
+        report.Severity = 0;
         strcpy(report.strDectName, "Nomal");
 
         std::cout << "서버로 보낼 정보" << std::endl;
         std::cout << report.strHash << std::endl;
         std::cout << report.strDectName << std::endl;
-        std::cout << report.Serverity << std::endl;
+        std::cout << report.Severity << std::endl;
+        std::cout << std::endl;
         if(!sendStaticEngineResult(argv[2], report))
             return -1;
 
