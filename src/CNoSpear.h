@@ -27,7 +27,7 @@ typedef struct ST_REPORT{
 typedef struct ST_SERVER_REPORT {
     char strHash[64];                       // 파일의 위치
     char strDectName[40];                   // 분석 결과
-    int Serverity;                          // 위험도(행위 분석 결과 평균)
+    int Severity;                           // 위험도(행위 분석 결과 평균)
 }ST_SERVER_REPORT;
 
 /*
