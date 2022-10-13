@@ -142,7 +142,7 @@ int main(int argc, char** argv)
     if(!staticEngine->Analyze(inputfile, outReport))
         return -1;
         
-    staticEngine->SaveResult(outReport);
+
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
     {
         std::cout << outReport.vecBehaviors[i].strName << std::endl;
@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     }
     else{
         report.nSeverity = 0;
-        strcpy(report.strDectName, "Nomal");
+        strcpy(report.strDectName, "Normal");
 
         std::cout << "서버로 보낼 정보" << std::endl;
         std::cout << report.strHash << std::endl;
@@ -183,8 +183,10 @@ int main(int argc, char** argv)
         if(!sendStaticEngineResult(argv[2], report))
             return -1;
 
-        return 0;
     }
+    staticEngine->SaveResult(outReport);
+    delete staticEngine;
+
     return 0;
 
 }
