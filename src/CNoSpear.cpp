@@ -30,9 +30,9 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
     std::string vecValues = ", '{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
         if(i == 0){
-            vecValues = vecValues + " [" + std::to_string(i) + "]Behavior :" + "{";    
+            vecValues = vecValues + " Behavior_" + std::to_string(i) + " :" + "{";    
         }else{
-        vecValues = vecValues + ", [" + std::to_string(i) + "]Behavior :" + "{";    
+        vecValues = vecValues + ", Behavior_" + std::to_string(i) + " :" + "{";    
         }
         vecValues = vecValues + "serverity : " + std::to_string(outReport.vecBehaviors[i].Severity);
         vecValues = vecValues + ", Desc : " + outReport.vecBehaviors[i].strDesc;
