@@ -4,6 +4,66 @@
 #include "CScriptAnalyzeEngine.h"
 #include "CNoSpear.h"
 
+// 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
+std::string extractFileHash(const std::string filepath)
+{
+    int slashlocation = filepath.find_last_of('/');
+    int dotlocation = filepath.find_last_of('.');
+    return filepath.substr(slashlocation+1, (dotlocation-slashlocation-1));
+}
+
+// 엔진에게 결과를 보내는 함수
+bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
+{
+    int filedes = atoi(pipe);
+    if(filedes < 0)
+    {
+        std::cout << "failed to call fifo" << std::endl;
+        return false;
+    }
+
+    int send = write(filedes, &report,sizeof(report));
+
+    if(send<0)
+    {
+        std::cout << "failed to write fifo" << std::endl;
+        return false;
+    }
+    close(filedes);
+    return true;
+}
+
+// DB에 저장하기 위한 결과를 만드는 함수
+void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport)
+{
+    // 서버로 보낼 평균 위험도
+    int totalSeverity = 0;
+    // 분석 결과의 사이즈
+    int behaviorSize = result.vecBehaviors.size();
+    
+    // NSeverity 결정을 위해
+    for(int i =0; i< behaviorSize; i++)
+        totalSeverity += result.vecBehaviors[i].Severity;
+
+    if(behaviorSize != 0)
+    {
+        outReport.strHash = sampleFile.strFileHash;
+        outReport.strName = sampleFile.strFileName;
+        if(outReport.vecBehaviors[0].strName.compare("Call msdt Function"))
+            outReport.strDetectName = "Follina";
+        outReport.nSeverity= totalSeverity / result.vecBehaviors.size();
+        outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
+        outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
+    }
+    else
+    {
+        outReport.strHash = sampleFile.strFileHash;
+        outReport.strName = sampleFile.strFileName;
+        outReport.strDetectName = "NomalFile";
+        outReport.nSeverity = 0;
+    }    
+}
+
 // 정적엔진 CNoSpear 생성자.
 CNoSpear::CNoSpear()
 {
@@ -47,6 +107,7 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
     return values;
 }
 
+
 bool CNoSpear::SaveResult(ST_REPORT& outReport)
 {
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
@@ -73,118 +134,88 @@ bool CNoSpear::SaveResult(ST_REPORT& outReport)
     return true;
 }
 
-// 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
-std::string CNoSpear::extractFileHash(const std::string filepath)
-{
-    int slashlocation = filepath.find_last_of('/');
-    int dotlocation = filepath.find_last_of('.');
-    return filepath.substr(slashlocation+1, (dotlocation-slashlocation-1));
-}
-
-bool CNoSpear::Analyze(std::string strSampleFile, ST_REPORT& outReport)
+bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
 {
     // 입력과 결과관련 파라미터들을 정의
     ST_ANALYZE_PARAM input;
     ST_ANALYZE_RESULT output;
+
     // 시작시 분석 파일의 위치를 전달.
-    input.vecInputFiles.push_back(strSampleFile);
+    input.vecInputFiles.push_back(sampleFile.strFileName);
 
-    for(int i =0; i < this->m_Engines.size(); i++)
-        this->m_Engines[i]->Analyze(&input, &output);
+    // URL 추출엔진 시작
+    if(!this->m_Engines[0]->Analyze(&input, &output))
+        return false;
+    // 분석했던 파일을 제거
+    input.vecInputFiles.pop_back();
+    // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
+    input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
+    input.vecURLs.insert(output.vecExtractedUrls.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
 
-    outReport.strHash.append(extractFileHash(strSampleFile));
-
-    // NSeverity 결정
-    int temp = 0;
-    for(int i =0; i< output.vecBehaviors.size(); i++)
-    {
-        temp += output.vecBehaviors[i].Severity;
-    }
-    if( output.vecBehaviors.size() != 0)
-        outReport.nSeverity= temp / output.vecBehaviors.size();
-    else
-        outReport.nSeverity = 0;
-
-    outReport.strDetectName.append("Follina");
+    // URL을 통한 다운로드 엔진 시작
+    if(!this->m_Engines[1]->Analyze(&input, &output))
+        return false;
+    // 추출엔진의 결과를 입력으로 제공
+    input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
+    input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
     
-    // 결과를 전달하기 위한 코드
-    outReport.vecBehaviors.reserve(output.vecBehaviors.size() + outReport.vecBehaviors.size());
-    outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), output.vecBehaviors.begin(), output.vecBehaviors.end());
-    return true;
-}
-
-// 엔진에게 결과를 보내는 함수
-bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
-{
-    int filedes = atoi(pipe);
-    if(filedes < 0)
-    {
-        std::cout << "failed to call fifo" << std::endl;
+    // 다운받은 파일에서 스크립트 추출엔진 시작
+    if(!this->m_Engines[2]->Analyze(&input, &output))
         return false;
-    }
-
-    int send = write(filedes, &report,sizeof(report));
-
-    if(send<0)
-    {
-        std::cout << "failed to write fifo" << std::endl;
+    // 추출엔진의 결과를 입력으로 제공
+    input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
+    input.vecURLs.insert(output.vecExtractedUrls.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+    
+    // 스크립트 분석엔진 시작
+    if(!this->m_Engines[3]->Analyze(&input, &output))
         return false;
-    }
-    close(filedes);
+
+    // DB에 저장할 결과를 제작
+    makeOutputReport(sampleFile, output, outReport);
     return true;
 }
 
 int main(int argc, char** argv)
 {
-    CNoSpear* staticEngine = new CNoSpear();
-    std::string inputfile(argv[1]);
-    ST_REPORT outReport;
-    if(!staticEngine->Analyze(inputfile, outReport))
-        return -1;
-        
+    // 분석하기 위한 파일에 대한 정보를 설정
+    ST_FILE_INFO sampleFile;
+    sampleFile.strFileName = argv[1];
+    sampleFile.strSampleFile= argv[2];
+    sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
 
+    CNoSpear* staticEngine = new CNoSpear();
+    ST_REPORT outReport;
+
+    // 정적엔진 분석 시작
+    if(!staticEngine->Analyze(sampleFile, outReport))
+        return -1;
+
+    std::cout << "악성 행위 정보" << std::endl;
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
     {
         std::cout << outReport.vecBehaviors[i].strName << std::endl;
         std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
         std::cout << outReport.vecBehaviors[i].Severity << std::endl;
     }
+    // DB로 분석 결과를 전달
+    staticEngine->SaveResult(outReport);
 
+    // 서버로 분석 결과를 전달
     ST_SERVER_REPORT report;
     strcpy(report.strHash, outReport.strHash.c_str());
-    int temp = 0;
-    for(int i =0; i< outReport.vecBehaviors.size(); i++)
-    {
-        temp += outReport.vecBehaviors[i].Severity;
-    }
-    
-    if(outReport.vecBehaviors.size() != 0)
-    {
-        report.nSeverity = temp / outReport.vecBehaviors.size();
-        strcpy(report.strDectName, "Follina");
+    strcpy(report.strDectName, outReport.strDetectName.c_str());
+    report.nSeverity = outReport.nSeverity;
+    std::cout << "서버로 보낼 정보" << std::endl;
+    std::cout << report.strHash << std::endl;
+    std::cout << report.strDectName << std::endl;
+    std::cout << report.nSeverity << "\n" << std::endl;
+   
+   if(!sendStaticEngineResult(argv[3], report))
+   {
+        std::cout << "Cant Send Data to Server" << std::endl;
+        return -1;
+   }
 
-        std::cout << "서버로 보낼 정보" << std::endl;
-        std::cout << report.strHash << std::endl;
-        std::cout << report.strDectName << std::endl;
-        std::cout << report.nSeverity << std::endl;
-        std::cout << std::endl;
-        if(!sendStaticEngineResult(argv[2], report))
-            return -1;
-    }
-    else{
-        report.nSeverity = 0;
-        strcpy(report.strDectName, "Normal");
-
-        std::cout << "서버로 보낼 정보" << std::endl;
-        std::cout << report.strHash << std::endl;
-        std::cout << report.strDectName << std::endl;
-        std::cout << report.nSeverity << std::endl;
-        std::cout << std::endl;
-        if(!sendStaticEngineResult(argv[2], report))
-            return -1;
-
-    }
-    staticEngine->SaveResult(outReport);
     delete staticEngine;
 
     return 0;
