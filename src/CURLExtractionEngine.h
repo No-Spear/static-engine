@@ -12,7 +12,6 @@
 */
 class OOXml{
 protected:
-    // const char* contentxml;                                     // 문서의 xml.rels의 위치,
     zip_t* document;                                            // zip 파일 형식으로 파일을 변환
 
     std::string parsing(std::string input);                     // 파싱한 문자열에서 URL을 추출한다.
@@ -66,5 +65,5 @@ private:
 public:
     CURLExtractEngine();                                                                            // 클래스 생성자
     ~CURLExtractEngine();                                                                           // 클래스 소멸자
-    bool Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);                               // 검사 함수
+    bool Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);                         // 검사 함수
 };

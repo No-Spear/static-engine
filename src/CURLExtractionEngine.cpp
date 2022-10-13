@@ -160,7 +160,7 @@ CURLExtractEngine::~CURLExtractEngine()
 }
 
 // CURLExtractEngine의 URL추출 함수
-bool CURLExtractEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
+bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::vector<std::string> urllist;
     // 입력받은 파일에 대한 정보를 확인한다.
@@ -170,19 +170,9 @@ bool CURLExtractEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* outp
         return false;
 
     // 추출한 주소들을 각각 복사.
-    input->vecURLs.reserve(urllist.size() + input->vecURLs.size());
-    input->vecURLs.insert(input->vecURLs.end(), urllist.begin(), urllist.end());
-    // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urllist.size() + output->vecExtractedUrls.size());
     output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urllist.begin(), urllist.end());
 
-    // Copy를 통한 복사(작동안됨)
-    // std::copy(urllist.begin(), urllist.end(), input->vecURLs.begin());
-    // std::copy(urllist.begin(), urllist.end(), output->vecExtractedUrls.begin());
-    // std::cout << "URL Analyze 함수 종료" << std::endl;
-    
-    // inputfiles에서 파일을 제거
-    input->vecInputFiles.pop_back();
     return true;
 }
 
