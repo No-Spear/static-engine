@@ -37,10 +37,10 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
         vecValues = vecValues + "'serverity' : " + "'" +std::to_string(outReport.vecBehaviors[i].Severity)+ "'";
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
         vecValues = vecValues + ", 'Name' : " + "'" + outReport.vecBehaviors[i].strName + "'";
-        vecValues = vecValues + "}\"";
+        vecValues = vecValues + "}'";
      
     }
-    vecValues = vecValues + "}'";
+    vecValues = vecValues + "}\"";
 
     values = values + vecValues + ")";
 
