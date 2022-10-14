@@ -17,7 +17,14 @@ OOXml::~OOXml()
 // 전달받은 문자열에서 URL만 추출하는 함수
 std::string OOXml::parsing(std::string input)
 {
-    std::istringstream iss(input);
+    // 정규표현식을 통해 1차로 내용 검출
+    std::smatch match;
+    std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+
+    std::regex_search(input, match, re);
+    std::cout << match.str() << std::endl;
+
+    std::istringstream iss(match.str());
     std::string buffer;
     // vector를 통해 넣을 수 있지만 넣고 빼는 과정에 
     // 오버해드를 생각해 해당 과정으로 처리
@@ -51,7 +58,7 @@ bool Docx::getUrlData(std::vector<std::string>& output)
     size_t bufsize;
 
     // URL을 추출하기 위해 정규표현식을 정의
-    std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*"[\s]*TargetMode[\s]*=[\s]*"External")");
+    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     // 문서에서 url과 관련된 "XML" 내용을 가져온다.
@@ -104,16 +111,22 @@ bool Ppsx::getUrlData(std::vector<std::string>& output)
     size_t bufsize;
 
     // URL을 추출하기 위해 정규표현식을 정의
-    std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*"[\s]*TargetMode[\s]*=[\s]*"External")");
+    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     // 문서에서 url과 관련된 "XML" 내용을 가져온다.
     if(zip_entry_open(this->document, contentxml) != 0)
+    {
+        std::cout << "파일을 열 수 없습니다." << std::endl;
         return false;
+    }
 
     // 문서파일에서 XML 데이터를 buf에 저장한다.
     if(zip_entry_read(this->document, &buf, &bufsize) < 0)
+    {
+        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
         return false;
+    }
 
     std::string xml((char*)buf);
     while (std::regex_search(xml, match, re)) {
