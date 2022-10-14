@@ -149,7 +149,6 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urllist.size() + output->vecExtractedUrls.size());
     output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urllist.begin(), urllist.end());
-    std::cout << "추출 주소 복사 끝" << std::endl;
     return true;
 }
 
