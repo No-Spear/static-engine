@@ -13,32 +13,6 @@ OOXml::~OOXml()
 
 }
 
-// 문서에서 C&C 서버 리스트를 돌려준다.
-bool OOXml::getUrlData(std::vector<std::string>& output)
-{
-    // void* buf = NULL;
-    // size_t bufsize;
-
-    // // URL을 추출하기 위해 정규표현식을 정의
-    // std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*"[\s]*TargetMode[\s]*=[\s]*"External")");
-    // std::smatch match;
-
-    // // 문서에서 url과 관련된 "XML" 내용을 가져온다.
-    // if(zip_entry_open(this->document, contentxml) != 0)
-    //     return false;
-
-    // // 문서파일에서 XML 데이터를 buf에 저장한다.
-    // if(zip_entry_read(this->document, &buf, &bufsize) < 0)
-    //     return false;
-
-    // std::string xml((char*)buf);
-    // while (std::regex_search(xml, match, re)) {
-    //     // std::cout << match.str() << '\n';
-    //     output.push_back(parsing(match.str()));
-    //     xml = match.suffix();
-    // }
-    return true;
-}
 
 // 전달받은 문자열에서 URL만 추출하는 함수
 std::string OOXml::parsing(std::string input)
@@ -82,15 +56,20 @@ bool Docx::getUrlData(std::vector<std::string>& output)
 
     // 문서에서 url과 관련된 "XML" 내용을 가져온다.
     if(zip_entry_open(this->document, contentxml) != 0)
+    {
+        std::cout << "파일을 열 수 없습니다." << std::endl;
         return false;
+    }
 
     // 문서파일에서 XML 데이터를 buf에 저장한다.
     if(zip_entry_read(this->document, &buf, &bufsize) < 0)
+    {
+        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
         return false;
+    }
 
     std::string xml((char*)buf);
     while (std::regex_search(xml, match, re)) {
-        // std::cout << match.str() << '\n';
         output.push_back(parsing(match.str()));
         xml = match.suffix();
     }
@@ -99,7 +78,6 @@ bool Docx::getUrlData(std::vector<std::string>& output)
 
 Ppsx::Ppsx(const char* docpath) : OOXml(docpath)
 {
-    std::cout << "PPSX 생성자 호출" << std::endl;
     // 부모의 생성자를 호출 이후
     // Docx XML파일의 위치 삽입
     this->contentxml = "ppt/slides/_rels/slide1.xml.rels";    
@@ -112,8 +90,7 @@ Ppsx::~Ppsx()
 }
 
 std::string Ppsx::parsing(const std::string input)
-{\
-    std::cout << "PPSX parsing 호출" << std::endl;
+{
     std::smatch match;
     std::regex re("https?://[A-Za-z0-9./]*");
     std::regex_search(input, match, re);
@@ -172,7 +149,7 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urllist.size() + output->vecExtractedUrls.size());
     output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urllist.begin(), urllist.end());
-
+    std::cout << "추출 주소 복사 끝" << std::endl;
     return true;
 }
 

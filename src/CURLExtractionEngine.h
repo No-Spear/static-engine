@@ -12,14 +12,14 @@
 */
 class OOXml{
 protected:
-    zip_t* document;                                            // zip 파일 형식으로 파일을 변환
+    zip_t* document;                                                // zip 파일 형식으로 파일을 변환
 
-    std::string parsing(std::string input);                     // 파싱한 문자열에서 URL을 추출한다.
+    std::string parsing(std::string input);                         // 파싱한 문자열에서 URL을 추출한다.
 
 public:
-    OOXml(const char* docpath);                                 // 클래스 생성자
-    ~OOXml();                                                   // 클래스 소멸자
-    virtual bool getUrlData(std::vector<std::string>& output);  // 파일에서 C&C URL을 가져온다.
+    OOXml(const char* docpath);                                     // 클래스 생성자
+    ~OOXml();                                                       // 클래스 소멸자
+    virtual bool getUrlData(std::vector<std::string>& output) =0;   // 파일에서 C&C URL을 가져온다.
 };
 
 /*
