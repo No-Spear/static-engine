@@ -13,7 +13,7 @@ CScriptAnalyzeEngine::~CScriptAnalyzeEngine()
 }
 
 // 추출된 스크립트에서 악성 행위를 판단하는 함수
-bool CScriptAnalyzeEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
+bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::cout << "분석엔진 시작" << std::endl;
     for(int i =0; i< input->vecScriptFIles.size(); i++)
