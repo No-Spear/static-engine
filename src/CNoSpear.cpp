@@ -47,19 +47,20 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
 
     if(behaviorSize != 0)
     {
-        outReport.strHash = sampleFile.strFileHash;
-        outReport.strName = sampleFile.strFileName;
-        if(outReport.vecBehaviors[0].strName.compare("Call msdt Function"))
-            outReport.strDetectName = "Follina";
-        outReport.nSeverity= totalSeverity / result.vecBehaviors.size();
+        outReport.strHash.append(sampleFile.strFileHash);
+        outReport.strName.append(sampleFile.strFileName);
+        if(result.vecBehaviors[0].strName.compare("Call msdt Function") == 0)
+            outReport.strDetectName.append("Follina");
+        std::cout <<outReport.strDetectName << std::endl;
+        outReport.nSeverity = totalSeverity / behaviorSize;
         outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
         outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
     }
     else
     {
-        outReport.strHash = sampleFile.strFileHash;
-        outReport.strName = sampleFile.strFileName;
-        outReport.strDetectName = "NomalFile";
+        outReport.strHash.append(sampleFile.strFileHash);
+        outReport.strName.append(sampleFile.strFileName);
+        outReport.strDetectName.append("NomalFile");
         outReport.nSeverity = 0;
     }    
 }
@@ -87,20 +88,20 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
     values = values + "," + "'" + outReport.strDetectName + "'";
     values = values + "," + "'" + outReport.strHash + "'";
     values = values + "," + "'" + outReport.strName + "'";
-    std::string vecValues = ", \"{";
+    std::string vecValues = ", {";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
         if(i == 0){
-            vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "'{";    
+            vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "{";    
         }else{
-        vecValues = vecValues + ", 'Behavior_" + std::to_string(i) + "' :" + "'{";    
+        vecValues = vecValues + ", 'Behavior_" + std::to_string(i) + "' :" + "{";    
         }
         vecValues = vecValues + "'serverity' : " + "'" +std::to_string(outReport.vecBehaviors[i].Severity)+ "'";
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
         vecValues = vecValues + ", 'Name' : " + "'" + outReport.vecBehaviors[i].strName + "'";
-        vecValues = vecValues + "}'";
+        vecValues = vecValues + "}";
      
     }
-    vecValues = vecValues + "}\"";
+    vecValues = vecValues + "}";
 
     values = values + vecValues + ")";
 
@@ -110,10 +111,10 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
 
 bool CNoSpear::SaveResult(ST_REPORT& outReport)
 {
-    char DBHost[] = "localhost";
-    char DBUser[] = "root";
-    char DBPass[] = "DBPW1234";
-    char DBName[] = "VSERVER";
+    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
+    char DBUser[] = "nospear";
+    char DBPass[] = "nospear!";
+    char DBName[] = "analysisResultDB";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
     if(conn == NULL)
@@ -190,11 +191,9 @@ int main(int argc, char** argv)
     std::cout << sampleFile.strFileName << std::endl;
     std::cout << sampleFile.strSampleFile << std::endl;
 
-    std::cout << "정적엔진 객체 생성" << std::endl;
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
 
-    std::cout << "정적엔진 분석 시작" << std::endl;
     // 정적엔진 분석 시작
     if(!staticEngine->Analyze(sampleFile, outReport))
         return -1;
@@ -213,11 +212,12 @@ int main(int argc, char** argv)
     ST_SERVER_REPORT report;
     strcpy(report.strHash, outReport.strHash.c_str());
     strcpy(report.strDectName, outReport.strDetectName.c_str());
+    std::cout<< outReport.strDetectName <<std::endl;
     report.nSeverity = outReport.nSeverity;
     std::cout << "서버로 보낼 정보" << std::endl;
     std::cout << report.strHash << std::endl;
     std::cout << report.strDectName << std::endl;
-    std::cout << report.nSeverity << "\n" << std::endl;
+    std::cout << report.nSeverity << std::endl;
    
    if(!sendStaticEngineResult(argv[3], report))
    {
