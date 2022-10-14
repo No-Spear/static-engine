@@ -163,8 +163,8 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     if(!this->m_Engines[2]->Analyze(&input, &output))
         return false;
     // 추출엔진의 결과를 입력으로 제공
-    input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
-    input.vecURLs.insert(output.vecExtractedUrls.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+    input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
+    input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
     
     // 스크립트 분석엔진 시작
     if(!this->m_Engines[3]->Analyze(&input, &output))
