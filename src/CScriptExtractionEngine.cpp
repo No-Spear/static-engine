@@ -79,7 +79,7 @@ bool CScriptExtractionEngine::getDotmScriptData(const char* fpath)
 }
 
 // CScriptExtractionEngine의 스크립트 추출 함수
-bool CScriptExtractionEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
+bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     // 현재 inputfile의 vecfile의 수만큼 반복하여 파일의 형식을 찾는다.
     for(int i =0; i < input->vecInputFiles.size(); i++)
@@ -88,10 +88,10 @@ bool CScriptExtractionEngine::Analyze(ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
         std::string filetype =  checkFileType(input->vecInputFiles[i]);
         // 만약 받은 파일이 html이라면
         if(filetype.compare("html") == 0)
-        {
-            getHtmlScriptData(input->vecInputFiles[i].c_str(), input->vecScriptFIles);
+        { 
+            getHtmlScriptData(input->vecInputFiles[i].c_str(), output->vecExtractedScript);
             for(int j=0; j < input->vecScriptFIles.size(); j++)
-                getMeanfulScript(input->vecScriptFIles[j]);
+                getMeanfulScript(output->vecExtractedScript[j]);
             return true;
         }
         // 만약 받은 파일이 docm이라면
