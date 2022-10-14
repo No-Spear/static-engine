@@ -88,7 +88,7 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
     values = values + "," + "'" + outReport.strDetectName + "'";
     values = values + "," + "'" + outReport.strHash + "'";
     values = values + "," + "'" + outReport.strName + "'";
-    std::string vecValues = ", {";
+    std::string vecValues = ", \"{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
         if(i == 0){
             vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "{";    
@@ -101,7 +101,7 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
         vecValues = vecValues + "}";
      
     }
-    vecValues = vecValues + "}";
+    vecValues = vecValues + "}\"";
 
     values = values + vecValues + ")";
 
