@@ -20,10 +20,9 @@ std::string OOXml::parsing(std::string input)
     // 정규표현식을 통해 1차로 내용 검출
     std::smatch match;
     std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
-
     std::regex_search(input, match, re);
-    std::cout << match.str() << std::endl;
 
+    // istringstream을 통해 URL을 검출
     std::istringstream iss(match.str());
     std::string buffer;
     // vector를 통해 넣을 수 있지만 넣고 빼는 과정에 
@@ -98,11 +97,18 @@ Ppsx::~Ppsx()
 
 std::string Ppsx::parsing(const std::string input)
 {
-    std::smatch match;
-    std::regex re("https?://[A-Za-z0-9./]*");
-    std::regex_search(input, match, re);
-    std::cout << match.str() << std::endl;
-    return match.str();
+    // 1차 정규식을 통해 Target="~"부분을 가져온다.
+    std::smatch firstmatch;
+    std::regex firstre(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+    std::regex_search(input, firstmatch, firstre);
+
+    // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
+    std::smatch secondmatch;
+    std::string urlinput = firstmatch.str();
+    std::regex scondre("https?://[A-Za-z0-9./]*");
+    std::regex_search(urlinput, secondmatch, scondre);
+    std::cout << secondmatch.str() << std::endl;
+    return secondmatch.str();
 }
 
 bool Ppsx::getUrlData(std::vector<std::string>& output)
@@ -153,8 +159,7 @@ CURLExtractEngine::~CURLExtractEngine()
 bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::vector<std::string> urllist;
-    // 입력받은 파일에 대한 정보를 확인한다.
-    // getDocumentInfo(input->vecInputFiles[0]);
+
     // 해당 파일의 정보에 맞게 url을 가져온다.
     if(!urlParsing(input->vecInputFiles[0], extractFileExe(input->vecInputFiles[0]) ,urllist))
         return false;
