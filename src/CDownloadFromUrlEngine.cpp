@@ -40,7 +40,7 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
     return true;
 }
 
-bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
+bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
 {
     
     for(int i =0; i < input->vecURLs.size(); i++){
@@ -52,7 +52,6 @@ bool CDownloadFromUrlEngine::Analyze(ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT 
         if(Response.count == 0){
             return false;
         }
-        input->vecInputFiles.push_back(Response.path);
         output->vecExtractedFiles.push_back(Response.path);
         std::cout << Response.path << std::endl;
     }
