@@ -27,6 +27,7 @@ typedef struct ST_ANALYZE_PARAM{
 typedef struct ST_ANALYZE_RESULT{
     std::vector<std::string> vecExtractedFiles; // C&C에서 다운받은 파일들
     std::vector<std::string> vecExtractedUrls;  // C&C URL 리스트
+    std::vector<std::string> vecExtractedScript;// 문서 파일에서 추출된 스크립트 파일
     std::vector<ST_BEHAVIOR> vecBehaviors;      // 정적엔진 분석 결과 리스트
 } ST_ANALYZE_RESULT;
 
