@@ -7,5 +7,9 @@
 # CNoSpearEngine
 CStatic-Engine
 
+# Database관련 파일
+DBconfig
+DBconfig/*
+
 # 파일 다운로드관련 임시 폴더
 temp
