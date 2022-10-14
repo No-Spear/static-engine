@@ -110,10 +110,10 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
 
 bool CNoSpear::SaveResult(ST_REPORT& outReport)
 {
-    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
-    char DBUser[] = "nospear";
-    char DBPass[] = "nospear!";
-    char DBName[] = "analysisResultDB";
+    char DBHost[] = "localhost";
+    char DBUser[] = "root";
+    char DBPass[] = "DBPW1234";
+    char DBName[] = "VSERVER";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
     if(conn == NULL)
@@ -141,8 +141,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     ST_ANALYZE_RESULT output;
 
     // 시작시 분석 파일의 위치를 전달.
-    input.vecInputFiles.push_back(sampleFile.strFileName);
+    input.vecInputFiles.push_back(sampleFile.strSampleFile);
 
+    std::cout << "URL 추출엔진 시작" << std::endl;
     // URL 추출엔진 시작
     if(!this->m_Engines[0]->Analyze(&input, &output))
         return false;
@@ -150,8 +151,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     input.vecInputFiles.pop_back();
     // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
     input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
-    input.vecURLs.insert(output.vecExtractedUrls.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
-
+    input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+    
+    std::cout << "URL 다운로드 엔진 시작" << std::endl;
     // URL을 통한 다운로드 엔진 시작
     if(!this->m_Engines[1]->Analyze(&input, &output))
         return false;
@@ -159,6 +161,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
     input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
     
+    std::cout << "스크립트 추출엔진 시작" << std::endl;
     // 다운받은 파일에서 스크립트 추출엔진 시작
     if(!this->m_Engines[2]->Analyze(&input, &output))
         return false;
@@ -166,6 +169,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
     input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
     
+    std::cout << "스크립트 분석엔진 시작" << std::endl;
     // 스크립트 분석엔진 시작
     if(!this->m_Engines[3]->Analyze(&input, &output))
         return false;
@@ -179,13 +183,18 @@ int main(int argc, char** argv)
 {
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
-    sampleFile.strFileName = argv[1];
-    sampleFile.strSampleFile= argv[2];
+    sampleFile.strFileName = std::string(argv[1]);
+    sampleFile.strSampleFile= std::string(argv[2]);
     sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
 
+    std::cout << sampleFile.strFileName << std::endl;
+    std::cout << sampleFile.strSampleFile << std::endl;
+
+    std::cout << "정적엔진 객체 생성" << std::endl;
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
 
+    std::cout << "정적엔진 분석 시작" << std::endl;
     // 정적엔진 분석 시작
     if(!staticEngine->Analyze(sampleFile, outReport))
         return -1;
