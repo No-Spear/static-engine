@@ -182,6 +182,12 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
 
 int main(int argc, char** argv)
 {
+    if(argc != 4)
+    {
+        std::cout << "syntax : CStatic-Engine <FileName> <FileLocation> <UnnamedPipe>" << std::endl;
+	    std::cout << "sample:  CStatic-Engine test.docx ./temp/testdocx 3" << std::endl;
+        return -1;
+    }
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
     sampleFile.strFileName = std::string(argv[1]);
