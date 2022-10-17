@@ -6,12 +6,14 @@ incpath=-I/home/arad4228/Desktop/zip/src
 
 all:CStatic-Engine
 
+sha256.o: sha256.h	sha256.cpp
+
 CEngineSuper.o: CEngineSuper.h CEngineSuper.cpp
 
 CURLExtractionEngine.o: CEngineSuper.h CURLExtractionEngine.h CURLExtractionEngine.cpp
 	$(CC) -c -o $@ CURLExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CDownloadFromUrlEngine.o: CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
+CDownloadFromUrlEngine.o: sha256.h CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
 
 CScriptExtractionEngine.o: CEngineSuper.h CScriptExtractionEngine.h CScriptExtractionEngine.cpp
 
@@ -20,7 +22,7 @@ CScriptAnalyzeEngine.o: CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngi
 CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CStatic-Engine: CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CNoSpear.o
+CStatic-Engine: sha256.o CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o $@
 
 clean:
