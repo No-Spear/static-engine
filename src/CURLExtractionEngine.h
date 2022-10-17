@@ -8,46 +8,102 @@
 // 다이나믹 라이브러리 추가
 
 /*
- * OOXML 객체의 공통 인터페이스(?) 클래스
+ * 문서파일의 포맷 형식에 대한 부모 클래스로써
+ * 이를 상속받아 Compound, OOXML 형식의 문서
+ * 파일의 분석을 정의한다.
 */
-class OOXml{
+class ContainerParserSuper
+{
+public:
+    ContainerParserSuper();                                                 // 생성자
+    ~ContainerParserSuper();                                                // 소멸자
+
+    virtual bool open(const char* pszFile, const char* parserInfo) = 0;     // 문서파일을 여는 함수
+    virtual bool close(void) =  0;                                          // 문서파일을 닫는 함수
+    virtual void* getStreamData(void) = 0;                                  // 문서파일에서 XML 데이터를 가져오는 함수
+};
+
+/*
+ * Compound 형식의 문서 파일 포맷 분석을 위한 클래스
+*/
+class CompoundParser : public ContainerParserSuper
+{
 protected:
-    zip_t* document;                                                // zip 파일 형식으로 파일을 변환
-
-    std::string parsing(std::string input);                         // 파싱한 문자열에서 URL을 추출한다.
+    std::string parsingUrl(std::string combinedUrlData);
 
 public:
-    OOXml(const char* docpath);                                     // 클래스 생성자
-    ~OOXml();                                                       // 클래스 소멸자
-    virtual bool getUrlData(std::vector<std::string>& output) =0;   // 파일에서 C&C URL을 가져온다.
+    CompoundParser();
+    ~CompoundParser();
 };
 
 /*
- *  OOXML객체중 Docx에 대한 객체
+ * OOXML 형식의 문서 파일 포맷 분석을 위한 클래스
 */
-class Docx : public OOXml {
+class OOXMLParser : public ContainerParserSuper
+{
 private:
-    const char* contentxml;
+    zip_t* OOXML;                                                           // 분석하려는 문서 파일
+    const char* contentxml;                                                 // 문서파일의 스트림 위치
+    void* buffer;                                                           // 문서파일의 스트림 데이터
+    size_t bufsize;                                                         // 문서파일의 스트림 데이터 크기
 
 public:
-    Docx(const char* docpath);
-    ~Docx();
-    bool getUrlData(std::vector<std::string>& output);          // 파일에서 C&C URL을 가져온다.
+    OOXMLParser();                                                          // 생성자
+    ~OOXMLParser();                                                         // 소멸자
+    bool open(const char* pszFile, const char* parserInfo);                 //  문서파일을 열고 스트림 데이터를 저장하는 함수
+    bool close(void);                                                       // 열었던 문서파일을 닫고 메모리 정리하는 함수
+    void* getStreamData(void);                                              // 문서파일의 스트림 데이터를 전달해주는 함수
 };
 
 /*
- * OOXML객체중 PPSX에 대한 객체
+ * 문서 파일의 형식에 대한 부모 클래스
+ * 이를 상속받아 word, excel, ppt 형식의 문서
+ * 파일을 분석을 정의한다.
 */
-class Ppsx : public OOXml {
-private:
-    const char* contentxml;
-
-    std::string parsing(const std::string input);
+class DocumentParserSuper
+{
+protected:
+    ContainerParserSuper* container;                                        // 문서 파일의 포맷 형식 변수
 
 public:
-    Ppsx(const char* docpath);
-    ~Ppsx();
-    bool getUrlData(std::vector<std::string>& output);          // 파일에서 C&C URL을 가져온다.
+    DocumentParserSuper(ContainerParserSuper* pContainer);                  // 생성자
+    ~DocumentParserSuper();                                                 // 소멸자
+
+    virtual std::vector<std::string> getUrlList(std::string samplePath) = 0;// UrlList를 찾아 돌려주는 함수
+};
+
+/*
+ * Word 문서 파일의 분석을 위한 클래스
+*/
+class WordParser : public DocumentParserSuper
+{
+private:
+    const char* paserInfo;                                                  // 문서를 탐색자의 정보
+
+    std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
+    char* getParserInfo();                                                  // 문서 탐색자에 대한 정보를 돌려주는 함수
+
+public:
+    WordParser(ContainerParserSuper* pContainer);                           // 생성자
+    ~WordParser();                                                          // 소멸자
+
+    std::vector<std::string> getUrlList(std::string samplePath);            // 문서파일에 내장된 스트림 데이터에서 외부 객체 Url을 돌려주는 함수
+};
+
+/*
+ * Excel 문서 파일의 분석을 위한 클래스
+*/
+class ExcelParser : public DocumentParserSuper
+{
+
+};
+
+/*
+ * Ppt 문서 파일의 분석을 위한 클래스
+*/
+class PptParser : public DocumentParserSuper
+{
+
 };
 
 /*
@@ -57,7 +113,7 @@ public:
 */
 class CURLExtractEngine : public CEngineSuper {
 private:
-    OOXml* document;                                                                                // 검사를 원하는 문서
+    DocumentParserSuper* sampleDocument;                                                            // 문서파일
 
     std::string extractFileExe(const std::string docpath);                                          // 문서의 위치로부터 문서 타입을 가져오기 위한 함수
     bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);      // URL을 파싱하기 위한 함수

@@ -1,101 +1,111 @@
 #include "CURLExtractionEngine.h"
 
-// Documentation(OOXML) 생성자
-OOXml::OOXml(const char* docpath)
-{   
-    // zip pointer에 파일을 연다.
-    this->document = zip_open(docpath, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
-}
-
-// Documentation(OOXML) 소멸자
-OOXml::~OOXml()
+// 문서 파일 포맷 생성자
+ContainerParserSuper::ContainerParserSuper()
 {
 
 }
 
-
-// 전달받은 문자열에서 URL만 추출하는 함수
-std::string OOXml::parsing(std::string input)
-{
-    // 정규표현식을 통해 1차로 내용 검출
-    std::smatch match;
-    std::regex re(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
-    std::regex_search(input, match, re);
-
-    // istringstream을 통해 URL을 검출
-    std::istringstream iss(match.str());
-    std::string buffer;
-    // vector를 통해 넣을 수 있지만 넣고 빼는 과정에 
-    // 오버해드를 생각해 해당 과정으로 처리
-    // Target="을 처리
-    getline(iss, buffer, '"');
-    // URL을 추출
-    getline(iss, buffer, '"');
-    // 마지막에 !가 있다면 제거
-    if(buffer.back() == '!')
-        buffer.pop_back();
-    return buffer;
-}
-
-// Docx객체 생성자
-Docx::Docx(const char* docpath) : OOXml(docpath)
-{
-    // 부모의 생성자를 호출 이후
-    // Docx XML파일의 위치 삽입
-    this->contentxml = "word/_rels/document.xml.rels";    
-}
-
-// Docx객체 소멸자
-Docx::~Docx()
+// 문서 파일 포맷 소멸자
+ContainerParserSuper::~ContainerParserSuper()
 {
 
 }
 
-bool Docx::getUrlData(std::vector<std::string>& output)
+// OOXML 파일 포맷 생성자
+OOXMLParser::OOXMLParser()
 {
-    void* buf = NULL;
-    size_t bufsize;
 
-    // URL을 추출하기 위해 정규표현식을 정의
-    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
-    std::smatch match;
+}
 
-    // 문서에서 url과 관련된 "XML" 내용을 가져온다.
-    if(zip_entry_open(this->document, contentxml) != 0)
+// OOXML 파일 포맷 소멸자
+OOXMLParser::~OOXMLParser()
+{
+
+}
+
+// OOXML 형식의 문서 파일을 여는 함수
+bool OOXMLParser::open(const char* pszFile, const char* parserInfo)
+{
+    // 문서의 타입을 보고 문서의 타입에 맞게 contentxml을 재정의
+    if(parserInfo == "WordParser")
+        this->contentxml = "word/_rels/document.xml.rels";
+    // else if(parserInfo == )
+
+    // OOXML 객체를 ZIP 파일로 변환하여 Open 
+    this->OOXML = zip_open(pszFile, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
+    if(this->OOXML == NULL)
+    {
+        std::cout << "분석을 의로한 파일을 열 수 없습니다." << std::endl;
+        return false;
+    }
+    // OOXML 객체의 Contentxml 데이터를 얻어온다.
+    if(zip_entry_open(this->OOXML, contentxml) != 0)
     {
         std::cout << "파일을 열 수 없습니다." << std::endl;
         return false;
     }
-
-    // 문서파일에서 XML 데이터를 buf에 저장한다.
-    if(zip_entry_read(this->document, &buf, &bufsize) < 0)
-    {
-        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
-        return false;
-    }
-
-    std::string xml((char*)buf);
-    while (std::regex_search(xml, match, re)) {
-        output.push_back(parsing(match.str()));
-        xml = match.suffix();
-    }
     return true;
 }
 
-Ppsx::Ppsx(const char* docpath) : OOXml(docpath)
+// OOXML 형식의 문서 파일을 닫는 함수
+bool OOXMLParser::close(void)
 {
-    // 부모의 생성자를 호출 이후
-    // Docx XML파일의 위치 삽입
-    this->contentxml = "ppt/slides/_rels/slide1.xml.rels";    
+    free(this->OOXML);
+    free(this->buffer);
+    return true;
 }
 
-// PPSX
-Ppsx::~Ppsx()
+// OOXML 형식의 문서 파일의 스트림 데이터를 얻는 함수
+void* OOXMLParser::getStreamData(void)
+{
+    // 문서파일에서 XML 데이터를 buf에 저장한다.
+    if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0)
+    {
+        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
+        return NULL;
+    }
+    return this->buffer;
+}
+
+// Compound 파일 포맷 생성자
+CompoundParser::CompoundParser()
 {
 
 }
 
-std::string Ppsx::parsing(const std::string input)
+// Compound 파일 포맷 소멸자
+CompoundParser::~CompoundParser()
+{
+
+}
+
+// 문서 형식 생성자
+DocumentParserSuper::DocumentParserSuper(ContainerParserSuper* pContainer)
+{
+    this->container = pContainer;
+}
+
+// 문서 형식 소멸자
+DocumentParserSuper::~DocumentParserSuper()
+{
+    delete(this->container);
+}
+
+// Word 문서 형식에 대한 생성자
+WordParser::WordParser(ContainerParserSuper* pContainer) : DocumentParserSuper(pContainer)
+{
+    this->paserInfo = "WordParser";
+}
+
+// Word 문서 형식에 대한 소멸자
+WordParser::~WordParser()
+{
+    
+}
+
+// Word 문서에서 얻은 스트림 데이터에서 Url 데이터만 가져오는 함수
+std::string WordParser::parsingUrl(const std::string input)
 {
     // 1차 정규식을 통해 Target="~"부분을 가져온다.
     std::smatch firstmatch;
@@ -107,40 +117,39 @@ std::string Ppsx::parsing(const std::string input)
     std::string urlinput = firstmatch.str();
     std::regex scondre("https?://[A-Za-z0-9./]*");
     std::regex_search(urlinput, secondmatch, scondre);
-    std::cout << secondmatch.str() << std::endl;
     return secondmatch.str();
 }
 
-bool Ppsx::getUrlData(std::vector<std::string>& output)
+// 어떠한 문서파일을 분석하는지 알려주는 함수
+char* WordParser::getParserInfo()
 {
-    void* buf = NULL;
-    size_t bufsize;
+    return (char*)this->paserInfo;
+}
 
-    // URL을 추출하기 위해 정규표현식을 정의
+// 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
+std::vector<std::string> WordParser::getUrlList(std::string samplePath)
+{
+    // 문서파일의 스트림 데이터를 받을 포인터
+    char* buffer;
+    // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
+    std::vector<std::string> UrlList;
+
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
-    // 문서에서 url과 관련된 "XML" 내용을 가져온다.
-    if(zip_entry_open(this->document, contentxml) != 0)
-    {
-        std::cout << "파일을 열 수 없습니다." << std::endl;
-        return false;
-    }
+    // 문서파일의 스트림 데이터를 열수 있는지 확인.
+    if(!this->container->open(samplePath.c_str(), getParserInfo()))
+        return UrlList;
+    
+    buffer = (char*)this->container->getStreamData();
 
-    // 문서파일에서 XML 데이터를 buf에 저장한다.
-    if(zip_entry_read(this->document, &buf, &bufsize) < 0)
-    {
-        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
-        return false;
-    }
-
-    std::string xml((char*)buf);
+    // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
+    std::string xml((char*)buffer);
     while (std::regex_search(xml, match, re)) {
-        // std::cout << match.str() << '\n';
-        output.push_back(parsing(match.str()));
+        UrlList.push_back(parsingUrl(match.str()));
         xml = match.suffix();
     }
-    return true;
+    return UrlList;
 }
 
 // 엔진객체 생성자
@@ -149,47 +158,15 @@ CURLExtractEngine::CURLExtractEngine() : CEngineSuper(1)
     
 }
 
+
+
 // 엔진객체 소멸자
 CURLExtractEngine::~CURLExtractEngine()
 {
 
 }
 
-// CURLExtractEngine의 URL추출 함수
-bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
-{
-    std::vector<std::string> urllist;
-
-    // 해당 파일의 정보에 맞게 url을 가져온다.
-    if(!urlParsing(input->vecInputFiles[0], extractFileExe(input->vecInputFiles[0]) ,urllist))
-        return false;
-
-    // 추출한 주소들을 각각 복사.
-    output->vecExtractedUrls.reserve(urllist.size() + output->vecExtractedUrls.size());
-    output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urllist.begin(), urllist.end());
-    return true;
-}
-
-bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::vector<std::string>& output)
-{
-    // 입력받은 파일에 맞는 객체를 생성
-    // Docx의 경우
-    if(doctype.compare("docx") == 0)
-        this->document = new Docx(input.c_str());
-    // Xlsx의 경우
-    // else if (doctype.compare("xlsx"))
-    //     this->document = new Xlsx();
-    else if (doctype.compare("ppsx")== 0)
-        this->document = new Ppsx(input.c_str());
-    
-    if(!this->document->getUrlData(output))
-        return false;
-    
-    // 메모리 해제
-    free(this->document);
-    return true;
-}
-
+// 분석의뢰를 받은 파일에 대한 형식을 얻어내는 함수
 std::string CURLExtractEngine::extractFileExe(const std::string docpath)
 {
     // 파일 형식자를 찾기위해 마지막 .의 위치를 찾는다.
@@ -198,4 +175,53 @@ std::string CURLExtractEngine::extractFileExe(const std::string docpath)
     std::string doctype(docpath.substr(location+1));
     // 해당 파일 형식자를 vector에 넣어둔다.
     return doctype;
+}
+
+bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::vector<std::string>& output)
+{
+    // 입력받은 파일에 맞는 객체를 생성
+    // Word 파일의 경우
+    if(doctype.front() == 'd')
+    {
+        if(doctype.back() == 'x')
+            this->sampleDocument = new WordParser(new OOXMLParser());
+        // else
+        //     this->sampleDocument = new WordParser(new CompoundParser());
+    }
+//     else if(doctype.front() == 'x')
+//     {
+//         if(doctype.back() == 'x')
+//             this->sampleDocument = new ExcelParser(new OOXMLParser());
+//         else
+//             this->sampleDocument = new ExcelParser(new CompoundParser());
+//     }
+//    else if(doctype.front() == 'p')
+//    {
+//         if(doctype.back() == 'x')
+//             this->sampleDocument = new PowerPointParser(new OOXMLParser());
+//         else
+//             this->sampleDocument = new PowerPointParser(new CompoundParser());
+//    }
+    else
+    {
+        std::cout << "현재 지원하지 않는 문서 형식입니다." << std::endl;
+        return false;
+    }
+    output = this->sampleDocument->getUrlList(input);
+    return true;
+}
+
+// CURLExtractEngine의 URL추출 함수
+bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
+{
+    std::vector<std::string> urlList;
+
+    // 해당 파일의 정보에 맞게 url을 가져온다.
+    if(!urlParsing(input->vecInputFiles[0], extractFileExe(input->vecInputFiles[0]) ,urlList))
+        return false;
+
+    // 추출한 주소들을 각각 복사.
+    output->vecExtractedUrls.reserve(urlList.size() + output->vecExtractedUrls.size());
+    output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urlList.begin(), urlList.end());
+    return true;
 }
