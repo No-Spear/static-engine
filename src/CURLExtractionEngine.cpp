@@ -25,28 +25,13 @@ OOXMLParser::~OOXMLParser()
 }
 
 // OOXML 형식의 문서 파일을 여는 함수
-bool OOXMLParser::open(const char* pszFile, const char* parserInfo)
-{
-    // 문서의 타입을 보고 문서의 타입에 맞게 contentxml을 재정의
-    if(parserInfo == "WordParser")
-        this->contentxml = "word/_rels/document.xml.rels";
-    else if(parserInfo == "ExcelParser")
-        this->contentxml = "";
-    else if(parserInfo == "PowerPointParser")
-        this->contentxml = "";
-    
-
+bool OOXMLParser::open(const char* pszFile)
+{    
     // OOXML 객체를 ZIP 파일로 변환하여 Open 
     this->OOXML = zip_open(pszFile, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
     if(this->OOXML == NULL)
     {
         std::cout << "분석을 의뢰한 파일을 열 수 없습니다." << std::endl;
-        return false;
-    }
-    // OOXML 객체의 Contentxml 데이터를 얻어온다.
-    if(zip_entry_open(this->OOXML, contentxml) != 0)
-    {
-        std::cout << "파일을 열 수 없습니다." << std::endl;
         return false;
     }
     return true;
@@ -61,15 +46,22 @@ bool OOXMLParser::close(void)
 }
 
 // OOXML 형식의 문서 파일의 스트림 데이터를 얻는 함수
-void* OOXMLParser::getStreamData(void)
-{
-    // 문서파일에서 XML 데이터를 buf에 저장한다.
-    if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0)
+char* OOXMLParser::getStreamData(const char* location)
+{   
+    // OOXML 객체의 Contentxml 데이터를 얻어온다.
+    if(zip_entry_open(this->OOXML, location) != 0)
     {
-        std::cout << "파일 내용을 열 수 없습니다." << std::endl;
+        std::cout << "파일을 열 수 없습니다." << std::endl;
         return NULL;
     }
-    return this->buffer;
+
+    // 문서파일에서 하위 XML 데이터를 buf에 저장한다.
+    if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0)
+    {
+        std::cout << "Cotent Xml 파일 내용을 열 수 없습니다." << std::endl;
+        return NULL;
+    }
+    return (char*)this->buffer;
 }
 
 // Compound 파일 포맷 생성자
@@ -99,7 +91,7 @@ DocumentParserSuper::~DocumentParserSuper()
 // Word 문서 형식에 대한 생성자
 WordParser::WordParser(ContainerParserSuper* pContainer) : DocumentParserSuper(pContainer)
 {
-    this->paserInfo = "WordParser";
+
 }
 
 // Word 문서 형식에 대한 소멸자
@@ -124,11 +116,6 @@ std::string WordParser::parsingUrl(const std::string input)
     return secondmatch.str();
 }
 
-// 어떠한 문서파일을 분석하는지 알려주는 함수
-char* WordParser::getParserInfo()
-{
-    return (char*)this->paserInfo;
-}
 
 // 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
 std::vector<std::string> WordParser::getUrlList(std::string samplePath)
@@ -141,11 +128,14 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
+    // Word 문서의 contentxml의 정의
+    const char* contentxml = "word/_rels/document.xml.rels";
+
     // 문서파일의 스트림 데이터를 열수 있는지 확인.
-    if(!this->container->open(samplePath.c_str(), getParserInfo()))
+    if(!this->container->open(samplePath.c_str()))
         return UrlList;
     
-    buffer = (char*)this->container->getStreamData();
+    buffer = (char*)this->container->getStreamData(contentxml);
 
     // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
     std::string xml((char*)buffer);
@@ -159,10 +149,10 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
 // Excel 문서 형식에 대한 생성자
 ExcelParser::ExcelParser(ContainerParserSuper* pContainer) : DocumentParserSuper(pContainer)
 {
-    this->paserInfo = "ExcelParser";
+
 }
 
-// Excel 문서 형식에 대한 소멸자
+// Excel 문서 형식에 대한 소멸자  
 ExcelParser::~ExcelParser()
 {
 
@@ -184,11 +174,29 @@ std::string ExcelParser::parsingUrl(const std::string input)
     return secondmatch.str();
 }
 
-// 어떠한 문서파일을 분석하는지 알려주는 함수
-char* ExcelParser::getParserInfo()
+std::string ExcelParser::parsingContentxml(const std::string input)
 {
-    return (char*)this->paserInfo;
+    std::istringstream iss(input);
+    std::string buffer;
+    getline(iss, buffer, '/');
+    return buffer;
 }
+
+std::vector<std::string> ExcelParser::getContenxmlList(const char* highStream)
+{
+    std::vector<std::string> contentxmlList;
+    // stream data를 string으로 변환
+    std::string streamData(highStream);
+    
+    std::smatch match;
+    std::regex re(R"(Target[\s]*=[\s]*"worksheets\/[A-Za-z0-9]*.xml)");
+     while (std::regex_search(streamData, match, re)) { 
+        contentxmlList.push_back("xl/worksheets/"+ parsingContentxml(match.str())+".rels");
+        std::cout << ""+ match.str()+".rels" << std::endl;
+        streamData = match.suffix();
+    }
+    return contentxmlList;
+}   
 
 // 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
 std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
@@ -201,18 +209,25 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
-    // 문서파일의 스트림 데이터를 열수 있는지 확인. 
-    // 해당부분 처리 필요.
-    if(!this->container->open(samplePath.c_str(), getParserInfo()))
+    //문서파일이 해당 위치에 있는지 확인
+    if(!this->container->open(samplePath.c_str()))
         return UrlList;
     
-    buffer = (char*)this->container->getStreamData();
+    // 상위 스트림에 대한 정보를 가져온다.
+    char* highStream = this->container->getStreamData("xl/_rels/workbook.xml.rels");
+    // Excel 문서의 상위 stream에서 contentxml 리스트를 가져온다.
+    std::vector<std::string> contentxml = getContenxmlList(highStream);
 
-    // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-    std::string xml((char*)buffer);
-    while (std::regex_search(xml, match, re)) {
-        UrlList.push_back(parsingUrl(match.str()));
-        xml = match.suffix();
+    // contentxml의 수 만큼 url을 찾아낸다.
+    for(int i =0; i< contentxml.size(); i++)
+    {
+        buffer = (char*)this->container->getStreamData(contentxml[i].c_str());
+        // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
+        std::string xml((char*)buffer);
+        while (std::regex_search(xml, match, re)) {
+            UrlList.push_back(parsingUrl(match.str()));
+            xml = match.suffix();
+        }
     }
     return UrlList;
 }
@@ -220,7 +235,7 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
 // PowerPoint 문서 형식에 대한 생성자
 PowerPointParser::PowerPointParser(ContainerParserSuper* pContainer) : DocumentParserSuper(pContainer)
 {
-    this->paserInfo = "PowerPointParser";
+
 }
 
 // PowerPoint 문서 형식에 대한 소멸자
@@ -245,11 +260,21 @@ std::string PowerPointParser::parsingUrl(const std::string input)
     return secondmatch.str();
 }
 
-// 어떠한 문서파일을 분석하는지 알려주는 함수
-char* PowerPointParser::getParserInfo()
+std::vector<std::string> PowerPointParser::getContenxmlList(const char* highStream)
 {
-    return (char*)this->paserInfo;
-}
+    std::vector<std::string> contentxmlList;
+    // stream data를 string으로 변환
+    std::string streamData(highStream);
+    
+    std::smatch match;
+    std::regex re(R"(slide[0-9]*.xml)");
+     while (std::regex_search(streamData, match, re)) {
+        contentxmlList.push_back("ppt/slides/_rels/"+ match.str()+".rels");
+        std::cout << "ppt/slides/_rels/"+ match.str()+".rels" << std::endl;
+        streamData = match.suffix();
+    }
+    return contentxmlList;
+}   
 
 // 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
 std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
@@ -262,18 +287,25 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
-    // 문서파일의 스트림 데이터를 열수 있는지 확인. 
-    // 해당부분 처리 필요.
-    if(!this->container->open(samplePath.c_str(), getParserInfo()))
+    //문서파일이 해당 위치에 있는지 확인
+    if(!this->container->open(samplePath.c_str()))
         return UrlList;
     
-    buffer = (char*)this->container->getStreamData();
+    // 상위 스트림에 대한 정보를 가져온다.
+    char* highStream = this->container->getStreamData("ppt/_rels/presentation.xml.rels");
+    // PowerPoint 문서의 상위 stream에서  contentxml 리스트를 가져온다.
+    std::vector<std::string> contentxml = getContenxmlList(highStream);
 
-    // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-    std::string xml((char*)buffer);
-    while (std::regex_search(xml, match, re)) {
-        UrlList.push_back(parsingUrl(match.str()));
-        xml = match.suffix();
+    // contentxml의 수 만큼 url을 찾아낸다.
+    for(int i =0; i< contentxml.size(); i++)
+    {
+        buffer = (char*)this->container->getStreamData(contentxml[i].c_str());
+        // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
+        std::string xml((char*)buffer);
+        while (std::regex_search(xml, match, re)) {
+            UrlList.push_back(parsingUrl(match.str()));
+            xml = match.suffix();
+        }
     }
     return UrlList;
 }
@@ -283,8 +315,6 @@ CURLExtractEngine::CURLExtractEngine() : CEngineSuper(1)
 {
     
 }
-
-
 
 // 엔진객체 소멸자
 CURLExtractEngine::~CURLExtractEngine()
@@ -314,25 +344,26 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
         // else
         //     this->sampleDocument = new WordParser(new CompoundParser());
     }
-//     else if(doctype.front() == 'x')
-//     {
-//         if(doctype.back() == 'x')
-//             this->sampleDocument = new ExcelParser(new OOXMLParser());
-//         else
-//             this->sampleDocument = new ExcelParser(new CompoundParser());
-//     }
-//    else if(doctype.front() == 'p')
-//    {
-//         if(doctype.back() == 'x')
-//             this->sampleDocument = new PowerPointParser(new OOXMLParser());
-//         else
-//             this->sampleDocument = new PowerPointParser(new CompoundParser());
-//    }
+    else if(doctype.front() == 'x')
+    {
+        if(doctype.back() == 'x')
+            this->sampleDocument = new ExcelParser(new OOXMLParser());
+        // else
+        //     this->sampleDocument = new ExcelParser(new CompoundParser());
+    }
+   else if(doctype.front() == 'p')
+   {
+        if(doctype.back() == 'x')
+            this->sampleDocument = new PowerPointParser(new OOXMLParser());
+        // else
+        //     this->sampleDocument = new PowerPointParser(new CompoundParser());
+   }
     else
     {
         std::cout << "현재 지원하지 않는 문서 형식입니다." << std::endl;
         return false;
     }
+
     output = this->sampleDocument->getUrlList(input);
     return true;
 }
