@@ -1,5 +1,6 @@
 #pragma once
 #include "CEngineSuper.h"
+#include "sha256.h"
 #include <string> 
 #include <fstream>
 #include <sstream>
@@ -37,6 +38,7 @@ private:
     MYSQL_ROW row;
     CURL * curl;
     bool queryCnCUrl(string url);
+    string getPath();
     string getFileName(string url);   
     string getDomain(string url);
     ST_RESPONSE getFileFromUrl(string url);

@@ -2,12 +2,14 @@
 
 CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2)
 {
+ 
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
     char DBUser[] = "nospear";
     char DBPass[] = "nospear!";
-    char DBName[] = "analysisResultDB";
+    char DBName[] = "cncDB";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
+  
     if(conn == NULL)
     {
         fprintf(stderr, "Mysql connection error : %s", mysql_error(&connect));
@@ -23,7 +25,7 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
 {
 
     url = "'" + url + "'";
-    string sql ="SELECT id from CnCTB where URL=" + url;
+    string sql ="SELECT id from CnCTable where URL=" + url;
 
 
 
@@ -38,6 +40,26 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
     }
 
     return true;
+}
+
+string CDownloadFromUrlEngine::getPath()
+{   
+//     FILE * fp 
+// // 파일 불러와서 해시 값 추출
+//     unsigned char digest[SHA256::DIGEST_SIZE] = {0,};
+//     char fileName[65] = {0,};
+//     fseek(fp,0,SEEK_SET);
+
+    
+
+//     SHA256 ctx = SHA256();
+//     ctx.init();
+//     ctx.update((unsigned char *)Response->response , Response->count);
+//     ctx.final(digest);
+
+//     for(int i=0;i<SHA256::DIGEST_SIZE;i++){
+//         sprintf(fileName+i*2,"%02x",digest[i]);    
+//     }
 }
 
 bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
@@ -156,8 +178,9 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
 
 size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response)
 {
-    
+
     Response->count = size * nmemb;
+
     if (Response->response == nullptr && Response->count <= 0)
     {
         std::cout << Response->count << std::endl;
@@ -166,7 +189,10 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
     Response->response = contents;
 
     std::ofstream writeFile;
-    string path = string("../temp/") + Response->fileName;
+
+
+    
+    string path = string("../temp/") + Response->fileName; 
 
     Response->path = path;
     writeFile.open(path, std::ios::binary | std::ios::app);
