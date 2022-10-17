@@ -78,7 +78,7 @@ public:
 class WordParser : public DocumentParserSuper
 {
 private:
-    const char* paserInfo;                                                  // 문서를 탐색자의 정보
+    const char* paserInfo;                                                  // 문서 탐색자의 정보
 
     std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
     char* getParserInfo();                                                  // 문서 탐색자에 대한 정보를 돌려주는 함수
@@ -95,14 +95,35 @@ public:
 */
 class ExcelParser : public DocumentParserSuper
 {
+private:
+    const char* paserInfo;                                                  // 문서 탐색자의 정보
 
+    std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
+    char* getParserInfo();                                                  // 문서 탐색자에 대한 정보를 돌려주는 함수
+
+public:
+    ExcelParser(ContainerParserSuper* pConrainer);                          // 생성자
+    ~ExcelParser();                                                         // 소멸자
+
+    std::vector<std::string> getUrlList(std::string samplePath);            // 문서파일에 내장된 스트림 데이터에서 외부 객체 Url을 돌려주는 함수
 };
 
 /*
  * Ppt 문서 파일의 분석을 위한 클래스
 */
-class PptParser : public DocumentParserSuper
+class PowerPointParser : public DocumentParserSuper
 {
+private:
+    const char* paserInfo;                                                  // 문서 탐색자의 정보
+
+    std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
+    char* getParserInfo();                                                  // 문서 탐색자에 대한 정보를 돌려주는 함수
+
+public:
+    PowerPointParser(ContainerParserSuper* pConrainer);                     // 생성자
+    ~PowerPointParser();                                                    // 소멸자
+
+    std::vector<std::string> getUrlList(std::string samplePath);            // 문서파일에 내장된 스트림 데이터에서 외부 객체 Url을 돌려주는 함수
 
 };
 
