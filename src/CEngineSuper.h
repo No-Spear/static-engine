@@ -41,6 +41,12 @@ private:
     int m_nPriority;
     
 public:
+    enum{
+        CONF,
+        COOF,
+        CCNF,
+        CCOF
+    };
     CEngineSuper(int m_nPriority);
     ~CEngineSuper();
     virtual bool Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)=0;
