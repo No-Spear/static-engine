@@ -381,7 +381,7 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     std::vector<std::string> urlList;
 
     // 해당 파일의 정보에 맞게 url을 가져온다.
-    if(!urlParsing(input->vecInputFiles[0], extractFileExe(input->vecInputFiles[0]) ,urlList))
+    if(!urlParsing(input->vecInputFiles[0].first, extractFileExe(input->vecInputFiles[0].first) ,urlList))
         return false;
 
     // 추출한 주소들을 각각 복사.
