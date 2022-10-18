@@ -142,7 +142,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     ST_ANALYZE_RESULT output;
 
     // 시작시 분석 파일의 위치를 전달.
-    input.vecInputFiles.push_back(sampleFile.strSampleFile);
+    input.vecInputFiles.push_back(std::make_pair(sampleFile.strSampleFile, ASF));
 
     std::cout << "URL 추출엔진 시작" << std::endl;
     // URL 추출엔진 시작
@@ -190,8 +190,8 @@ int main(int argc, char** argv)
     }
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
-    sampleFile.strFileName = std::string(argv[1]);
-    sampleFile.strSampleFile= std::string(argv[2]);
+    // sampleFile.strFileName = std::string(argv[1]);
+    // sampleFile.strSampleFile= std::string(argv[2]);
     sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
 
     std::cout << sampleFile.strFileName << std::endl;
