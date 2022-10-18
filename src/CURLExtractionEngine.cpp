@@ -330,7 +330,7 @@ CURLExtractEngine::~CURLExtractEngine()
 }
 
 // 분석의뢰를 받은 파일에 대한 형식을 얻어내는 함수
-std::string CURLExtractEngine::extractFileExe(const std::string docpath)
+std::string CURLExtractEngine::extractFileExetoPath(const std::string docpath)
 {
     // 파일 형식자를 찾기위해 마지막 .의 위치를 찾는다.
     int location = docpath.find_last_of('.');
@@ -340,27 +340,56 @@ std::string CURLExtractEngine::extractFileExe(const std::string docpath)
     return doctype;
 }
 
+// 문서의 시그니처로부터 문서 타입을 가져오는 함수
+std::string CURLExtractEngine::extractFileExetoSignature(const std::string docpath)
+{
+    std::string signature;
+    std::stringstream signaturestream;
+    // 분석의뢰파일을 바이너리 형태로 데이터를 읽는다.
+    std::ifstream document(docpath, std::ios::binary);
+
+    // 만약 파일을 열지 못했다면
+    if (document.fail())
+	{
+		std::cout << "파일을 열고 파일의 시그니처를 알 수 없습니다" << std::endl;
+		return signature;
+	}
+
+    // 파일의 시그니처 값에 해당하는 4byte를 읽어온다.
+    for(int i =0; i<4; i++)
+    {
+        int sig = document.get();
+        signaturestream << std::hex << sig;
+    }
+    signature = signaturestream.str();
+    return signature;
+}                      
+
+
 bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::vector<std::string>& output)
 {
+    // 문서의 시그니처를 확인 
+    std::string documentSignature = extractFileExetoSignature(input);
+    
     // 입력받은 파일에 맞는 객체를 생성
     // Word 파일의 경우
     if(doctype.front() == 'd')
     {
-        if(doctype.back() == 'x')
+        if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new WordParser(new OOXMLParser());
         // else
         //     this->sampleDocument = new WordParser(new CompoundParser());
     }
     else if(doctype.front() == 'x')
     {
-        if(doctype.back() == 'x')
+        if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new ExcelParser(new OOXMLParser());
         // else
         //     this->sampleDocument = new ExcelParser(new CompoundParser());
     }
    else if(doctype.front() == 'p')
    {
-        if(doctype.back() == 'x')
+        if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new PowerPointParser(new OOXMLParser());
         // else
         //     this->sampleDocument = new PowerPointParser(new CompoundParser());
@@ -381,7 +410,7 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     std::vector<std::string> urlList;
 
     // 해당 파일의 정보에 맞게 url을 가져온다.
-    if(!urlParsing(input->vecInputFiles[0].first, extractFileExe(input->vecInputFiles[0].first) ,urlList))
+    if(!urlParsing(input->vecInputFiles[0].first, extractFileExetoPath(input->vecInputFiles[0].first) ,urlList))
         return false;
 
     // 추출한 주소들을 각각 복사.

@@ -1,8 +1,9 @@
 #pragma once
 #include "CEngineSuper.h"
-#include <regex>    // 정규표현식을 위한 라이브러리
+#include <fstream>
 #include <string>
 #include <sstream>
+#include <regex>    // 정규표현식을 위한 라이브러리
 #include <zip.h>    // zip
 // export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/arad4228/Desktop/zip/build
 // 다이나믹 라이브러리 추가
@@ -131,7 +132,8 @@ class CURLExtractEngine : public CEngineSuper {
 private:
     DocumentParserSuper* sampleDocument;                                                            // 문서파일
 
-    std::string extractFileExe(const std::string docpath);                                          // 문서의 위치로부터 문서 타입을 가져오기 위한 함수
+    std::string extractFileExetoPath(const std::string docpath);                                    // 문서의 위치로부터 문서 타입을 가져오기 위한 함수
+    std::string extractFileExetoSignature(const std::string docpath);                               // 문서의 시그니처로부터 문서 타입을 가져오는 함수
     bool urlParsing(std::string input, std::string doctype, std::vector<std::string>& output);      // URL을 파싱하기 위한 함수
 
 public:
