@@ -193,12 +193,9 @@ int main(int argc, char** argv)
     }
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
-    // sampleFile.strFileName = std::string(argv[1]);
-    // sampleFile.strSampleFile= std::string(argv[2]);
+    sampleFile.strFileName = std::string(argv[1]);
+    sampleFile.strSampleFile= std::string(argv[2]);
     sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
-
-    std::cout << sampleFile.strFileName << std::endl;
-    std::cout << sampleFile.strSampleFile << std::endl;
 
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
