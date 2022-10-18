@@ -39,6 +39,7 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
     {
         outReport.strHash.append(sampleFile.strFileHash);
         outReport.strName.append(sampleFile.strFileName);
+        // 만약 추출된 Url은 있지만 분석 결과가 없다면
         if(result.vecExtractedUrls.size() != 0)
             outReport.strDetectName.append("SuspiciousFile");
         else
@@ -110,7 +111,6 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
 
     return values;
 }
-
 
 bool CNoSpear::SaveResult(ST_REPORT& outReport)
 {
