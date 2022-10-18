@@ -178,7 +178,10 @@ std::string ExcelParser::parsingContentxml(const std::string input)
 {
     std::istringstream iss(input);
     std::string buffer;
+    // Target="worksheets. 제거
     getline(iss, buffer, '/');
+    getline(iss, buffer, '"');
+
     return buffer;
 }
 
@@ -192,7 +195,6 @@ std::vector<std::string> ExcelParser::getContenxmlList(const char* highStream)
     std::regex re(R"(Target[\s]*=[\s]*"worksheets\/[A-Za-z0-9]*.xml)");
      while (std::regex_search(streamData, match, re)) { 
         contentxmlList.push_back("xl/worksheets/"+ parsingContentxml(match.str())+".rels");
-        std::cout << ""+ match.str()+".rels" << std::endl;
         streamData = match.suffix();
     }
     return contentxmlList;
@@ -204,14 +206,14 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터를 받을 포인터
     char* buffer;
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
-    std::vector<std::string> UrlList;
+    std::vector<std::string> urlList;
 
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
     if(!this->container->open(samplePath.c_str()))
-        return UrlList;
+        return urlList;
     
     // 상위 스트림에 대한 정보를 가져온다.
     char* highStream = this->container->getStreamData("xl/_rels/workbook.xml.rels");
@@ -221,15 +223,18 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     // contentxml의 수 만큼 url을 찾아낸다.
     for(int i =0; i< contentxml.size(); i++)
     {
-        buffer = (char*)this->container->getStreamData(contentxml[i].c_str());
+        buffer = this->container->getStreamData(contentxml[i].c_str());
+        // 만약 해당 contentxml이 없다면 종료
+        if(buffer == NULL)
+            return urlList;
         // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-        std::string xml((char*)buffer);
+        std::string xml(buffer);
         while (std::regex_search(xml, match, re)) {
-            UrlList.push_back(parsingUrl(match.str()));
+            urlList.push_back(parsingUrl(match.str()));
             xml = match.suffix();
         }
     }
-    return UrlList;
+    return urlList;
 }
 
 // PowerPoint 문서 형식에 대한 생성자
@@ -270,7 +275,6 @@ std::vector<std::string> PowerPointParser::getContenxmlList(const char* highStre
     std::regex re(R"(slide[0-9]*.xml)");
      while (std::regex_search(streamData, match, re)) {
         contentxmlList.push_back("ppt/slides/_rels/"+ match.str()+".rels");
-        std::cout << "ppt/slides/_rels/"+ match.str()+".rels" << std::endl;
         streamData = match.suffix();
     }
     return contentxmlList;
@@ -282,14 +286,14 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터를 받을 포인터
     char* buffer;
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
-    std::vector<std::string> UrlList;
+    std::vector<std::string> urlList;
 
     std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
     if(!this->container->open(samplePath.c_str()))
-        return UrlList;
+        return urlList;
     
     // 상위 스트림에 대한 정보를 가져온다.
     char* highStream = this->container->getStreamData("ppt/_rels/presentation.xml.rels");
@@ -299,15 +303,18 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     // contentxml의 수 만큼 url을 찾아낸다.
     for(int i =0; i< contentxml.size(); i++)
     {
-        buffer = (char*)this->container->getStreamData(contentxml[i].c_str());
+        buffer = this->container->getStreamData(contentxml[i].c_str());
+        // 만약 contentxml 파일이 없을 경우 종료
+        if(buffer == NULL)
+            return urlList;
         // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-        std::string xml((char*)buffer);
+        std::string xml(buffer);
         while (std::regex_search(xml, match, re)) {
-            UrlList.push_back(parsingUrl(match.str()));
+            urlList.push_back(parsingUrl(match.str()));
             xml = match.suffix();
         }
     }
-    return UrlList;
+    return urlList;
 }
 
 // 엔진객체 생성자
