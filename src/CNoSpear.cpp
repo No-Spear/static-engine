@@ -12,27 +12,6 @@ std::string extractFileHash(const std::string filepath)
     return filepath.substr(slashlocation+1, (dotlocation-slashlocation-1));
 }
 
-// 엔진에게 결과를 보내는 함수
-bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
-{
-    int filedes = atoi(pipe);
-    if(filedes < 0)
-    {
-        std::cout << "failed to call fifo" << std::endl;
-        return false;
-    }
-
-    int send = write(filedes, &report,sizeof(report));
-
-    if(send<0)
-    {
-        std::cout << "failed to write fifo" << std::endl;
-        return false;
-    }
-    close(filedes);
-    return true;
-}
-
 // DB에 저장하기 위한 결과를 만드는 함수
 void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport)
 {
@@ -60,9 +39,33 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
     {
         outReport.strHash.append(sampleFile.strFileHash);
         outReport.strName.append(sampleFile.strFileName);
-        outReport.strDetectName.append("NomalFile");
+        if(result.vecExtractedUrls.size() != 0)
+            outReport.strDetectName.append("SuspiciousFile");
+        else
+            outReport.strDetectName.append("NomalFile");
         outReport.nSeverity = 0;
     }    
+}
+
+// 엔진에게 결과를 보내는 함수
+bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
+{
+    int filedes = atoi(pipe);
+    if(filedes < 0)
+    {
+        std::cout << "failed to call fifo" << std::endl;
+        return false;
+    }
+
+    int send = write(filedes, &report,sizeof(report));
+
+    if(send<0)
+    {
+        std::cout << "failed to write fifo" << std::endl;
+        return false;
+    }
+    close(filedes);
+    return true;
 }
 
 // 정적엔진 CNoSpear 생성자.
@@ -211,6 +214,7 @@ int main(int argc, char** argv)
         std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
         std::cout << outReport.vecBehaviors[i].Severity << std::endl;
     }
+
     // DB로 분석 결과를 전달
     staticEngine->SaveResult(outReport);
 
