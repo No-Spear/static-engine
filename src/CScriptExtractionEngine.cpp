@@ -85,11 +85,11 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
     for(int i =0; i < input->vecInputFiles.size(); i++)
     {
         // 파일 타입에 대한 정보를 받을 변수
-        std::string filetype =  checkFileType(input->vecInputFiles[i]);
+        std::string filetype =  checkFileType(input->vecInputFiles[i].first);
         // 만약 받은 파일이 html이라면
         if(filetype.compare("html") == 0)
         { 
-            getHtmlScriptData(input->vecInputFiles[i].c_str(), output->vecExtractedScript);
+            getHtmlScriptData(input->vecInputFiles[i].first.c_str(), output->vecExtractedScript);
             for(int j=0; j < input->vecScriptFIles.size(); j++)
                 getMeanfulScript(output->vecExtractedScript[j]);
             return true;
