@@ -58,7 +58,6 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     in.seekg(0, std::ios::end);
 
     int size = in.tellg();
-    std::cout << size << std::endl;        
     file.resize(size);
 
     in.seekg(0, std::ios::beg);
@@ -102,7 +101,8 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
             return false;
         }
         getPath(&Response);
-        output->vecExtractedFiles.push_back(Response.path);
+        // 
+        output->vecExtractedFiles.push_back(std::make_pair(Response.path,CONF));
         std::cout << Response.path << std::endl;
     }
 
