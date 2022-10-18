@@ -25,8 +25,7 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
 {
 
     url = "'" + url + "'";
-    string sql ="SELECT id from CnCTable where URL=" + url;
-
+    string sql ="SELECT id from CnCTable where URL=" + url;   
 
 
     std::cout << sql << std::endl;
@@ -42,10 +41,19 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
     return true;
 }
 
+string CDownloadFromUrlEngine::getExtension(string fileName)
+{
+
+    std::istringstream ss(fileName);
+    string extension;
+    while(getline(ss, extension, '.'));
+
+    return "."+extension;
+}
+
 void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
 {   
     std::ifstream in(Response->path);
-    std::cout << Response->fileName << std::endl;
     string file;
     in.seekg(0, std::ios::end);
 
@@ -69,14 +77,16 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     for(int i=0;i<SHA256::DIGEST_SIZE;i++){
         sprintf(fileName+i*2,"%02x",digest[i]);    
     }
-    std::cout << "File Name is "<<fileName << std::endl;
-    string newPath = "../temp/" + string(fileName);
+    string extension = getExtension(Response->fileName);
+    std::cout << "File Name is "<<string(fileName)+extension << std::endl;
+    string newPath = "../temp/" + string(fileName) + extension;
     if(access(newPath.c_str(),F_OK)==0){
         remove(Response->path.c_str());
         return;
     }
-    if(-1 == rename(Response->path.c_str(),newPath.c_str() ))    
-    Response->path = "../temp/" + string(fileName);
+    if(-1 == rename(Response->path.c_str(),newPath.c_str() ))Response->path = "../temp/" + string(Response->fileName);
+
+    Response->path = "../temp/" + string(fileName)+string(extension);
 }
 
 bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
@@ -171,6 +181,7 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
     CURLcode err_code = curl_easy_perform(curl);
     if (err_code !=CURLE_OK)
     {   
+        
         std::cout << "No File or No URL" <<std::endl;
         return Response;
     }

@@ -41,6 +41,7 @@ private:
     CURL * curl;
     bool queryCnCUrl(string url);
     void getPath(ST_RESPONSE *Response);
+    string getExtension(string fileName);
     string getFileName(string url);   
     string getDomain(string url);
     ST_RESPONSE getFileFromUrl(string url);
