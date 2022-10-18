@@ -42,24 +42,43 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
     return true;
 }
 
-string CDownloadFromUrlEngine::getPath()
+void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
 {   
-//     FILE * fp 
-// // 파일 불러와서 해시 값 추출
-//     unsigned char digest[SHA256::DIGEST_SIZE] = {0,};
-//     char fileName[65] = {0,};
-//     fseek(fp,0,SEEK_SET);
+    std::ifstream in(Response->path);
+    std::cout << Response->fileName << std::endl;
+    string file;
+    in.seekg(0, std::ios::end);
+
+    int size = in.tellg();
+    std::cout << size << std::endl;        
+    file.resize(size);
+
+    in.seekg(0, std::ios::beg);
+
+    in.read(&file[0], size);
+
+    // 파일 불러와서 해시 값 추출
+    unsigned char digest[SHA256::DIGEST_SIZE] = {0,};
+    char fileName[65] = {0,};
 
     
 
-//     SHA256 ctx = SHA256();
-//     ctx.init();
-//     ctx.update((unsigned char *)Response->response , Response->count);
-//     ctx.final(digest);
+    SHA256 ctx = SHA256();
+    ctx.init(); 
+    ctx.update((unsigned char *)file.c_str(),size);
+    ctx.final(digest);
 
-//     for(int i=0;i<SHA256::DIGEST_SIZE;i++){
-//         sprintf(fileName+i*2,"%02x",digest[i]);    
-//     }
+    for(int i=0;i<SHA256::DIGEST_SIZE;i++){
+        sprintf(fileName+i*2,"%02x",digest[i]);    
+    }
+    std::cout << "File Name is "<<fileName << std::endl;
+    string newPath = "../temp/" + string(fileName);
+    if(access(newPath.c_str(),F_OK)==0){
+        remove(Response->path.c_str());
+        return;
+    }
+    if(-1 == rename(Response->path.c_str(),newPath.c_str() ))    
+    Response->path = "../temp/" + string(fileName);
 }
 
 bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
@@ -74,6 +93,7 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
         if(Response.count == 0){
             return false;
         }
+        getPath(&Response);
         output->vecExtractedFiles.push_back(Response.path);
         std::cout << Response.path << std::endl;
     }

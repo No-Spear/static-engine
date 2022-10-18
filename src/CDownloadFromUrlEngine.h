@@ -3,8 +3,10 @@
 #include "sha256.h"
 #include <string> 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <time.h>
+#include <unistd.h>
 #include <curl/curl.h>
 #include <curl/curlver.h>
 #include <curl/easy.h>
@@ -38,7 +40,7 @@ private:
     MYSQL_ROW row;
     CURL * curl;
     bool queryCnCUrl(string url);
-    string getPath();
+    void getPath(ST_RESPONSE *Response);
     string getFileName(string url);   
     string getDomain(string url);
     ST_RESPONSE getFileFromUrl(string url);
