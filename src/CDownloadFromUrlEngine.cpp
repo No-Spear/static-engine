@@ -61,8 +61,6 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     unsigned char digest[SHA256::DIGEST_SIZE] = {0,};
     char fileName[65] = {0,};
 
-    
-
     SHA256 ctx = SHA256();
     ctx.init(); 
     ctx.update((unsigned char *)file.c_str(),size);
@@ -105,9 +103,7 @@ string CDownloadFromUrlEngine::getFileName(string url)
 {
     std::istringstream ss(url);
     string fileName;
-    while(getline(ss, fileName, '/')){
-        
-    };
+    while(getline(ss, fileName, '/'));
 
     return fileName;
 
@@ -119,7 +115,6 @@ string CDownloadFromUrlEngine::getDomain(string url)
     while(1)
     {     
         if(url.find("\%2f") == string::npos)break;
-        
         url.replace(url.find("\%2f"),encoded_slash.length(),"/");
     }
     std::istringstream ss(url);
@@ -132,7 +127,6 @@ string CDownloadFromUrlEngine::getDomain(string url)
             domain.push_back(tempUrl);
         }
         i++;
-
     }
 
     for(int x =0; x < domain.size(); x++){
@@ -141,7 +135,6 @@ string CDownloadFromUrlEngine::getDomain(string url)
             break;
         } 
         settingUrl += "/";
-       
     }
     std::cout << settingUrl << std::endl;
     return settingUrl;
@@ -178,7 +171,6 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
     CURLcode err_code = curl_easy_perform(curl);
     if (err_code !=CURLE_OK)
     {   
-        
         std::cout << "No File or No URL" <<std::endl;
         return Response;
     }
@@ -200,7 +192,6 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
 {
 
     Response->count = size * nmemb;
-
     if (Response->response == nullptr && Response->count <= 0)
     {
         std::cout << Response->count << std::endl;
