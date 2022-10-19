@@ -113,8 +113,8 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
 
             output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
             std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
-            if(fileStatus == CCNF && input->vecURLs.size() == i+1)return false;
-            else if(fileStatus == CCNF && input->vecURLs.size() != i+1) continue;
+            if(fileStatus == CCNF)return false; 
+            // else if(fileStatus == CCNF && input->vecURLs.size() != i+1) continue;
 
             
 
