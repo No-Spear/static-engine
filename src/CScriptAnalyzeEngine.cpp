@@ -16,7 +16,23 @@ CScriptAnalyzeEngine::~CScriptAnalyzeEngine()
 bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     for(int i =0; i< input->vecScriptFIles.size(); i++)
-        checkFollina(input->vecScriptFIles[i], output->vecBehaviors);
+    {
+        switch (input->vecScriptFIles[i].second)
+        {
+        case JS:
+            checkFollina(input->vecScriptFIles[i].first, output->vecBehaviors);
+            break;
+        
+        case PS:
+            break;
+        
+        case VBS:
+            break;
+        default:
+            std::cout << "현재 지원하지 않는 타입의 스크립트 입니다." << std::endl;
+            break;
+        }
+    }
     return true;    
 }
 
@@ -26,7 +42,7 @@ bool CScriptAnalyzeEngine::checkFollina(std::string script, std::vector<ST_BEHAV
     if(script.find("ms-msdt:") != std::string::npos)
     {
         ST_BEHAVIOR msdt;
-        msdt.Severity=2;
+        msdt.Severity=6;
         msdt.strName="Call msdt Function";
         msdt.strDesc="msdt 명령어 호출";
         vecBehaviors.push_back(msdt);
