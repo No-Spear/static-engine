@@ -7,9 +7,10 @@
  * 최종 엔진에서 탐지 결과을 제공하기 위해 사용된다.
 */ 
 typedef struct ST_BEHAVIOR{
+    std::string strUrl;     // 행위를 검출한 url 주소
     std::string strName;    // 행위 이름
     std::string strDesc;    // 행위 설명
-    int Severity;          // 위험도
+    int Severity;           // 위험도
 }ST_BEHAVIOR;
 
 /*
