@@ -195,7 +195,6 @@ int main(int argc, char** argv)
     sampleFile.strFileName = std::string(argv[1]);
     sampleFile.strSampleFile = std::string(argv[2]);
     sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
-    std::cout << sampleFile.strFileHash << std::endl;
 
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
@@ -207,6 +206,7 @@ int main(int argc, char** argv)
     std::cout << "악성 행위 정보" << std::endl;
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
     {
+        std::cout << outReport.vecBehaviors[i].strUrl << std::endl;
         std::cout << outReport.vecBehaviors[i].strName << std::endl;
         std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
         std::cout << outReport.vecBehaviors[i].Severity << std::endl;
