@@ -30,7 +30,6 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
         outReport.strName.append(sampleFile.strFileName);
         if(result.vecBehaviors[0].strName.compare("Call msdt Function") == 0)
             outReport.strDetectName.append("Follina");
-        std::cout <<outReport.strDetectName << std::endl;
         outReport.nSeverity = totalSeverity / behaviorSize;
         outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
         outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
@@ -86,7 +85,7 @@ CNoSpear::~CNoSpear()
     this->m_Engines.shrink_to_fit();
 }
 
-std::string CNoSpear::makeValue(ST_REPORT& outReport)
+std::string CNoSpear::makeValue(const ST_REPORT& outReport)
 {
     std::string values = "(" + std::to_string(outReport.nSeverity);
     values = values + "," + "'" + outReport.strDetectName + "'";
@@ -112,7 +111,7 @@ std::string CNoSpear::makeValue(ST_REPORT& outReport)
     return values;
 }
 
-bool CNoSpear::SaveResult(ST_REPORT& outReport)
+bool CNoSpear::SaveResult(const ST_REPORT& outReport)
 {
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
     char DBUser[] = "nospear";
@@ -194,8 +193,9 @@ int main(int argc, char** argv)
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
     sampleFile.strFileName = std::string(argv[1]);
-    sampleFile.strSampleFile= std::string(argv[2]);
+    sampleFile.strSampleFile = std::string(argv[2]);
     sampleFile.strFileHash = extractFileHash(sampleFile.strSampleFile);
+    std::cout << sampleFile.strFileHash << std::endl;
 
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
@@ -219,8 +219,8 @@ int main(int argc, char** argv)
     ST_SERVER_REPORT report;
     strcpy(report.strHash, outReport.strHash.c_str());
     strcpy(report.strDectName, outReport.strDetectName.c_str());
-    std::cout<< outReport.strDetectName <<std::endl;
     report.nSeverity = outReport.nSeverity;
+
     std::cout << "서버로 보낼 정보" << std::endl;
     std::cout << report.strHash << std::endl;
     std::cout << report.strDectName << std::endl;

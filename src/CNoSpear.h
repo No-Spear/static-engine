@@ -23,7 +23,7 @@ typedef struct ST_REPORT{
  * 서버에게 파이프를 통해 결과를 전달하기 위해 사용하는 구조체
 */
 typedef struct ST_SERVER_REPORT {
-    char strHash[64];                       // 파일의 해쉬값
+    char strHash[65];                       // 파일의 해쉬값
     char strDectName[40];                   // 분석 결과
     int nSeverity;                          // 위험도(행위 분석 결과 평균)
 }ST_SERVER_REPORT;
@@ -49,11 +49,11 @@ private:
     MYSQL_ROW row;
     std::vector<CEngineSuper*> m_Engines;
 
-    std::string makeValue(ST_REPORT& outReport);
+    std::string makeValue(const ST_REPORT& outReport);
 
 public:
     CNoSpear();
     ~CNoSpear();
-    bool SaveResult(ST_REPORT& outReport);
+    bool SaveResult(const ST_REPORT& outReport);
     bool Analyze(const ST_FILE_INFO sampleFile ,ST_REPORT& outReport);
 };
