@@ -81,6 +81,7 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     string newPath = "../temp/" + string(fileName) + extension;
     if(access(newPath.c_str(),F_OK)==0){
         remove(Response->path.c_str());
+        Response->path = "../temp/" + string(fileName)+string(extension);        
         return;
     }
     if(-1 == rename(Response->path.c_str(),newPath.c_str() ))Response->path = "../temp/" + string(Response->fileName);
