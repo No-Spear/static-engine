@@ -16,19 +16,19 @@ typedef struct ST_BEHAVIOR{
  * 정적엔진에 입력되는 입력값들에 대한 Parameter 객체
 */
 typedef struct ST_ANALYZE_PARAM{
-    std::vector<std::pair<std::string, int> >vecInputFiles;         // 검사할 문서 또는 다운로드 파일
-    std::vector<std::string> vecURLs;                               // C&C URL 리스트
-    std::vector<std::pair<std::string, int> >vecScriptFIles;        // 문서파일에서 추출한 스크립트 파일들
+    std::vector<std::pair<std::string, int> >vecInputFiles;                     // 검사할 문서 또는 다운로드 파일
+    std::vector<std::string> vecURLs;                                           // C&C URL 리스트
+    std::vector<std::pair<std::string, std::pair<int, int>> >vecScriptFIles;    // 문서파일에서 추출한 스크립트 파일, URL 벡터 위치, 스크립트 타입을 담고 있다.
 } ST_ANALYZE_PARAM;
 
 /*
  * 정적엔진의 분석결과를 제공하기 위한 객체
 */
 typedef struct ST_ANALYZE_RESULT{
-    std::vector<std::pair<std::string, int> > vecExtractedFiles;    // C&C에서 다운받은 파일들
-    std::vector<std::string> vecExtractedUrls;                      // C&C URL 리스트
-    std::vector<std::pair<std::string, int> > vecExtractedScript;   // 문서 파일에서 추출된 스크립트 파일
-    std::vector<ST_BEHAVIOR> vecBehaviors;                          // 정적엔진 분석 결과 리스트
+    std::vector<std::pair<std::string, int> > vecExtractedFiles;                // C&C에서 다운받은 파일들
+    std::vector<std::string> vecExtractedUrls;                                  // C&C URL 리스트
+    std::vector<std::pair<std::string, std::pair<int, int>> >vecExtractedScript;// 문서 파일에서 추출된 스크립트 파일, URL 벡터 위치, 스크립트 타입을 담고 있다.
+    std::vector<ST_BEHAVIOR> vecBehaviors;                                      // 정적엔진 분석 결과 리스트
 } ST_ANALYZE_RESULT;
 
 /*

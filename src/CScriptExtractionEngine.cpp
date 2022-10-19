@@ -32,7 +32,7 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script)
     script = std::regex_replace(script, last, "");
 }
 
-bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<std::pair<std::string, int> >& scriptlist)
+bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
 {
     // 파일 입출력
     std::ifstream html;
@@ -64,7 +64,7 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<s
     std::smatch match;
 
     while (std::regex_search(buf, match, re)) {
-        scriptlist.push_back(std::make_pair(match.str(), getHtmlScriptType(match.str())));
+        scriptlist.push_back(std::make_pair(match.str(), std::make_pair(i, getHtmlScriptType(match.str()))));
         buf = match.suffix();
     }
     return true;
@@ -103,7 +103,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         if(filetype.compare("html") == 0)
         { 
             // html 파일에서 script와 스크립트 타입을 확인한다.
-            getHtmlScriptData(input->vecInputFiles[i].first.c_str(), output->vecExtractedScript);
+            getHtmlScriptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
             // 추출된 스크립트에서 의미 있는 스크립트만 추출한다.
             getMeanfulScript(output->vecExtractedScript[i].first);
             return true;
