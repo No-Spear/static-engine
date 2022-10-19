@@ -32,7 +32,7 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script)
     script = std::regex_replace(script, last, "");
 }
 
-bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<std::string>& scriptlist)
+bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<std::pair<std::string, int> >& scriptlist)
 {
     // 파일 입출력
     std::ifstream html;
@@ -56,16 +56,29 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, std::vector<s
 	// 파일 전체 내용을 읽어서 문자열에 저장한다.
 	html.read(&buf[0], size);
     html.close();
+    
+    // 전달받은 html파일에서 스크립트 형태를 확인하기 위한 함수.
 
     // Html문서에서 Script를 추출하기 위한 정규 표현식
-    std::regex re(R"(<script>[\s]*[\/A-Za-z"'.,=:;\/_?$()-\[\]\s\\]*[\s]*<\/script>)");
+    std::regex re(R"(<SCRIPT LANGUAGE="VBScript">[\s]*[A-Za-z0-9\s-!()=><%*&,.;:'"|#~`_]*<\/SCRIPT>|<script>[\s]*[\/A-Za-z"'.,=:;\/_?$()-\[\]\s\\]*[\s]*<\/script>)");
     std::smatch match;
 
     while (std::regex_search(buf, match, re)) {
-        scriptlist.push_back(match.str());
+        scriptlist.push_back(std::make_pair(match.str(), getHtmlScriptType(match.str())));
         buf = match.suffix();
     }
     return true;
+}
+
+int CScriptExtractionEngine::getHtmlScriptType(const std::string scriptData)
+{
+    // 1차로 문서의 타입을 가지고 있는지 확인하기 위한 정규 표현식
+    std::regex re(R"((LANGUAGE|language)[\s]*=[\s]*"VBScript"")");
+    std::smatch match;
+    if(std::regex_search(scriptData, match, re))
+        return VBS;
+    else
+        return JS;
 }
 
 bool CScriptExtractionEngine::getDocmScriptData(const char* fpath)
@@ -89,9 +102,10 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         // 만약 받은 파일이 html이라면
         if(filetype.compare("html") == 0)
         { 
+            // html 파일에서 script와 스크립트 타입을 확인한다.
             getHtmlScriptData(input->vecInputFiles[i].first.c_str(), output->vecExtractedScript);
-            for(int j=0; j < input->vecScriptFIles.size(); j++)
-                getMeanfulScript(output->vecExtractedScript[j]);
+            // 추출된 스크립트에서 의미 있는 스크립트만 추출한다.
+            getMeanfulScript(output->vecExtractedScript[i].first);
             return true;
         }
         // 만약 받은 파일이 docm이라면
