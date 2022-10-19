@@ -3,7 +3,7 @@
 CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2)
 {
  
-    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
+    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.co";
     char DBUser[] = "nospear";
     char DBPass[] = "nospear!";
     char DBName[] = "cncDB";
@@ -21,12 +21,18 @@ CDownloadFromUrlEngine::~CDownloadFromUrlEngine()
     mysql_close(conn);
 }
 
-bool CDownloadFromUrlEngine::queryCnCUrl(string url)
+bool CDownloadFromUrlEngine::queryCnCUrl(string url,string fileName,ST_RESPONSE * Response)
 {
-
-    url = "'" + url + "'";
-    string sql ="SELECT id from CnCTable where URL=" + url;   
-
+    string sql = "";
+    url = "'" + url + "'";    
+    std::cout << fileName << std::endl;
+    if(!fileName.compare("NoFile")){
+        sql = "SELECT fileHash from cncTable where url=" + url;   
+    }else
+    {
+        fileName = "'" + fileName + "'";
+        sql ="SELECT fileHash from cncTable where url=" + url + "and fileHash=" + fileName;   
+    }
 
     std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
@@ -38,6 +44,8 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url)
         return false;
     }
 
+    if(!fileName.compare("NoFile"))Response->path = "../temp/" + string(row[0]);
+    std::cout << Response->path << std::endl;
     return true;
 }
 
@@ -77,36 +85,50 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
         sprintf(fileName+i*2,"%02x",digest[i]);    
     }
     string extension = getExtension(Response->fileName);
-    std::cout << "File Name is "<<string(fileName)+extension << std::endl;
-    string newPath = "../temp/" + string(fileName) + extension;
+    string tempFileName = Response->fileName;
+    Response->fileName = string(fileName) + extension; 
+    std::cout << "File Name is "<<Response->fileName << std::endl;
+    string newPath = "../temp/" + Response->fileName;
     if(access(newPath.c_str(),F_OK)==0){
         remove(Response->path.c_str());
-        Response->path = "../temp/" + string(fileName)+string(extension);        
+        Response->path = newPath;        
         return;
     }
-    if(-1 == rename(Response->path.c_str(),newPath.c_str() ))Response->path = "../temp/" + string(Response->fileName);
+    if(-1 == rename(Response->path.c_str(),newPath.c_str() ))Response->path = "../temp/" + string(tempFileName);
 
-    Response->path = "../temp/" + string(fileName)+string(extension);
+    Response->path = newPath;
 }
 
 bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)
-{
-    
+{   
+    int fileStatus;
     for(int i =0; i < input->vecURLs.size(); i++){
-        if(queryCnCUrl(input->vecURLs[i])){
-            continue;
-        }
+
 
         ST_RESPONSE Response = getFileFromUrl(getDomain(input->vecURLs[i]));
+        std::cout << Response.count << std::endl;
         if(Response.count == 0){
-            return false;
-        }
-        getPath(&Response);
-        // 
-        output->vecExtractedFiles.push_back(std::make_pair(Response.path,CONF));
-        std::cout << Response.path << std::endl;
-    }
+            if(queryCnCUrl(input->vecURLs[i],Response.fileName,&Response))fileStatus = CCOF;
+            else fileStatus = CCNF;
 
+            output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
+            std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
+            if(fileStatus == CCNF && input->vecURLs.size() == i+1)return false;
+            else if(fileStatus == CCNF && input->vecURLs.size() != i+1) continue;
+
+            
+
+        }else{
+            getPath(&Response);
+                // 
+            if(queryCnCUrl(input->vecURLs[i],Response.fileName,&Response))fileStatus = COOF;
+            else fileStatus = CONF;
+
+            output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
+            std::cout << Response.path << std::endl;
+            std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
+        }
+    }
     return true;
 }
 
@@ -178,15 +200,26 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
 
     std::cout << "File Download Start" <<std::endl;
-   
+
     CURLcode err_code = curl_easy_perform(curl);
     if (err_code !=CURLE_OK)
     {   
         
         std::cout << "No File or No URL" <<std::endl;
+        Response.count = 0;
+        Response.fileName = "NoFile";
+        Response.path = "../temp";
+        Response.response = nullptr;
         return Response;
     }
-
+    if(Response.count > 838860800){
+        std::cout << "No File or No URL" <<std::endl;
+        Response.count = 0;
+        Response.fileName = "NoFile";
+        Response.path = "../temp";
+        Response.response = nullptr;
+        return Response;
+    }
 
     std::size_t response_code = 0;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
@@ -195,15 +228,17 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
     curl_slist_free_all(slist);
     curl_easy_cleanup(curl);
     curl_global_cleanup();
-
+    std::cout << "File Download Finish" <<std::endl;
     return Response;
 
 }
 
 size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response)
 {
-
     Response->count = size * nmemb;
+    if(Response->count > 838860800){
+        return Response->count;
+    }
     if (Response->response == nullptr && Response->count <= 0)
     {
         std::cout << Response->count << std::endl;
@@ -225,8 +260,6 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
         writeFile.close();
         return Response->count;
     }   
-
-
 
     writeFile.write(reinterpret_cast<const char*>(Response->response), Response->count);
         

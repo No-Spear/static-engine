@@ -39,7 +39,7 @@ private:
     MYSQL_RES* result; 
     MYSQL_ROW row;
     CURL * curl;
-    bool queryCnCUrl(string url);
+    bool queryCnCUrl(string url,string fileName,ST_RESPONSE * Response);
     void getPath(ST_RESPONSE *Response);
     string getExtension(string fileName);
     string getFileName(string url);   
