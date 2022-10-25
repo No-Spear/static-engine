@@ -32,6 +32,11 @@ public:
     std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
 };
 
+/*
+ * 예외처리를 담당하는 부모 클래스를 상속받아 
+ * DownloadFromUrlEngine에서 일어나는 모든 에외를 담당하는
+ * 예외처리 클래스이다.
+*/
 class DownloadFromUrlException : public ExceptionSuper {
 private:
     int checker;                                                    // 어떠한 예외가 발생했는지 확인하는 변수
@@ -45,6 +50,11 @@ public:
     std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
 };
 
+/*
+ * 예외처리를 담당하는 부모 클래스를 상속받아 
+ * ScriptExtrationEngine에서 일어나는 모든 에외를 담당하는
+ * 예외처리 클래스이다.
+*/
 class ScriptExtractionException : public ExceptionSuper {
 private:
     std::string exceptionDetail;
@@ -52,6 +62,22 @@ private:
 public:
     ScriptExtractionException(const char* detail);
     ~ScriptExtractionException();
+
+    std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
+};
+
+/*
+ * 예외처리를 담당하는 부모 클래스를 상속받아 
+ * ScriptAnalyzeEngine에서 일어나는 모든 에외를 담당하는
+ * 예외처리 클래스이다.
+*/
+class ScriptAnalyzeException : public ExceptionSuper {
+private:
+    std::string exceptionDetail;                                    // 예외처리가 일어난 원인
+
+public:
+    ScriptAnalyzeException(const char* detail);                     // 생성자
+    ~ScriptAnalyzeException();                                      // 소멸자
 
     std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
 };

@@ -69,13 +69,13 @@ std::string DownloadFromUrlException::getExceptionDetail()
     return output;
 }
 
-// ScriptExtractionEngine에서 일어나는 예외처리  클래스의 생성자
+// ScriptExtractionEngine에서 일어나는 예외처리 클래스의 생성자
 ScriptExtractionException::ScriptExtractionException(const char* detail) : ExceptionSuper("ScriptExtration")
 {
     this->exceptionDetail.append(detail);
 }
 
-// ScriptExtractionEngine에서 일어나는 예외처리  클래스의 소멸자
+// ScriptExtractionEngine에서 일어나는 예외처리 클래스의 소멸자
 ScriptExtractionException::~ScriptExtractionException()
 {
 
@@ -83,6 +83,28 @@ ScriptExtractionException::~ScriptExtractionException()
 
 // ScriptExtractionEngine에서 일어나는 예외처리 내용을 돌려주는 함수
 std::string ScriptExtractionException::getExceptionDetail()
+{
+    std::string output;
+    output.append(this->getExceptionEngine());
+    output.append("Engine에서 다음 예외가 발생했습니다.\n");
+    output.append(this->exceptionDetail);
+    return output;
+}
+
+// ScriptAnalyzeEngine에서 일어나는 예외처리 클래스의 생성자
+ScriptAnalyzeException::ScriptAnalyzeException(const char* detail) : ExceptionSuper("ScriptAnalyze")
+{
+    this->exceptionDetail.append(detail);
+}
+
+// ScriptAnalyzeEngine에서 일어나는 예외처리 클래스의 소멸자
+ScriptAnalyzeException::~ScriptAnalyzeException()
+{
+
+}
+
+// ScriptAnalyzeEngine에서 일어나는 예외처리 내용을 돌려주는 함수
+std::string ScriptAnalyzeException::getExceptionDetail()
 {
     std::string output;
     output.append(this->getExceptionEngine());
