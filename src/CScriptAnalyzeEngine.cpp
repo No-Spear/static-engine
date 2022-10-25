@@ -30,7 +30,7 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
         case VBS:
             break;
         default:
-            std::cout << "현재 지원하지 않는 타입의 스크립트 입니다." << std::endl;
+            throw ScriptAnalyzeException("현재 지원하지 않는 타입의 스크립트 입니다.");
             break;
         }
     }

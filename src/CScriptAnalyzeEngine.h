@@ -1,6 +1,6 @@
 #pragma once
-
 #include "CEngineSuper.h"
+#include "CException.h"
 
 class CScriptAnalyzeEngine : public CEngineSuper {
 private:
