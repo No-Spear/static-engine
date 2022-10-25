@@ -19,7 +19,7 @@ std::string ExceptionSuper::getExceptionEngine()
 }
 
 // UrlExtractionEngine에서 일어나는 예외에 대한 클래스 생성자
-UrlExtractionException::UrlExtractionException(std::string detail) : ExceptionSuper("UrlExtraction")
+UrlExtractionException::UrlExtractionException(const char* detail) : ExceptionSuper("UrlExtraction")
 {
     this->exceptionDetail.append(detail);
 }
@@ -37,5 +37,34 @@ std::string UrlExtractionException::getExceptionDetail()
     output.append(this->getExceptionEngine());
     output.append("Engine에서 다음 예외가 발생했습니다.\n");
     output.append(this->exceptionDetail);
+    return output;
+}
+
+// DownloadFromUrlEngine에서 일어나는 예외처리 클래스의 생성자
+DownloadFromUrlException::DownloadFromUrlException(const char* detail, int checker) : ExceptionSuper("DownloadFromUrl")
+{
+    this->checker = checker;
+    this->exceptionDetail.append(detail);
+}
+
+// DownloadFromUrlEngine에서 일어나는 예외처리 클래스의 소멸자
+DownloadFromUrlException::~DownloadFromUrlException()
+{
+
+}
+
+// DownloadFromUrlEngine에서 일어나는 예외처리 내용을 돌려주는 함수
+std::string DownloadFromUrlException::getExceptionDetail()
+{
+    std::string output;
+    output.append(this->getExceptionEngine());
+    output.append("Engine에서 다음 예외가 발생했습니다.\n");
+    if(checker == 1)
+        output.append(this->exceptionDetail);
+    else if(checker == 2)
+    {
+        output.append("Mysql의 ");
+        output.append(this->exceptionDetail);
+    }
     return output;
 }
