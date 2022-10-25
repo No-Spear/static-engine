@@ -44,3 +44,14 @@ public:
 
     std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
 };
+
+class ScriptExtractionException : public ExceptionSuper {
+private:
+    std::string exceptionDetail;
+
+public:
+    ScriptExtractionException(const char* detail);
+    ~ScriptExtractionException();
+
+    std::string getExceptionDetail();                               // 예외처리가 일어난 원인을 제공하는 함수
+};
