@@ -1,12 +1,12 @@
 #pragma once
+#include "CEngineSuper.h"
+#include "CException.h"
 #include <iostream>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <regex>
-
-#include "CEngineSuper.h"
 
 class CScriptExtractionEngine : public CEngineSuper {
 private:

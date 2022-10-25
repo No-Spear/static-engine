@@ -41,11 +41,8 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::v
     html.open(fpath, std::ios::in);
     // 해당 파일을 열 수 없다면
     if(!html)
-    {
-        // 에러를 출력하고 리턴
-        std::cerr << "Can't Open Html File" << std::endl;
-        return false;
-    }
+        throw ScriptExtractionException("다운받은 html 파일을 열 수 없습니다.");
+    
     html.seekg(0, std::ios::end);
 	// 그리고 그 위치를 읽는다. (파일의 크기)
 	int size = html.tellg();
@@ -57,8 +54,7 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::v
 	html.read(&buf[0], size);
     html.close();
     
-    // 전달받은 html파일에서 스크립트 형태를 확인하기 위한 함수.
-
+    // 전달받은 html파일에서 스크립트 형태를 확인하고
     // Html문서에서 Script를 추출하기 위한 정규 표현식
     std::regex re(R"(<SCRIPT LANGUAGE="VBScript">[\s]*[A-Za-z0-9\s-!()=><%*&,.;:'"|#~`_]*<\/SCRIPT>|<script>[\s]*[\/A-Za-z"'.,=:;\/_?$()-\[\]\s\\]*[\s]*<\/script>)");
     std::smatch match;
@@ -122,7 +118,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         }
         // 아무것도 해당하지 않는다면 
         else
-            return false;
+            throw ScriptExtractionException("현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
     }
     return true;
 }
