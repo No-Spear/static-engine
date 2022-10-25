@@ -147,7 +147,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     input.vecInputFiles.push_back(std::make_pair(sampleFile.strSampleFile, ASF));
 
     try{
-         std::cout << "URL 추출엔진 시작" << std::endl;
+        std::cout << "URL 추출엔진 시작" << std::endl;
         // URL 추출엔진 시작
         this->m_Engines[0]->Analyze(&input, &output);
         // 분석했던 파일을 제거
@@ -161,30 +161,50 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
-    
-    std::cout << "URL 다운로드 엔진 시작" << std::endl;
-    // URL을 통한 다운로드 엔진 시작
-    if(!this->m_Engines[1]->Analyze(&input, &output))
+
+    try{
+        std::cout << "URL 다운로드 엔진 시작" << std::endl;
+        // URL을 통한 다운로드 엔진 시작
+        this->m_Engines[1]->Analyze(&input, &output);
+        // 추출엔진의 결과를 입력으로 제공
+        input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
+        input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
+    } catch(ExceptionSuper & e)
+    {
+        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        makeOutputReport(sampleFile, output, outReport);
         return false;
-    // 추출엔진의 결과를 입력으로 제공
-    input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
-    input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
-    
-    std::cout << "스크립트 추출엔진 시작" << std::endl;
-    // 다운받은 파일에서 스크립트 추출엔진 시작
-    if(!this->m_Engines[2]->Analyze(&input, &output))
+    }
+
+    try{
+        std::cout << "스크립트 추출엔진 시작" << std::endl;
+        // 다운받은 파일에서 스크립트 추출엔진 시작
+        this->m_Engines[2]->Analyze(&input, &output);
+        // 추출엔진의 결과를 입력으로 제공
+        input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
+        input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
+    } catch(ExceptionSuper & e)
+    {
+        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        makeOutputReport(sampleFile, output, outReport);
         return false;
-    // 추출엔진의 결과를 입력으로 제공
-    input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
-    input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
+    }
     
-    std::cout << "스크립트 분석엔진 시작" << std::endl;
-    // 스크립트 분석엔진 시작
-    if(!this->m_Engines[3]->Analyze(&input, &output))
+    try{
+        std::cout << "스크립트 분석엔진 시작" << std::endl;
+        // 스크립트 분석엔진 시작
+        this->m_Engines[3]->Analyze(&input, &output);
+
+    } catch(ExceptionSuper & e)
+    {
+        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        makeOutputReport(sampleFile, output, outReport);
         return false;
+    }
 
     // DB에 저장할 결과를 제작
     makeOutputReport(sampleFile, output, outReport);
+
     return true;
 }
 
