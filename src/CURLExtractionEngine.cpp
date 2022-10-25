@@ -29,11 +29,9 @@ bool OOXMLParser::open(const char* pszFile)
 {    
     // OOXML 객체를 ZIP 파일로 변환하여 Open 
     this->OOXML = zip_open(pszFile, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
-    if(this->OOXML == NULL)
-    {
-        std::cout << "분석을 의뢰한 파일을 열 수 없습니다." << std::endl;
-        return false;
-    }
+    if(this->OOXML == NULL) 
+        throw UrlExtractionException("분석을 의로한 파일을 확인할 수 없습니다.");
+
     return true;
 }
 
@@ -49,18 +47,13 @@ bool OOXMLParser::close(void)
 char* OOXMLParser::getStreamData(const char* location)
 {   
     // OOXML 객체의 Contentxml 데이터를 얻어온다.
-    if(zip_entry_open(this->OOXML, location) != 0)
-    {
-        std::cout << "파일을 열 수 없습니다." << std::endl;
-        return NULL;
-    }
+    if(zip_entry_open(this->OOXML, location) != 0) 
+        throw UrlExtractionException("Contentxml 파일을 열 수 없습니다.");
 
     // 문서파일에서 하위 XML 데이터를 buf에 저장한다.
-    if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0)
-    {
-        std::cout << "Cotent Xml 파일 내용을 열 수 없습니다." << std::endl;
-        return NULL;
-    }
+    if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
+        throw UrlExtractionException("Contentxml 파일을 확인할 수 없습니다.");
+
     return (char*)this->buffer;
 }
 
@@ -132,9 +125,10 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     const char* contentxml = "word/_rels/document.xml.rels";
 
     // 문서파일의 스트림 데이터를 열수 있는지 확인.
-    if(!this->container->open(samplePath.c_str()))
-        return UrlList;
+    // 해당 구간에서 문제가 발생하면 예외처리 루틴이 동작
+    this->container->open(samplePath.c_str());
     
+    // 해당 구간에서 문제가 발생한다면 예외처리 루틴이 동작
     buffer = (char*)this->container->getStreamData(contentxml);
 
     // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
@@ -349,11 +343,8 @@ std::string CURLExtractEngine::extractFileExetoSignature(const std::string docpa
     std::ifstream document(docpath, std::ios::binary);
 
     // 만약 파일을 열지 못했다면
-    if (document.fail())
-	{
-		std::cout << "파일을 열고 파일의 시그니처를 알 수 없습니다" << std::endl;
-		return signature;
-	}
+    if (document.fail()) 
+        throw UrlExtractionException("분석파일을 열고 파일의 시그니처를 확인할 수 없습니다.");
 
     // 파일의 시그니처 값에 해당하는 4byte를 읽어온다.
     for(int i =0; i<4; i++)
@@ -394,11 +385,8 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
         // else
         //     this->sampleDocument = new PowerPointParser(new CompoundParser());
    }
-    else
-    {
-        std::cout << "현재 지원하지 않는 문서 형식입니다." << std::endl;
-        return false;
-    }
+    else 
+        throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
 
     output = this->sampleDocument->getUrlList(input);
     return true;
@@ -410,8 +398,10 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     std::vector<std::string> urlList;
 
     // 해당 파일의 정보에 맞게 url을 가져온다.
-    if(!urlParsing(input->vecInputFiles[0].first, extractFileExetoPath(input->vecInputFiles[0].first) ,urlList))
-        return false;
+    urlParsing(input->vecInputFiles[0].first, extractFileExetoPath(input->vecInputFiles[0].first) ,urlList);
+    
+    if(urlList.empty()) 
+        throw UrlExtractionException("분석한 파일에서 추출된 Url이 없습니다.");
 
     // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urlList.size() + output->vecExtractedUrls.size());

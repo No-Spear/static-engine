@@ -1,5 +1,6 @@
 #pragma once
 #include "CEngineSuper.h"
+#include "CException.h"
 #include <fstream>
 #include <string>
 #include <sstream>

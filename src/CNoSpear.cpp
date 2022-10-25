@@ -146,15 +146,21 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     // 시작시 분석 파일의 위치를 전달.
     input.vecInputFiles.push_back(std::make_pair(sampleFile.strSampleFile, ASF));
 
-    std::cout << "URL 추출엔진 시작" << std::endl;
-    // URL 추출엔진 시작
-    if(!this->m_Engines[0]->Analyze(&input, &output))
+    try{
+         std::cout << "URL 추출엔진 시작" << std::endl;
+        // URL 추출엔진 시작
+        this->m_Engines[0]->Analyze(&input, &output);
+        // 분석했던 파일을 제거
+        input.vecInputFiles.pop_back();
+        // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
+        input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
+        input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+    } catch(ExceptionSuper & e)
+    {
+        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        makeOutputReport(sampleFile, output, outReport);
         return false;
-    // 분석했던 파일을 제거
-    input.vecInputFiles.pop_back();
-    // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
-    input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
-    input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+    }
     
     std::cout << "URL 다운로드 엔진 시작" << std::endl;
     // URL을 통한 다운로드 엔진 시작
@@ -201,7 +207,7 @@ int main(int argc, char** argv)
 
     // 정적엔진 분석 시작
     if(!staticEngine->Analyze(sampleFile, outReport))
-        return -1;
+        std::cout << "예외 루틴이 발생하였으나 처리 완료" << std::endl;
 
     std::cout << "악성 행위 정보" << std::endl;
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
