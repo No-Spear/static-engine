@@ -385,22 +385,28 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
     {
         if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new WordParser(new OOXMLParser());
-        // else
+        // else if
         //     this->sampleDocument = new WordParser(new CompoundParser());
+        else
+            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
     }
     else if(doctype.front() == 'x')
     {
         if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new ExcelParser(new OOXMLParser());
-        // else
+        // else if
         //     this->sampleDocument = new ExcelParser(new CompoundParser());
+        else
+            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
     }
    else if(doctype.front() == 'p')
    {
         if(documentSignature.compare("504b34") == 0)
             this->sampleDocument = new PowerPointParser(new OOXMLParser());
-        // else
+        // else if
         //     this->sampleDocument = new PowerPointParser(new CompoundParser());
+        else
+            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
    }
     else 
         throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
