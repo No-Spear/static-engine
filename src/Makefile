@@ -3,6 +3,7 @@ CFLAGS=-o
 LDLIBS=-lzip -lcurl -lmysqlclient
 libpath=-L/home/arad4228/Desktop/zip/build
 incpath=-I/home/arad4228/Desktop/zip/src
+outpath=/home/arad4228/Desktop/static-engine/build
 
 all:CStatic-Engine
 
@@ -23,10 +24,11 @@ CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEng
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
 CStatic-Engine: sha256.o CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CNoSpear.o
-	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o $@
+	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o ${outpath}/$@
 
 clean:
 	rm -f CStatic-Engine *.o 
+	rm -f ../build/CStatic-Engine
 
 # g++ main.cpp CEngineSuper.cpp CURLExtractionEngine.cpp -o CURLExtractionEngine -I/home/arad4228/Desktop/zip/src -L/home/arad4228/Desktop/zip/build -lzip
 # g++ main.cpp CEngineSuper.cpp CURLExtractionEngine.cpp CDownloadFromUrlEngine.cpp -o process -I/home/arad4228/Desktop/zip/src -L/home/arad4228/Desktop/zip/build -lzip -lcurl
