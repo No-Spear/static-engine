@@ -8,7 +8,7 @@ using std::string;
 bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
 
-    if(!isDocument(input->vecInputFiles[0].first))return false;
+    if(!isDocument(input->vecInputFiles[0].first))return false; //문서 파일 검사
 
     string xmlBuffer = unzipDocument(input->vecInputFiles[0].first);
 
@@ -19,11 +19,11 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     return true;
 }
 
-bool CXMLParsingEngine::isDocument(const string filePath)
+bool CXMLParsingEngine::isDocument(const string filePath) 
 {
-    string extension = getFileExtension(filePath);
+    string extension = getFileExtension(filePath); //파일 확장자 가져오기
     std::cout << extension << std::endl;
-    string fileSignature = getFileSignature(filePath);
+    string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
     std::cout << fileSignature << std::endl;
 
     if(fileSignature.compare("807534") == 0)
@@ -63,7 +63,7 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
 
     if (!readFile.is_open())
     {
-        //에러
+        //파일이 존재하지 않음 에러처리 해야함
     }
 
     for(int i =0; i<4;i++)
@@ -75,7 +75,7 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
     return fileSignature;
 }
 
-string CXMLParsingEngine::unzipDocument(const string filePath)
+string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 모든 xml 읽기 
 {   
     std::regex re("\\<\\?.*\\?\\>");
     string xmlBuffer;
@@ -96,14 +96,14 @@ string CXMLParsingEngine::unzipDocument(const string filePath)
             int isdir = zip_entry_isdir(OOXML);
             if(isdir == 1)continue;
             string name(string(zip_entry_name(OOXML)));
-            if(name.find(".rels")==string::npos && name.find(".xml") == string::npos)continue;
+            if(name.find(".rels")==string::npos && name.find(".xml") == string::npos)continue; // .rels .xml 이외에 파일 무시
             char * buf = NULL;
             size_t bufsize= 0;
             zip_entry_read(OOXML, (void **)&buf, &bufsize);
             string tempBuf = string(buf);        
             if(i == 0) xmlBuffer = xmlBuffer + tempBuf; 
             if(i == 0) continue;
-            tempBuf = std::regex_replace(tempBuf,re,"");
+            tempBuf = std::regex_replace(tempBuf,re,""); // xml 선언부분 제거
 
             xmlBuffer = xmlBuffer + tempBuf;
             
