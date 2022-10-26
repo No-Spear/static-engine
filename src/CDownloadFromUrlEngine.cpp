@@ -113,7 +113,7 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
 
             output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
             std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
-            if(fileStatus == CCNF)return false; 
+            if(fileStatus == CCNF)return false;  //예외처리해야하는 부분 OR URL이 여러개일 경우 처리 하는 방법 변경해야함 
             // else if(fileStatus == CCNF && input->vecURLs.size() != i+1) continue;
 
             
@@ -233,10 +233,10 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
 
 }
 
-size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response)
+size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response) //파일 다운로드 받아오는 부분 
 {
     Response->count = size * nmemb;
-    if(Response->count > 838860800){
+    if(Response->count > 838860800){ // 일정 용량 이상은 파일 다운로드 금지 시킴
         return Response->count;
     }
     if (Response->response == nullptr && Response->count <= 0)
