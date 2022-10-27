@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <regex> 
+#include <iomanip>
 #include <zip.h>
 
 using std::string;

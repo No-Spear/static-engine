@@ -22,17 +22,23 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
 bool CXMLParsingEngine::isDocument(const string filePath) 
 {
     string extension = getFileExtension(filePath); //파일 확장자 가져오기
-    std::cout << extension << std::endl;
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
-    std::cout << fileSignature << std::endl;
 
-    if(fileSignature.compare("807534") == 0)
+    // if(fileSignature.compare("0x504b0304") == 0)
+    // {
+    //     if(extension.front() == 'd')return true;
+
+    //     if(extension.front() == 'x')return true;
+
+    //     if(extension.front() == 'p')return true;
+
+    // }
+
+    string ext = "dxp";
+    if(fileSignature.compare("0x504b0304") == 0)
     {
-        if(extension.front() == 'd')return true;
-
-        if(extension.front() == 'x')return true;
-
-        if(extension.front() == 'p')return true;
+        for(const char a : ext)
+        if(extension.front() == a) return true;
 
     }
 
@@ -55,8 +61,9 @@ string CXMLParsingEngine::getFileExtension(const string filePath)
 
 string CXMLParsingEngine::getFileSignature(const string filePath)
 {
-    string fileSignature;
+    string fileSignature = "0x";
     std::ifstream readFile;
+    std::ostringstream hexbin;
 
     readFile.open(filePath, std::ios::binary);
 
@@ -69,9 +76,11 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
     for(int i =0; i<4;i++)
     {
         int binary = readFile.get();
-        std::cout << binary << std::endl;
-        fileSignature += std::to_string(binary);
+        hexbin << std::setfill('0') << std::setw(2) << std::hex << binary;
     }
+
+    fileSignature += hexbin.str();
+    std::cout << fileSignature << std::endl;
     return fileSignature;
 }
 
@@ -95,11 +104,14 @@ string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 �
             
             int isdir = zip_entry_isdir(OOXML);
             if(isdir == 1)continue;
+
             string name(string(zip_entry_name(OOXML)));
             if(name.find(".rels")==string::npos && name.find(".xml") == string::npos)continue; // .rels .xml 이외에 파일 무시
+
             char * buf = NULL;
             size_t bufsize= 0;
             zip_entry_read(OOXML, (void **)&buf, &bufsize);
+            
             string tempBuf = string(buf);        
             if(i == 0) xmlBuffer = xmlBuffer + tempBuf; 
             if(i == 0) continue;
