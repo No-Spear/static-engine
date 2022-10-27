@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include <regex> 
-#include <iomanip>
+#include <set>
 #include <zip.h>
 
 using std::string;
@@ -22,7 +22,7 @@ private:
     void* buffer;
     size_t bufferSize;
     bool isDocument(const string filePath);
-    string getFileExtension(const string filePath);
+    string getFileExt(const string filePath);
     string getFileSignature(const string filePath);
     string unzipDocument(const string filePath);
 };
