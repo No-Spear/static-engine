@@ -12,11 +12,16 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
 
     string xmlBuffer = unzipDocument(input->vecInputFiles[0].first);
 
-    if(xmlBuffer.compare("") == 0)return false;
+    if(xmlBuffer.compare(NoFile) == 0)return false;
 
-    std::cout << xmlBuffer << std::endl;
+    //std::cout << xmlBuffer << std::endl;
 
     return true;
+}
+
+
+void CXMLParsingEngine::organizeMemory(){
+    free(this->OOXML);
 }
 
 bool CXMLParsingEngine::isDocument(const string filePath) 
@@ -38,11 +43,9 @@ bool CXMLParsingEngine::isDocument(const string filePath)
     if (setPptExt.find(ext) != setPptExt.end())return true;  /* OOXML DOC */ ;
     if (setXlsExt.find(ext) != setXlsExt.end())return true;  /* OOXML DOC */ ;
 
-    // if (setDocExt.count(ext) != 1)return true;  /* OOXML DOC */ ;
+    // if (setDocExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
     // if (setPptExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
     // if (setXlsExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
-
-
 
     return false;
 }
@@ -52,9 +55,9 @@ string CXMLParsingEngine::getFileExt(const string filePath)
 
     int location = filePath.find_last_of('.');
 
-    string extension(filePath.substr(location+1));
+    string ext(filePath.substr(location+1));
 
-    return extension;
+    return ext;
 
 }
 
@@ -79,7 +82,6 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
         fileSignature += string(&text);
     }
 
-    std::cout << fileSignature << std::endl;
     return fileSignature;
 }
 
@@ -91,6 +93,7 @@ string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 �
     if(this->OOXML == NULL)
     {
         std::cout << "파일을 열 수 없습니다." << std::endl;
+        xmlBuffer = NoFile;
         return xmlBuffer;
     }
 
@@ -99,7 +102,7 @@ string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 �
     {  
         zip_entry_openbyindex(OOXML,i);
         
-            
+        
             
         int isdir = zip_entry_isdir(OOXML);
         if(isdir == 1)continue;
@@ -112,15 +115,22 @@ string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 �
         zip_entry_read(OOXML, (void **)&buf, &bufsize);
 
         string tempBuf = string(buf);        
-        if(i == 0) xmlBuffer = xmlBuffer + tempBuf; 
-        if(i == 0) continue;
+        // if(i == 0) xmlBuffer = xmlBuffer + tempBuf; 
+        // if(i == 0) continue;
 
         tempBuf = std::regex_replace(tempBuf,re,""); // xml 선언부분 제거
+        xmls.insert(std::pair(name,tempBuf));
         xmlBuffer = xmlBuffer + tempBuf;
-            
-          
 
     }
+    // for(std::map<string,string>::iterator it = xmls.begin(); it != xmls.end(); it++){
+    //     std::cout << it->first << std::endl;
+    //     std::cout << it->second << std::endl;
+    // }
+
+    
+    organizeMemory();
+
     return xmlBuffer;
 
 }

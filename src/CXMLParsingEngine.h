@@ -6,21 +6,25 @@
 #include <string>
 #include <regex> 
 #include <set>
+#include <map>
 #include <zip.h>
+
 
 using std::string;
 
 class CXMLParsingEngine
 {
 public:
+    const string NoFile = "NO FILE";
     CXMLParsingEngine();
     ~CXMLParsingEngine();
     bool Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);
 
 private:
+    std::map<string,string> xmls;
     zip_t* OOXML;
-    void* buffer;
     size_t bufferSize;
+    void organizeMemory();
     bool isDocument(const string filePath);
     string getFileExt(const string filePath);
     string getFileSignature(const string filePath);
