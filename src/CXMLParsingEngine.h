@@ -15,12 +15,14 @@ using std::string;
 class CXMLParsingEngine
 {
 public:
-    const string NoFile = "NO FILE";
+
+    const string NoFile = "NO FILE";   
+    
     CXMLParsingEngine();
     ~CXMLParsingEngine();
     bool Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);
 
-private:
+private: 
     std::map<string,string> xmls;
     zip_t* OOXML;
     size_t bufferSize;

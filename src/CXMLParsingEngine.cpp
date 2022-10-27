@@ -14,7 +14,9 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
 
     if(xmlBuffer.compare(NoFile) == 0)return false;
 
-    //std::cout << xmlBuffer << std::endl;
+    // OOXML 검사 부분 추가
+
+    std::cout << xmlBuffer << std::endl;
 
     return true;
 }
@@ -26,11 +28,13 @@ void CXMLParsingEngine::organizeMemory(){
 
 bool CXMLParsingEngine::isDocument(const string filePath) 
 {
+    const string OoxmlSignature = "8075";
     string ext = getFileExt(filePath); //파일 확장자 가져오기
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
 
+    std::cout << fileSignature << std::endl;
 
-    if (fileSignature.substr(0, 2) != "PK")
+    if (fileSignature.substr(0, 4) != OoxmlSignature)
     {
         std::cout << "OOXML 형식만 지원됩니다." << std::endl;
         return false;
@@ -43,19 +47,14 @@ bool CXMLParsingEngine::isDocument(const string filePath)
     if (setPptExt.find(ext) != setPptExt.end())return true;  /* OOXML DOC */ ;
     if (setXlsExt.find(ext) != setXlsExt.end())return true;  /* OOXML DOC */ ;
 
-    // if (setDocExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
-    // if (setPptExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
-    // if (setXlsExt.count(ext) == 1)return true;  /* OOXML DOC */ ;
-
     return false;
 }
 
 string CXMLParsingEngine::getFileExt(const string filePath)
 {
 
-    int location = filePath.find_last_of('.');
-
-    string ext(filePath.substr(location+1));
+    int dotPosition = filePath.find_last_of('.');
+    string ext = filePath.substr(dotPosition+1);
 
     return ext;
 
@@ -77,9 +76,9 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
 
     for(int i =0; i<2;i++)
     {   
-        char text;
-        readFile.get(text);
-        fileSignature += string(&text);
+        int a = readFile.get();
+        std::cout << a << std::endl;
+        fileSignature += std::to_string(a);
     }
 
     return fileSignature;
