@@ -12,7 +12,7 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
 
     string xmlBuffer = unzipDocument(input->vecInputFiles[0].first);
 
-    if(xmlBuffer.compare(NoFile) == 0)return false;
+    if(xmlBuffer == NoFile)return false;
 
     // OOXML 검사 부분 추가
 
@@ -71,7 +71,13 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
 
     if (!readFile.is_open())
     {
-        //파일이 존재하지 않음 에러처리 해야함
+        try{
+            throw std::runtime_error("파일이 존재하지 않습니다.");
+        }catch (const std::exception& e)
+        {
+            printf("%s\n",e.what());
+            return fileSignature;
+        }
     }
 
     for(int i =0; i<2;i++)

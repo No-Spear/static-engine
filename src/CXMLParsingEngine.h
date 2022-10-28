@@ -7,6 +7,7 @@
 #include <regex> 
 #include <set>
 #include <map>
+#include <stdexcept>
 #include <zip.h>
 
 
