@@ -113,10 +113,10 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
 
 bool CNoSpear::SaveResult(const ST_REPORT& outReport)
 {
-    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
-    char DBUser[] = "nospear";
-    char DBPass[] = "nospear!";
-    char DBName[] = "analysisResultDB";
+    char DBHost[] = "localhost";
+    char DBUser[] = "root";
+    char DBPass[] = "DBPW1234";
+    char DBName[] = "VSERVER";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
     if(conn == NULL)
@@ -243,6 +243,7 @@ int main(int argc, char** argv)
 
     // 서버로 분석 결과를 전달
     ST_SERVER_REPORT report;
+    strcpy(report.strName, outReport.strName.c_str());
     strcpy(report.strHash, outReport.strHash.c_str());
     strcpy(report.strDectName, outReport.strDetectName.c_str());
     report.nSeverity = outReport.nSeverity;

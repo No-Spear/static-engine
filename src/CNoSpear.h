@@ -23,6 +23,7 @@ typedef struct ST_REPORT{
  * 서버에게 파이프를 통해 결과를 전달하기 위해 사용하는 구조체
 */
 typedef struct ST_SERVER_REPORT {
+    char strName[513];                      // 파일의 이름
     char strHash[65];                       // 파일의 해쉬값
     char strDectName[40];                   // 분석 결과
     int nSeverity;                          // 위험도(행위 분석 결과 평균)
