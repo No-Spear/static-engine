@@ -30,7 +30,7 @@ bool OOXMLParser::open(const char* pszFile)
     // OOXML 객체를 ZIP 파일로 변환하여 Open 
     this->OOXML = zip_open(pszFile, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
     if(this->OOXML == NULL) 
-        throw UrlExtractionException("분석을 의로한 파일을 확인할 수 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "분석을 의로한 파일을 확인할 수 없습니다.");
 
     return true;
 }
@@ -48,11 +48,11 @@ char* OOXMLParser::getStreamData(const char* location)
 {   
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
     if(zip_entry_open(this->OOXML, location) != 0) 
-        throw UrlExtractionException("전달 받은 위치의 파일을 열 수 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
 
     // 문서파일에서 상위, 하위 Stream 데이터를 buf에 저장한다.
     if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
-        throw UrlExtractionException("상위, 하위 스트림 파일을 확인할 수 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "상위, 하위 스트림 파일을 확인할 수 없습니다.");
 
     return (char*)this->buffer;
 }
@@ -194,13 +194,13 @@ std::vector<std::string> ExcelParser::getContenxmlList(const char* highStream)
 
     // 만약 상위 스트림에서 하위 데이터 없다면
     if(contentxmlList.empty())
-        throw UrlExtractionException("상위 스트림에서 하위 스트림 데이터가 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "상위 스트림에서 하위 스트림 데이터가 없습니다.");
     return contentxmlList;
 }   
 
 // 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
 std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
-{
+{ 
     // 문서파일의 스트림 데이터를 받을 포인터
     char* buffer;
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
@@ -230,7 +230,7 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
                 urlList.push_back(parsingUrl(match.str()));
                 xml = match.suffix();
             }
-        } catch (ExceptionSuper & e)
+        } catch (std::exception & e)
         {
             std::cout << "하위 스트림인 " << contentxml[i] << "을 열 수 없습니다." <<std::endl;
             continue;
@@ -282,7 +282,7 @@ std::vector<std::string> PowerPointParser::getContenxmlList(const char* highStre
 
     // 만약 상위 스트림에서 하위 데이터 없다면
     if(contentxmlList.empty())
-        throw UrlExtractionException("상위 스트림에서 하위 스트림 데이터가 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "상위 스트림에서 하위 스트림 데이터가 없습니다.");
     return contentxmlList;
 }   
 
@@ -319,7 +319,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
                 urlList.push_back(parsingUrl(match.str()));
                 xml = match.suffix();
             }
-        } catch (ExceptionSuper & e)
+        } catch (std::exception & e)
         {
             std::cout << "하위 스트림인 " << contentxml[i] << "을 열 수 없습니다." <<std::endl;
             continue;
@@ -361,7 +361,7 @@ std::string CURLExtractEngine::extractFileExetoSignature(const std::string docpa
 
     // 만약 파일을 열지 못했다면
     if (document.fail()) 
-        throw UrlExtractionException("분석파일을 열고 파일의 시그니처를 확인할 수 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "분석파일을 열고 파일의 시그니처를 확인할 수 없습니다.");
 
     // 파일의 시그니처 값에 해당하는 4byte를 읽어온다.
     for(int i =0; i<4; i++)
@@ -388,7 +388,7 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
         // else if
         //     this->sampleDocument = new WordParser(new CompoundParser());
         else
-            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
+            throw engine_Exception("URLExtraction", "s", "현재 지원하지 않는 문서 형식 입니다.");
     }
     else if(doctype.front() == 'x')
     {
@@ -397,7 +397,7 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
         // else if
         //     this->sampleDocument = new ExcelParser(new CompoundParser());
         else
-            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
+            throw engine_Exception("URLExtraction", "s", "현재 지원하지 않는 문서 형식 입니다.");
     }
    else if(doctype.front() == 'p')
    {
@@ -406,10 +406,10 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
         // else if
         //     this->sampleDocument = new PowerPointParser(new CompoundParser());
         else
-            throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
+            throw engine_Exception("URLExtraction", "s", "현재 지원하지 않는 문서 형식 입니다.");
    }
     else 
-        throw UrlExtractionException("현재 지원하지 않는 문서 형식 입니다.");
+        throw engine_Exception("URLExtraction", "s", "현재 지원하지 않는 문서 형식 입니다.");
 
     output = this->sampleDocument->getUrlList(input);
     return true;
@@ -424,7 +424,7 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     urlParsing(input->vecInputFiles[0].first, extractFileExetoPath(input->vecInputFiles[0].first) ,urlList);
     
     if(urlList.empty()) 
-        throw UrlExtractionException("분석한 파일에서 추출된 Url이 없습니다.");
+        throw engine_Exception("URLExtraction", "s", "분석한 파일에서 추출된 Url이 없습니다.");
 
     // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urlList.size() + output->vecExtractedUrls.size());

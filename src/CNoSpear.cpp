@@ -155,9 +155,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
         input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
         input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
-    } catch(ExceptionSuper & e)
+    } catch(const std::exception& e)
     {
-        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        std::cout << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -169,9 +169,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // 추출엔진의 결과를 입력으로 제공
         input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
         input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
-    } catch(ExceptionSuper & e)
+    } catch(const std::exception& e)
     {
-        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        std::cout << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -183,9 +183,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // 추출엔진의 결과를 입력으로 제공
         input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
         input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
-    } catch(ExceptionSuper & e)
+    } catch(const std::exception& e)
     {
-        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        std::cout << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -195,9 +195,9 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // 스크립트 분석엔진 시작
         this->m_Engines[3]->Analyze(&input, &output);
 
-    } catch(ExceptionSuper & e)
+    } catch(const std::exception& e)
     {
-        std::cout << e.getExceptionDetail()+"\n" << std::endl;
+        std::cout << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }

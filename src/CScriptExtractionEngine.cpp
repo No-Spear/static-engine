@@ -41,7 +41,7 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::v
     html.open(fpath, std::ios::in);
     // 해당 파일을 열 수 없다면
     if(!html)
-        throw ScriptExtractionException("다운받은 html 파일을 열 수 없습니다.");
+        throw engine_Exception("ScriptExtraction", "s", "다운받은 html 파일을 열 수 없습니다.");
     
     html.seekg(0, std::ios::end);
 	// 그리고 그 위치를 읽는다. (파일의 크기)
@@ -118,7 +118,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         }
         // 아무것도 해당하지 않는다면 
         else
-            throw ScriptExtractionException("현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
+            throw engine_Exception("ScriptExtraction", "s", "현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
     }
     return true;
 }

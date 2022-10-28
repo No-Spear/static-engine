@@ -1,114 +1,33 @@
 #include "CException.h"
 
-// 예외처리를 담당하는 부모 클래스 생성자
-ExceptionSuper::ExceptionSuper(std::string engine)
+// 각 엔진에서 일어나는 예외처리 사항들을 다루는 클래스 생성자
+engine_Exception::engine_Exception(const char* engine, const char* pszFormat, ...)
 {
-    this->exceptionEngine.append(engine);
-}
-
-// 예외처리를 담당하는 부모 클래스 소멸자
-ExceptionSuper::~ExceptionSuper()
-{
-
-}
-
-// 어떠한 엔진에서 예외처리가 발생했는지 확인하기 위한 함수
-std::string ExceptionSuper::getExceptionEngine()
-{
-    return this->exceptionEngine;
-}
-
-// UrlExtractionEngine에서 일어나는 예외에 대한 클래스 생성자
-UrlExtractionException::UrlExtractionException(const char* detail) : ExceptionSuper("UrlExtraction")
-{
-    this->exceptionDetail.append(detail);
-}
-
-// UrlExtractionEngine에서 일어나는 예외처리 클래스의 소멸자
-UrlExtractionException::~UrlExtractionException()
-{
-
-}
-
-// UrlExtractionEngine에서 일어나는 예외처리 내용을 돌려주는 함수
-std::string UrlExtractionException::getExceptionDetail()
-{
-    std::string output;
-    output.append(this->getExceptionEngine());
-    output.append("Engine에서 다음 예외가 발생했습니다.\n");
-    output.append(this->exceptionDetail);
-    return output;
-}
-
-// DownloadFromUrlEngine에서 일어나는 예외처리 클래스의 생성자
-DownloadFromUrlException::DownloadFromUrlException(const char* detail, int checker) : ExceptionSuper("DownloadFromUrl")
-{
-    this->checker = checker;
-    this->exceptionDetail.append(detail);
-}
-
-// DownloadFromUrlEngine에서 일어나는 예외처리 클래스의 소멸자
-DownloadFromUrlException::~DownloadFromUrlException()
-{
-
-}
-
-// DownloadFromUrlEngine에서 일어나는 예외처리 내용을 돌려주는 함수
-std::string DownloadFromUrlException::getExceptionDetail()
-{
-    std::string output;
-    output.append(this->getExceptionEngine());
-    output.append("Engine에서 다음 예외가 발생했습니다.\n");
-    if(checker == 1)
-        output.append(this->exceptionDetail);
-    else if(checker == 2)
+    // 어떠한 엔진에서 예외가 발생했는지 저장
+    this->exceptionDetail.append(engine);
+    this->exceptionDetail.append("Engine의 동작 중 다음과 같은 예외처리 루틴이 동작 하였습니다.\n");
+    // 가변 매개변수를 처리하기 위해 선언
+    va_list detail;
+    int count = 0;
+    // 스택 상의 첫 가변인수의 위치를 구해 detail에 대입
+    va_start(detail, pszFormat);
+    
+    while(pszFormat[count] != '\0')
     {
-        output.append("Mysql의 ");
-        output.append(this->exceptionDetail);
+        this->exceptionDetail.append(va_arg(detail, char*));
+        count++;
     }
-    return output;
+    va_end(detail);
 }
 
-// ScriptExtractionEngine에서 일어나는 예외처리 클래스의 생성자
-ScriptExtractionException::ScriptExtractionException(const char* detail) : ExceptionSuper("ScriptExtration")
-{
-    this->exceptionDetail.append(detail);
-}
-
-// ScriptExtractionEngine에서 일어나는 예외처리 클래스의 소멸자
-ScriptExtractionException::~ScriptExtractionException()
+// 각 엔진에서 일어나는 예외처리 사항들을 다루는 클래스 소멸자
+engine_Exception::~engine_Exception()
 {
 
 }
 
-// ScriptExtractionEngine에서 일어나는 예외처리 내용을 돌려주는 함수
-std::string ScriptExtractionException::getExceptionDetail()
+// 예외처리 내용에 대해 돌려주는 함수
+const char* engine_Exception::what() const noexcept
 {
-    std::string output;
-    output.append(this->getExceptionEngine());
-    output.append("Engine에서 다음 예외가 발생했습니다.\n");
-    output.append(this->exceptionDetail);
-    return output;
-}
-
-// ScriptAnalyzeEngine에서 일어나는 예외처리 클래스의 생성자
-ScriptAnalyzeException::ScriptAnalyzeException(const char* detail) : ExceptionSuper("ScriptAnalyze")
-{
-    this->exceptionDetail.append(detail);
-}
-
-// ScriptAnalyzeEngine에서 일어나는 예외처리 클래스의 소멸자
-ScriptAnalyzeException::~ScriptAnalyzeException()
-{
-
-}
-
-// ScriptAnalyzeEngine에서 일어나는 예외처리 내용을 돌려주는 함수
-std::string ScriptAnalyzeException::getExceptionDetail()
-{
-    std::string output;
-    output.append(this->getExceptionEngine());
-    output.append("Engine에서 다음 예외가 발생했습니다.\n");
-    output.append(this->exceptionDetail);
-    return output;
+    return this->exceptionDetail.c_str();
 }
