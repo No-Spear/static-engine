@@ -383,7 +383,7 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
     // Word 파일의 경우
     if(doctype.front() == 'd')
     {
-        if(documentSignature.compare("504b34") == 0)
+        if(documentSignature == "504b34")
             this->sampleDocument = new WordParser(new OOXMLParser());
         // else if
         //     this->sampleDocument = new WordParser(new CompoundParser());
@@ -392,7 +392,7 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
     }
     else if(doctype.front() == 'x')
     {
-        if(documentSignature.compare("504b34") == 0)
+        if(documentSignature == "504b34")
             this->sampleDocument = new ExcelParser(new OOXMLParser());
         // else if
         //     this->sampleDocument = new ExcelParser(new CompoundParser());
@@ -401,7 +401,7 @@ bool CURLExtractEngine::urlParsing(std::string input, std::string doctype, std::
     }
    else if(doctype.front() == 'p')
    {
-        if(documentSignature.compare("504b34") == 0)
+        if(documentSignature == "504b34")
             this->sampleDocument = new PowerPointParser(new OOXMLParser());
         // else if
         //     this->sampleDocument = new PowerPointParser(new CompoundParser());
