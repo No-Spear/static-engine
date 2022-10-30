@@ -1,9 +1,9 @@
 CC=g++
 CFLAGS=-o
 LDLIBS=-lzip -lcurl -lmysqlclient
-libpath=-L/var/lib/jenkins/static-engine/zip/build
-incpath=-I/var/lib/jenkins/static-engine/zip/src
-outpath=var/lib/jenkins/static-engine/build
+libpath=-L/var/lib/jenkins/workspace/zip/build
+incpath=-I/var/lib/jenkins/workspace/zip/src
+outpath=/var/lib/jenkins/workspace/static-engine/build
 
 all:CStatic-Engine
 
