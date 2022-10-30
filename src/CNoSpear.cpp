@@ -179,6 +179,12 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
 
         // url이 있으면 위험도를 3증가.
         outReport.nSeverity += 3;
+
+        // 추출된 URL 정보 출력
+        std::cout << "Extracted URLs:" << std::endl;
+        for(int i = 0; i< output.vecExtractedUrls.size(); i++)
+            std::cout << output.vecExtractedUrls[i] << std::endl;
+        std::cout << std::endl;
     } catch(const std::exception& e)
     {
         std::cout << "\n" << e.what() << "\n" << std::endl;
@@ -201,6 +207,15 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
             outReport.nSeverity += 2;
         else
             outReport.nSeverity += downloadSize;
+        
+        // 다운로드된 파일 위치 정보 출력
+        for(int i = 0; i < output.vecExtractedFiles.size(); i++)
+        {
+            std::cout << "Downloaded File Location:" << std::endl;
+            std::cout << output.vecExtractedFiles[i].first << std::endl;
+            std::cout << "CnC URL & Downloaded File Status: " << output.vecExtractedFiles[i].second << std::endl;
+        }
+        std::cout << std::endl;
     } catch(const std::exception& e)
     {
         std::cout << "\n" << e.what() << "\n" << std::endl;
@@ -215,6 +230,14 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // 추출엔진의 결과를 입력으로 제공
         input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
         input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
+        
+        for(int i = 0; i< output.vecExtractedScript.size(); i++)
+        {
+            std::cout << "Extracted Script:" << std::endl;
+            std::cout << output.vecExtractedScript[i].first << std::endl;
+            std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
+        }
+        std::cout << std::endl;
     } catch(const std::exception& e)
     {
         std::cout << "\n" << e.what() << "\n" << std::endl;
@@ -226,7 +249,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         std::cout << "스크립트 분석엔진 시작" << std::endl;
         // 스크립트 분석엔진 시작
         this->m_Engines[3]->Analyze(&input, &output);
-
+        std::cout << std::endl;
     } catch(const std::exception& e)
     {
         std::cout << "\n" << e.what() << "\n" << std::endl;
@@ -289,6 +312,7 @@ int main(int argc, char** argv)
     std::cout << report.strHash << std::endl;
     std::cout << report.strDectName << std::endl;
     std::cout << report.nSeverity << std::endl;
+    std::cout << std::endl;
    
    if(!sendStaticEngineResult(argv[3], report))
    {
