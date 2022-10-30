@@ -16,7 +16,7 @@ std::string extractFileHash(const std::string filepath)
 void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport)
 {
     // 서버로 보낼 평균 위험도
-    int totalSeverity = 0;
+    float totalSeverity = 0;
     // 분석 결과의 사이즈
     int behaviorSize = result.vecBehaviors.size();
     
@@ -24,26 +24,48 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
     for(int i =0; i< behaviorSize; i++)
         totalSeverity += result.vecBehaviors[i].Severity;
 
+    // 악성행위의 정보가 있다면
     if(behaviorSize != 0)
     {
+        // 위험도의 평균을 구하고 이를 전체 위험도에 더함.
+        totalSeverity = totalSeverity / behaviorSize;
+        if(totalSeverity < 2.5)
+            outReport.nSeverity += 1;
+        else if(totalSeverity < 5)
+            outReport.nSeverity += 2;
+        else if(totalSeverity < 7.5)
+            outReport.nSeverity += 3;
+        else
+            outReport.nSeverity += 4;
+
+        // 만약 전체 결과의 위험도가 5이하 라면 의심파일
+        if(outReport.nSeverity <= 5 )
+            outReport.strDetectName.append("Suspicious File");
+        // 위험도가 5초과 10이하라면 악성파일로 규정
+        else if(outReport.nSeverity <= 10)
+        {
+            if(result.vecBehaviors[0].strName.compare("Call msdt Function") == 0)
+                outReport.strDetectName.append("Follina");
+            else 
+                outReport.strDetectName.append("Malware File");
+        }
+
         outReport.strHash.append(sampleFile.strFileHash);
         outReport.strName.append(sampleFile.strFileName);
-        if(result.vecBehaviors[0].strName.compare("Call msdt Function") == 0)
-            outReport.strDetectName.append("Follina");
-        outReport.nSeverity = totalSeverity / behaviorSize;
+
         outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
         outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
     }
+    // 행위 결과 값이 없다면
     else
     {
         outReport.strHash.append(sampleFile.strFileHash);
         outReport.strName.append(sampleFile.strFileName);
-        // 만약 추출된 Url은 있지만 분석 결과가 없다면
-        if(result.vecExtractedUrls.size() != 0)
-            outReport.strDetectName.append("SuspiciousFile");
+        // 만약 위험도가 0이라면 정상파일, 0을 넘는다면 의심파일로 설정한다.
+        if(outReport.nSeverity == 0)
+            outReport.strDetectName.append("Normal File");
         else
-            outReport.strDetectName.append("NomalFile");
-        outReport.nSeverity = 0;
+            outReport.strDetectName.append("Suspicious File");
     }    
 }
 
@@ -128,7 +150,6 @@ bool CNoSpear::SaveResult(const ST_REPORT& outReport)
 
     string sql ="INSERT INTO analysisResultTable(nseverity,detectName,sha256,name,behaviors) VALUES" + values;
 
-    std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
     }
@@ -155,9 +176,12 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
         input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
         input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+
+        // url이 있으면 위험도를 3증가.
+        outReport.nSeverity += 3;
     } catch(const std::exception& e)
     {
-        std::cout << e.what() << "\n" << std::endl;
+        std::cout << "\n" << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -169,9 +193,17 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         // 추출엔진의 결과를 입력으로 제공
         input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
         input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
+
+        // Download된 파일의 수만큼 위험도를 증가
+        int downloadSize = output.vecExtractedFiles.size();
+        // 단 Download된 파일에서 제공할 수있는 최대 위험도는 2로 설정.
+        if(downloadSize > 2)
+            outReport.nSeverity += 2;
+        else
+            outReport.nSeverity += downloadSize;
     } catch(const std::exception& e)
     {
-        std::cout << e.what() << "\n" << std::endl;
+        std::cout << "\n" << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -185,7 +217,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
     } catch(const std::exception& e)
     {
-        std::cout << e.what() << "\n" << std::endl;
+        std::cout << "\n" << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
@@ -197,11 +229,11 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
 
     } catch(const std::exception& e)
     {
-        std::cout << e.what() << "\n" << std::endl;
+        std::cout << "\n" << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
-
+    std::cout << std::endl;
     // DB에 저장할 결과를 제작
     makeOutputReport(sampleFile, output, outReport);
 
@@ -216,6 +248,7 @@ int main(int argc, char** argv)
 	    std::cout << "sample:  CStatic-Engine test.docx ./temp/testdocx 3" << std::endl;
         return -1;
     }
+
     // 분석하기 위한 파일에 대한 정보를 설정
     ST_FILE_INFO sampleFile;
     sampleFile.strFileName = std::string(argv[1]);
@@ -224,10 +257,12 @@ int main(int argc, char** argv)
 
     CNoSpear* staticEngine = new CNoSpear();
     ST_REPORT outReport;
+    // initialize nServerity
+    outReport.nSeverity = 0;
 
     // 정적엔진 분석 시작
     if(!staticEngine->Analyze(sampleFile, outReport))
-        std::cout << "예외 루틴이 발생하였으나 처리 완료" << std::endl;
+        std::cout << "예외 루틴이 발생하였으나 처리 완료\n" << std::endl;
 
     std::cout << "악성 행위 정보" << std::endl;
     for(int i= 0; i< outReport.vecBehaviors.size(); i++)
@@ -237,6 +272,7 @@ int main(int argc, char** argv)
         std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
         std::cout << outReport.vecBehaviors[i].Severity << std::endl;
     }
+    std::cout << std::endl;
 
     // DB로 분석 결과를 전달
     staticEngine->SaveResult(outReport);
@@ -249,6 +285,7 @@ int main(int argc, char** argv)
     report.nSeverity = outReport.nSeverity;
 
     std::cout << "서버로 보낼 정보" << std::endl;
+    std::cout << report.strName << std::endl;
     std::cout << report.strHash << std::endl;
     std::cout << report.strDectName << std::endl;
     std::cout << report.nSeverity << std::endl;
