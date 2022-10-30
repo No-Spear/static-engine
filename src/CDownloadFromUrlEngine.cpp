@@ -25,7 +25,6 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url,string fileName,ST_RESPONSE 
 {
     string sql = "";
     url = "'" + url + "'";    
-    std::cout << fileName << std::endl;
     if(!fileName.compare("NoFile")){
         sql = "SELECT fileHash from cncTable where url=" + url;   
     }else
@@ -34,7 +33,6 @@ bool CDownloadFromUrlEngine::queryCnCUrl(string url,string fileName,ST_RESPONSE 
         sql ="SELECT fileHash from cncTable where url=" + url + "and fileHash=" + fileName;   
     }
 
-    std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
     }
@@ -87,7 +85,6 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     string extension = getExtension(Response->fileName);
     string tempFileName = Response->fileName;
     Response->fileName = string(fileName) + extension; 
-    std::cout << "File Name is "<<Response->fileName << std::endl;
     string newPath = "../temp/" + Response->fileName;
     if(access(newPath.c_str(),F_OK)==0){
         remove(Response->path.c_str());
@@ -106,13 +103,11 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
 
 
         ST_RESPONSE Response = getFileFromUrl(getDomain(input->vecURLs[i]));
-        std::cout << Response.count << std::endl;
         if(Response.count == 0){
             if(queryCnCUrl(input->vecURLs[i],Response.fileName,&Response))fileStatus = CCOF;
             else fileStatus = CCNF;
 
             output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
-            std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
             if(fileStatus == CCNF)return false;  //예외처리해야하는 부분 OR URL이 여러개일 경우 처리 하는 방법 변경해야함 
             // else if(fileStatus == CCNF && input->vecURLs.size() != i+1) continue;
 
@@ -125,8 +120,6 @@ bool CDownloadFromUrlEngine::Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_R
             else fileStatus = CONF;
 
             output->vecExtractedFiles.push_back(std::make_pair(Response.path,fileStatus));
-            std::cout << Response.path << std::endl;
-            std::cout << "CNC Status and File Status " << fileStatus <<std::endl;
         }
     }
     return true;
@@ -169,7 +162,6 @@ string CDownloadFromUrlEngine::getDomain(string url)
         } 
         settingUrl += "/";
     }
-    std::cout << settingUrl << std::endl;
     return settingUrl;
 
 }
