@@ -1,5 +1,5 @@
 #include "CEngineSuper.h"
-#include "CException.h"
+#include "CXMLAnalyzeModule.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>

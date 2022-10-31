@@ -15,7 +15,8 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     if(xmlBuffer == NoFile)return false;
 
     // OOXML 검사 부분 추가
-
+    CXMLAnalyzeModule AnalyzeModule;
+    AnalyzeModule.Analyze(xmlBuffer, output);
     std::cout << xmlBuffer << std::endl;
 
     return true;
