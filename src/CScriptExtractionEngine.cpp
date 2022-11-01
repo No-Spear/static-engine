@@ -63,6 +63,8 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::v
         scriptlist.push_back(std::make_pair(match.str(), std::make_pair(i, getHtmlScriptType(match.str()))));
         buf = match.suffix();
     }
+    if(scriptlist.empty())
+        throw engine_Exception("ScriptExtraction", "s", "스크립트엔진에서 추출된 스크립트가 없습니다.");
     return true;
 }
 
