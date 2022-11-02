@@ -11,12 +11,12 @@
 #include <zip.h>
 
 
+
 using std::string;
 
 class CXMLParsingEngine
 {
 public:
-
     const string NoFile = "NO FILE";   
     
     CXMLParsingEngine();
@@ -24,6 +24,7 @@ public:
     bool Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);
 
 private: 
+
     std::map<string,string> xmls;
     zip_t* OOXML;
     size_t bufferSize;
@@ -32,4 +33,5 @@ private:
     string getFileExt(const string filePath);
     string getFileSignature(const string filePath);
     string unzipDocument(const string filePath);
+
 };
