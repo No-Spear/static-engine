@@ -124,7 +124,7 @@ bool CScriptAnalyzeEngine::checkFollina(std::string script, std::string url ,std
 bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIOR>& vecBehaiors)
 {
     /* 
-        악성매크로 의심 리스트 -> 정규표현식 리스트로 변경해야함.
+        악성매크로 의심 리스트
         "AutoOpen", "Workbook_Open", "Document_Open", "DocumentOpen", 
         "AutoExec", "AutoExit", "Auto_Close", "AutoClose", "DocumentChange",
         "AutoNew", "Document_New", "NewDocument", "CreateObject()", "allocateMemory",
