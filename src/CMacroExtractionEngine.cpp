@@ -1,7 +1,7 @@
 #include "CMacroExtractionEngine.h"
 
 // 매크로가 있는지 확인하고 추출하는 엔진의 생성자
-CMacroExtractionEngine::CMacroExtractionEngine() : CEngineSuper(4)
+CMacroExtractionEngine::CMacroExtractionEngine() : CEngineSuper(4, "MacroExtraction")
 {
 
 }
@@ -51,25 +51,25 @@ char* CMacroExtractionEngine::getMacroData(const char* location)
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::string macroData;
-    char* location = NULL;
+    std::string location;
     switch (extractFileExetoPath(input->vecInputFiles[0].first).front())
     {
     case 'd':
         open(input->vecInputFiles[0].first.c_str());
-        location = "word/vbaProject.bin";
-        macroData = (std::string)getMacroData(location);
+        location.append("word/vbaProject.bin");
+        macroData = (std::string)getMacroData(location.c_str());
         break;
 
     case 'x':
         open(input->vecInputFiles[0].first.c_str());
-        location = "xl/vbaProject.bin";
-        macroData = (std::string)getMacroData(location);
+        location.append("xl/vbaProject.bin");
+        macroData = (std::string)getMacroData(location.c_str());
         break;
 
     case 'p':
         open(input->vecInputFiles[0].first.c_str());
-        location = "ppt/vbaProject.bin";
-        macroData = (std::string)getMacroData(location);
+        location.append("ppt/vbaProject.bin");
+        macroData = (std::string)getMacroData(location.c_str());
         break;
 
     default:
@@ -78,4 +78,5 @@ bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_R
     // 출력에 다운로드된 url의 위치는 -1로 안쓰는 숫자를 사용한다.
     // 추출된 파일에 대한 데이터를 분석엔진에 넘겨준다.
     output->vecExtractedScript.push_back(std::make_pair(macroData, std::make_pair(-1, VBS)));
+    return true;
 }
