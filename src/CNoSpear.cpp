@@ -2,6 +2,7 @@
 #include "CDownloadFromUrlEngine.h"
 #include "CScriptExtractionEngine.h"
 #include "CScriptAnalyzeEngine.h"
+#include "CMacroExtractionEngine.h"
 #include "CNoSpear.h"
 
 // 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
@@ -44,7 +45,7 @@ void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT res
         // 위험도가 5초과 10이하라면 악성파일로 규정
         else if(outReport.nSeverity <= 10)
         {
-            if(result.vecBehaviors[0].strName.compare("Call msdt Function") == 0)
+            if(result.vecBehaviors[0].strName.find("msdt") != std::string::npos)
                 outReport.strDetectName.append("Follina");
             else 
                 outReport.strDetectName.append("Malware File");
@@ -168,7 +169,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     input.vecInputFiles.push_back(std::make_pair(sampleFile.strSampleFile, ASF));
 
     try{
-        std::cout << "URL 추출엔진 시작" << std::endl;
+        std::cout << this->m_Engines[0]->getEngineType() << "Engine 시작"  <<std::endl;
         // URL 추출엔진 시작
         this->m_Engines[0]->Analyze(&input, &output);
         // 분석했던 파일을 제거
@@ -193,7 +194,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     }
 
     try{
-        std::cout << "URL 다운로드 엔진 시작" << std::endl;
+        std::cout << this->m_Engines[1]->getEngineType() << "Engine 시작"  <<std::endl;
         // URL을 통한 다운로드 엔진 시작
         this->m_Engines[1]->Analyze(&input, &output);
         // 추출엔진의 결과를 입력으로 제공
@@ -224,7 +225,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     }
 
     try{
-        std::cout << "스크립트 추출엔진 시작" << std::endl;
+        std::cout << this->m_Engines[2]->getEngineType() << "Engine 시작"  <<std::endl;
         // 다운받은 파일에서 스크립트 추출엔진 시작
         this->m_Engines[2]->Analyze(&input, &output);
         // 추출엔진의 결과를 입력으로 제공
@@ -246,17 +247,25 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     }
     
     try{
-        std::cout << "스크립트 분석엔진 시작" << std::endl;
+        std::cout << this->m_Engines[3]->getEngineType() << "Engine 시작"  <<std::endl;
         // 스크립트 분석엔진 시작
-        this->m_Engines[3]->Analyze(&input, &output);
-        std::cout << std::endl;
+        if(this->m_Engines[3]->Analyze(&input, &output))
+        {
+            std::cout << "Analyze Result:" << std::endl;
+            for(int i= 0; i< output.vecBehaviors.size(); i++)
+            {
+                std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+            }
+        }
     } catch(const std::exception& e)
     {
         std::cout << "\n" << e.what() << "\n" << std::endl;
         makeOutputReport(sampleFile, output, outReport);
         return false;
     }
-    std::cout << std::endl;
     // DB에 저장할 결과를 제작
     makeOutputReport(sampleFile, output, outReport);
 
@@ -286,16 +295,6 @@ int main(int argc, char** argv)
     // 정적엔진 분석 시작
     if(!staticEngine->Analyze(sampleFile, outReport))
         std::cout << "예외 루틴이 발생하였으나 처리 완료\n" << std::endl;
-
-    std::cout << "악성 행위 정보" << std::endl;
-    for(int i= 0; i< outReport.vecBehaviors.size(); i++)
-    {
-        std::cout << outReport.vecBehaviors[i].strUrl << std::endl;
-        std::cout << outReport.vecBehaviors[i].strName << std::endl;
-        std::cout << outReport.vecBehaviors[i].strDesc << std::endl;
-        std::cout << outReport.vecBehaviors[i].Severity << std::endl;
-    }
-    std::cout << std::endl;
 
     // DB로 분석 결과를 전달
     staticEngine->SaveResult(outReport);

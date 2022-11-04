@@ -1,4 +1,9 @@
 #pragma once
+#include "CURLExtractionEngine.h"
+#include "CDownloadFromUrlEngine.h"
+#include "CScriptExtractionEngine.h"
+#include "CScriptAnalyzeEngine.h"
+#include "CMacroExtractionEngine.h"
 #include <iostream>
 #include <vector>
 #include <stdio.h>
