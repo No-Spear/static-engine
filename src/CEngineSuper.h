@@ -61,11 +61,13 @@ enum extractedScriptType
 */
 class CEngineSuper{
 private:
+    std::string engineType;
     int m_nPriority;
     
 public:
-    CEngineSuper(int m_nPriority);
+    CEngineSuper(int m_nPriority, std::string engineType);
     ~CEngineSuper();
     virtual bool Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output)=0;
     int GetPriority();
+    std::string getEngineType(void);
 };
