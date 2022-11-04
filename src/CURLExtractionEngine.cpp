@@ -329,7 +329,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
 }
 
 // 엔진객체 생성자
-CURLExtractEngine::CURLExtractEngine() : CEngineSuper(1)
+CURLExtractEngine::CURLExtractEngine() : CEngineSuper(1, "URLExtraction")
 {
     
 }

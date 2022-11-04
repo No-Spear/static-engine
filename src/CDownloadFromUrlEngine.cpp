@@ -1,6 +1,6 @@
 #include "CDownloadFromUrlEngine.h"
 
-CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2)
+CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2, "DownloadFromUrl")
 {
  
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";

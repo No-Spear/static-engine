@@ -1,7 +1,7 @@
 #include "CScriptExtractionEngine.h"
 
 // 엔진 객체 생성자
-CScriptExtractionEngine::CScriptExtractionEngine() : CEngineSuper(3)
+CScriptExtractionEngine::CScriptExtractionEngine() : CEngineSuper(3,"ScriptExtraction")
 {
 
 }
