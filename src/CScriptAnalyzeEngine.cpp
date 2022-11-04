@@ -1,7 +1,7 @@
 #include "CScriptAnalyzeEngine.h"
 
 // 엔진 객체 생성자
-CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4)
+CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4, "ScriptAnayze")
 {
 
 }
@@ -41,69 +41,84 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
 
 bool CScriptAnalyzeEngine::checkFollina(std::string script, std::string url ,std::vector<ST_BEHAVIOR>& vecBehaviors)
 {
-    // 검사하는 부분을 정규표현식으로 변경하기
-    // Follina 전용
-    if(script.find("ms-msdt:") != std::string::npos)
+    // 탐지 됬는지 확인하기 위한 변수
+    int count = 0;
+    std::smatch match;
+
+    std::regex follina0(R"(ms-msdt:[A-Za-z0-9\s\/\\]*)");
+    if(std::regex_search(script, match, follina0))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=7;
-        msdt.strName="Call msdt Function";
+        msdt.strName=match.str();
         msdt.strDesc="msdt 명령어 호출";
         vecBehaviors.push_back(msdt);
+        count++;
     }
     
-    if(script.find("IT_RebrowseForFile") != std::string::npos)
+    std::regex follina1(R"(IT_RebrowseForFile=[A-Za-z0-9_!@#$%^&*()_+=:;"'<>.,/?-]*)");
+    if(std::regex_search(script, match, follina1))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=9;
-        msdt.strName="Use IT_RebrowseForFile";
+        msdt.strName=match.str();
         msdt.strDesc="원격으로 실행할 프로그램을 선택할 떄 사용하는 매개변수이다.";
         vecBehaviors.push_back(msdt);
+        count++;
     }
 
-    if(script.find("IT_LaunchMethod") != std::string::npos)
+    std::regex follina2(R"(IT_LaunchMethod=[A-Za-z0-9_!@#$%^&*()_+=:;"'<>.,/?-]*)");
+    if(std::regex_search(script, match, follina2))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=8;
-        msdt.strName="Use IT_LaunchMethod";
+        msdt.strName=match.str();
         msdt.strDesc="프로그램 선택과 관련이 있으며, 자동으로 선택할 프로그램 없음을 설정";
         vecBehaviors.push_back(msdt);
+        count++;
     }
     
-    if(script.find("IT_SelectProgram") != std::string::npos)
+    std::regex follina3(R"(IT_SelectProgram=[A-Za-z0-9_!@#$%^&*()_+=:;"'<>.,/?-]*)");
+    if(std::regex_search(script, match, follina3))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=8;
-        msdt.strName="Use IT_SelectProgram";
+        msdt.strName=match.str();
         msdt.strDesc="사전에 실행할 프로그램을 선택하여 프로그램 선택창을 우회할 수 있게 한다.";
         vecBehaviors.push_back(msdt);
     }
 
-    if(script.find("IT_BrowseForFile") != std::string::npos)
+    std::regex follina4(R"(IT_BrowseForFile=[A-Za-z0-9!@#$%^&*():;_+='"`~|/.\[\]-]*)");
+    if(std::regex_search(script, match, follina4))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=9;
-        msdt.strName="Use IT_BrowseForFile";
+        msdt.strName=match.str();
         msdt.strDesc="실행할 프로그램을 선택할 떄 사용하는 매개변수이다.";
         vecBehaviors.push_back(msdt);
+        count++;
     }
 
-    if(script.find("IT_AutoTroubleshoot") != std::string::npos)
+    std::regex follina5(R"(IT_AutoTroubleshoot=[A-Za-z0-9_!@#$%^&*()_+=:;"'<>.,/?-]*)");
+    if(std::regex_search(script, match, follina5))
     {
         ST_BEHAVIOR msdt;
         msdt.strUrl.append(url);
         msdt.Severity=9;
-        msdt.strName="Use IT_AutoTroubleshoot";
+        msdt.strName=match.str();
         msdt.strDesc="취약점 유발과 무관하나, 자동으로 문제해결 기능을 우회할 수 있게 한다.";
         vecBehaviors.push_back(msdt);
+        count++;
     }
 
-    return true;
+    if(count > 0)
+        return true;
+    return false;
 }
 
 bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIOR>& vecBehaiors)
@@ -115,11 +130,13 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         "AutoNew", "Document_New", "NewDocument", "CreateObject()", "allocateMemory",
         "copyMemory", "shellExecute"
     */
-
-    std::regex macroAnomal(R"(AutoOpen)");
-    // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
+    // 탐지 됬는지 확인하기 위한 변수
+    int count = 0;
     std::smatch match;
-    if(std::regex_search(script, match, macroAnomal))
+
+    std::regex macro0(R"(AutoOpen)");
+    // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
+    if(std::regex_search(script, match, macro0))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append("Local Macro");
@@ -127,76 +144,83 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         autoOpen.strName="Calling AutoOpen function used in a malicious macro";
         autoOpen.strDesc="악성 매크로에서 사용되는 AutoOpen 함수를 호출";
         vecBehaiors.push_back(autoOpen);
+        count++;
     }
     
-    std::regex macroAnomal(R"(Workbook_Open)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro1(R"(Workbook_Open)");
+    if(std::regex_search(script, match, macro1))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=7;
-        autoOpen.strName="Calling Workbook_Open function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 Workbook_Open 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR Workbook_Open;
+        Workbook_Open.strUrl.append("Local Macro");
+        Workbook_Open.Severity=7;
+        Workbook_Open.strName="Calling Workbook_Open function used in a malicious macro";
+        Workbook_Open.strDesc="악성 매크로에서 사용되는 Workbook_Open 함수를 호출";
+        vecBehaiors.push_back(Workbook_Open);
+        count++;
     }
 
-    std::regex macroAnomal(R"(Document_Open)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro2(R"(Document_Open)");
+    if(std::regex_search(script, match, macro2))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=7;
-        autoOpen.strName="Calling Document_Open function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 Document_Open 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR Document_Open;
+        Document_Open.strUrl.append("Local Macro");
+        Document_Open.Severity=7;
+        Document_Open.strName="Calling Document_Open function used in a malicious macro";
+        Document_Open.strDesc="악성 매크로에서 사용되는 Document_Open 함수를 호출";
+        vecBehaiors.push_back(Document_Open);
+        count++;
     }
 
-    std::regex macroAnomal(R"(DocumentOpen)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro3(R"(DocumentOpen)");
+    if(std::regex_search(script, match, macro3))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=7;
-        autoOpen.strName="Calling a function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR DocumentOpen;
+        DocumentOpen.strUrl.append("Local Macro");
+        DocumentOpen.Severity=7;
+        DocumentOpen.strName="Calling a function used in a malicious macro";
+        DocumentOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        vecBehaiors.push_back(DocumentOpen);
+        count++;
     }
 
-    std::regex macroAnomal(R"(AutoExec)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro4(R"(AutoExec)");
+    if(std::regex_search(script, match, macro4))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=10;
-        autoOpen.strName="Calling AutoExec function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 AutoExec 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR AutoExec;
+        AutoExec.strUrl.append("Local Macro");
+        AutoExec.Severity=10;
+        AutoExec.strName="Calling AutoExec function used in a malicious macro";
+        AutoExec.strDesc="악성 매크로에서 사용되는 AutoExec 함수를 호출";
+        vecBehaiors.push_back(AutoExec);
+        count++;
     }
 
-    std::regex macroAnomal(R"(AutoExit)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro5(R"(AutoExit)");
+    if(std::regex_search(script, match, macro5))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=9;
-        autoOpen.strName="Calling AutoExit function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 AutoExit 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR AutoExit;
+        AutoExit.strUrl.append("Local Macro");
+        AutoExit.Severity=9;
+        AutoExit.strName="Calling AutoExit function used in a malicious macro";
+        AutoExit.strDesc="악성 매크로에서 사용되는 AutoExit 함수를 호출";
+        vecBehaiors.push_back(AutoExit);
+        count++;
     }
 
-    std::regex macroAnomal(R"(Auto_Close)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro6(R"(Auto_Close)");
+    if(std::regex_search(script, match, macro6))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=7;
-        autoOpen.strName="Calling Auto_Close function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 Auto_Close 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR Auto_Close;
+        Auto_Close.strUrl.append("Local Macro");
+        Auto_Close.Severity=7;
+        Auto_Close.strName="Calling Auto_Close function used in a malicious macro";
+        Auto_Close.strDesc="악성 매크로에서 사용되는 Auto_Close 함수를 호출";
+        vecBehaiors.push_back(Auto_Close);
+        count++;
     }
 
-    std::regex macroAnomal(R"(AutoClose)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro7(R"(AutoClose)");
+    if(std::regex_search(script, match, macro7))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append("Local Macro");
@@ -206,91 +230,102 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         vecBehaiors.push_back(autoOpen);
     }
 
-    std::regex macroAnomal(R"(DocumentChange)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro8(R"(DocumentChange)");
+    if(std::regex_search(script, match, macro8))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=9;
-        autoOpen.strName="Calling DocumentChange function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 DocumentChange 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR DocumentChange;
+        DocumentChange.strUrl.append("Local Macro");
+        DocumentChange.Severity=9;
+        DocumentChange.strName="Calling DocumentChange function used in a malicious macro";
+        DocumentChange.strDesc="악성 매크로에서 사용되는 DocumentChange 함수를 호출";
+        vecBehaiors.push_back(DocumentChange);
+        count++;
     }
 
-    std::regex macroAnomal(R"(AutoNew)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro9(R"(AutoNew)");
+    if(std::regex_search(script, match, macro9))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=10;
-        autoOpen.strName="Calling AutoNew function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 AutoNew 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR AutoNew;
+        AutoNew.strUrl.append("Local Macro");
+        AutoNew.Severity=10;
+        AutoNew.strName="Calling AutoNew function used in a malicious macro";
+        AutoNew.strDesc="악성 매크로에서 사용되는 AutoNew 함수를 호출";
+        vecBehaiors.push_back(AutoNew);
     }
 
-    std::regex macroAnomal(R"(Document_New)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro10(R"(Document_New)");
+    if(std::regex_search(script, match, macro10))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=9;
-        autoOpen.strName="Calling a function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR Document_New;
+        Document_New.strUrl.append("Local Macro");
+        Document_New.Severity=9;
+        Document_New.strName="Calling a function used in a malicious macro";
+        Document_New.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        vecBehaiors.push_back(Document_New);
+        count++;
     }
 
-    std::regex macroAnomal(R"(NewDocument)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro11(R"(NewDocument)");
+    if(std::regex_search(script, match, macro11))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=8;
-        autoOpen.strName="Calling Document_New function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 Document_New 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR NewDocument;
+        NewDocument.strUrl.append("Local Macro");
+        NewDocument.Severity=8;
+        NewDocument.strName="Calling Document_New function used in a malicious macro";
+        NewDocument.strDesc="악성 매크로에서 사용되는 Document_New 함수를 호출";
+        vecBehaiors.push_back(NewDocument);
+        count++;
     }
 
-    std::regex macroAnomal(R"(CreateObject)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro12(R"(CreateObject)");
+    if(std::regex_search(script, match, macro12))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=8;
-        autoOpen.strName="Calling a function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR CreateObject;
+        CreateObject.strUrl.append("Local Macro");
+        CreateObject.Severity=8;
+        CreateObject.strName="Calling a function used in a malicious macro";
+        CreateObject.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        vecBehaiors.push_back(CreateObject);
+        count++;
     }
 
-    std::regex macroAnomal(R"(allocateMemory)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro13(R"(allocateMemory)");
+    if(std::regex_search(script, match, macro13))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=8;
-        autoOpen.strName="Calling a function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR allocateMemory;
+        allocateMemory.strUrl.append("Local Macro");
+        allocateMemory.Severity=8;
+        allocateMemory.strName="Calling a function used in a malicious macro";
+        allocateMemory.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        vecBehaiors.push_back(allocateMemory);
+        count++;
     }
 
-    std::regex macroAnomal(R"(copyMemory)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro14(R"(copyMemory)");
+    if(std::regex_search(script, match, macro14))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=8;
-        autoOpen.strName="Calling allocateMemory function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 allocateMemory 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR copyMemory;
+        copyMemory.strUrl.append("Local Macro");
+        copyMemory.Severity=8;
+        copyMemory.strName="Calling allocateMemory function used in a malicious macro";
+        copyMemory.strDesc="악성 매크로에서 사용되는 allocateMemory 함수를 호출";
+        vecBehaiors.push_back(copyMemory);
+        count++;
     }
 
-    std::regex macroAnomal(R"(shellExecute)");
-    if(std::regex_search(script, match, macroAnomal))
+    std::regex macro15(R"(shellExecute)");
+    if(std::regex_search(script, match, macro15))
     {
-        ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
-        autoOpen.Severity=8;
-        autoOpen.strName="Calling a function used in a malicious macro";
-        autoOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
-        vecBehaiors.push_back(autoOpen);
+        ST_BEHAVIOR shellExecute;
+        shellExecute.strUrl.append("Local Macro");
+        shellExecute.Severity=8;
+        shellExecute.strName="Calling a function used in a malicious macro";
+        shellExecute.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        vecBehaiors.push_back(shellExecute);
+        count++;
     }
+    
+    if(count > 0)
+        return true;
+    return false;
 }
