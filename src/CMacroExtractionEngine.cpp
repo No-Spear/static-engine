@@ -35,17 +35,37 @@ bool CMacroExtractionEngine::open(const char* pszFile)
 }
 
 // 분석을 의뢰한 파일에서 매크로 파일을 가져오는 함수
-char* CMacroExtractionEngine::getMacroData(const char* location)
+std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
 {
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
     if(zip_entry_open(this->macroFile, location) != 0) 
         throw engine_Exception("MacroExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
 
-    // 문서파일에서 매크로 파일의 내용을 buf에 저장한다.
-    if(zip_entry_read(this->macroFile, &buffer, &bufsize) < 0) 
+    // 문서파일에서 매크로 파일을 엔진에 저장한다..
+    if(zip_entry_fread(this->macroFile, "vbaProject.bin") < 0) 
         throw engine_Exception("MacroExtraction", "s", "매크로 파일이 있는 파일의 내용을 확인할 수 없습니다.");
+    
+    // 추출된 파일을 바이너리 형식으로 읽는다.
+    std::ifstream macroFile("./vbaProject.bin", std::ios::binary);
+    // 만약 파일을 열기가 실패했다면
+    if(macroFile.fail())
+        throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 열 수 없습니다.");
+    
+    // 읽을 파일에 대한 사이즈를 구하기 위해 파일의 맨끝으로 이동한다.
+    macroFile.seekg(0,std::ios::end);
+    int fileSize = macroFile.tellg();
+    // 파일을 다시 맨 처음으로 이동시킨다.
+    macroFile.seekg(0, std::ios::beg);
+    // 파일에 대한 내용을 받을 스트링 객체 생성 및 사이즈 조정
+    std::string macroData;
+    macroData.resize(fileSize);
+    macroFile.read(&macroData[0], fileSize);
 
-    return (char*)this->buffer;
+    // 추출된 파일을 전부 읽은 후 삭제한다.
+    if(remove("./vbaProject.bin") != 0)
+        throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 삭제할 수 없습니다.");
+    
+    return macroData;
 }
 
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
@@ -57,24 +77,25 @@ bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_R
     case 'd':
         open(input->vecInputFiles[0].first.c_str());
         location.append("word/vbaProject.bin");
-        macroData = (std::string)getMacroData(location.c_str());
+        macroData = (std::string)getMacroDataFromFile(location.c_str());
         break;
 
     case 'x':
         open(input->vecInputFiles[0].first.c_str());
         location.append("xl/vbaProject.bin");
-        macroData = (std::string)getMacroData(location.c_str());
+        macroData = (std::string)getMacroDataFromFile(location.c_str());
         break;
 
     case 'p':
         open(input->vecInputFiles[0].first.c_str());
         location.append("ppt/vbaProject.bin");
-        macroData = (std::string)getMacroData(location.c_str());
+        macroData = (std::string)getMacroDataFromFile(location.c_str());
         break;
 
     default:
         throw engine_Exception("MacroExtraction", "s", "매크로 추출을 지원하지않는 형식의 문서 입니다.");
     }
+ 
     // 출력에 다운로드된 url의 위치는 -1로 안쓰는 숫자를 사용한다.
     // 추출된 파일에 대한 데이터를 분석엔진에 넘겨준다.
     output->vecExtractedScript.push_back(std::make_pair(macroData, std::make_pair(-1, VBS)));
