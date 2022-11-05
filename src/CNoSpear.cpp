@@ -168,103 +168,116 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     // 시작시 분석 파일의 위치를 전달.
     input.vecInputFiles.push_back(std::make_pair(sampleFile.strSampleFile, ASF));
 
-    try{
-        std::cout << this->m_Engines[0]->getEngineType() << "Engine 시작"  <<std::endl;
-        // URL 추출엔진 시작
-        this->m_Engines[0]->Analyze(&input, &output);
-        // 분석했던 파일을 제거
-        input.vecInputFiles.pop_back();
-        // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
-        input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
-        input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
-
-        // url이 있으면 위험도를 3증가.
-        outReport.nSeverity += 3;
-
-        // 추출된 URL 정보 출력
-        std::cout << "Extracted URLs:" << std::endl;
-        for(int i = 0; i< output.vecExtractedUrls.size(); i++)
-            std::cout << output.vecExtractedUrls[i] << std::endl;
-        std::cout << std::endl;
-    } catch(const std::exception& e)
+    while(!this->m_Engines.empty())
     {
-        std::cout << "\n" << e.what() << "\n" << std::endl;
-        makeOutputReport(sampleFile, output, outReport);
-        return false;
-    }
+        try{
+            // 현재 분석하는 엔진이 어떠한 엔진인지 출력
+            std::cout << this->m_Engines[0]->getEngineType() << "Engine 시작"  <<std::endl;
+            // 각 엔진의 분석 실행
+            this->m_Engines[0]->Analyze(&input, &output);
 
-    try{
-        std::cout << this->m_Engines[1]->getEngineType() << "Engine 시작"  <<std::endl;
-        // URL을 통한 다운로드 엔진 시작
-        this->m_Engines[1]->Analyze(&input, &output);
-        // 추출엔진의 결과를 입력으로 제공
-        input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
-        input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
-
-        // Download된 파일의 수만큼 위험도를 증가
-        int downloadSize = output.vecExtractedFiles.size();
-        // 단 Download된 파일에서 제공할 수있는 최대 위험도는 2로 설정.
-        if(downloadSize > 2)
-            outReport.nSeverity += 2;
-        else
-            outReport.nSeverity += downloadSize;
-        
-        // 다운로드된 파일 위치 정보 출력
-        for(int i = 0; i < output.vecExtractedFiles.size(); i++)
-        {
-            std::cout << "Downloaded File Location:" << std::endl;
-            std::cout << output.vecExtractedFiles[i].first << std::endl;
-            std::cout << "CnC URL & Downloaded File Status: " << output.vecExtractedFiles[i].second << std::endl;
-        }
-        std::cout << std::endl;
-    } catch(const std::exception& e)
-    {
-        std::cout << "\n" << e.what() << "\n" << std::endl;
-        makeOutputReport(sampleFile, output, outReport);
-        return false;
-    }
-
-    try{
-        std::cout << this->m_Engines[2]->getEngineType() << "Engine 시작"  <<std::endl;
-        // 다운받은 파일에서 스크립트 추출엔진 시작
-        this->m_Engines[2]->Analyze(&input, &output);
-        // 추출엔진의 결과를 입력으로 제공
-        input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
-        input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
-        
-        for(int i = 0; i< output.vecExtractedScript.size(); i++)
-        {
-            std::cout << "Extracted Script:" << std::endl;
-            std::cout << output.vecExtractedScript[i].first << std::endl;
-            std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
-        }
-        std::cout << std::endl;
-    } catch(const std::exception& e)
-    {
-        std::cout << "\n" << e.what() << "\n" << std::endl;
-        makeOutputReport(sampleFile, output, outReport);
-        return false;
-    }
-    
-    try{
-        std::cout << this->m_Engines[3]->getEngineType() << "Engine 시작"  <<std::endl;
-        // 스크립트 분석엔진 시작
-        if(this->m_Engines[3]->Analyze(&input, &output))
-        {
-            std::cout << "Analyze Result:" << std::endl;
-            for(int i= 0; i< output.vecBehaviors.size(); i++)
+            // URLExtraction엔진의 경우 
+            if(this->m_Engines[0]->getEngineType() == "URLExtraction")
             {
-                std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
-                std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
-                std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
-                std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                // 분석했던 파일을 제거
+                input.vecInputFiles.pop_back();
+                // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
+                input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
+                input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+                // url이 있으면 위험도를 3증가.
+                outReport.nSeverity += 3;
+                std::cout << "Extracted URLs:" << std::endl;
+                for(int i = 0; i< output.vecExtractedUrls.size(); i++)
+                    std::cout << output.vecExtractedUrls[i] << std::endl;
+                std::cout << std::endl;
             }
+            else if(this->m_Engines[0]->getEngineType() == "DownloadFromUrl")
+            {
+                // 추출엔진의 결과를 입력으로 제공
+                input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
+                input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
+
+                // Download된 파일의 수만큼 위험도를 증가
+                int downloadSize = output.vecExtractedFiles.size();
+                // 단 Download된 파일에서 제공할 수있는 최대 위험도는 2로 설정.
+                if(downloadSize > 2)
+                    outReport.nSeverity += 2;
+                else
+                    outReport.nSeverity += downloadSize;
+        
+                // 다운로드된 파일 위치 정보 출력
+                for(int i = 0; i < output.vecExtractedFiles.size(); i++)
+                {
+                    std::cout << "Downloaded File Location:" << std::endl;
+                    std::cout << output.vecExtractedFiles[i].first << std::endl;
+                    std::cout << "CnC URL & Downloaded File Status: " << output.vecExtractedFiles[i].second << std::endl;
+                }
+                std::cout << std::endl;
+            }
+            else if(this->m_Engines[0]->getEngineType() == "ScriptExtraction")
+            {
+                input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
+                input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
+        
+                for(int i = 0; i< output.vecExtractedScript.size(); i++)
+                {
+                    std::cout << "Extracted Script:" << std::endl;
+                    std::cout << output.vecExtractedScript[i].first << std::endl;
+                    std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
+                }
+                std::cout << std::endl;
+            }
+            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
+            {
+                this->m_Engines[0]->Analyze(&input, &output);
+                
+                std::cout << "Analyze Result:" << std::endl;
+                for(int i= 0; i< output.vecBehaviors.size(); i++)
+                {
+                    std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                    std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                    std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                    std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                }
+                
+            }
+            else if(this->m_Engines[0]->getEngineType() == "MacroExtraction")
+            {
+                input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
+                input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
+
+                for(int i =0; i<output.vecExtractedScript.size(); i++)
+                {
+                    std::cout << "Extracted Macro:" << std::endl;
+                    // std::cout << output.vecExtractedScript[i].first << std::endl;
+                    std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
+                }
+                std::cout << std::endl;
+            }
+            else
+                throw engine_Exception("Static-Engine","s",this->m_Engines[0]->getEngineType(), "Engine은 현재 지원하지 않는 엔진입니다.");
+
+        } catch(const std::exception& e)
+        {
+            std::cout << "\n" << e.what() << "\n" << std::endl;
+            if(strstr(e.what(),"Url이 없습니다."))
+            {
+                // 현재 배열에 등록된 엔진 객체 소멸
+                this->m_Engines.clear();
+                // vector가 가진 메모리 회수
+                this->m_Engines.shrink_to_fit();
+                // 매크로 추출엔진 삽입.
+                this->m_Engines.push_back(new CMacroExtractionEngine());
+                // 스크립트 분석엔진 삽입.
+                this->m_Engines.push_back(new CScriptAnalyzeEngine());
+                // this->m_Engines.push_back(new COLE);
+                // this->m_Engines.push_back(new CDDE);
+                continue;
+            }
+            makeOutputReport(sampleFile, output, outReport);
+            return false;
         }
-    } catch(const std::exception& e)
-    {
-        std::cout << "\n" << e.what() << "\n" << std::endl;
-        makeOutputReport(sampleFile, output, outReport);
-        return false;
+        this->m_Engines.erase(this->m_Engines.begin());
     }
     // DB에 저장할 결과를 제작
     makeOutputReport(sampleFile, output, outReport);
