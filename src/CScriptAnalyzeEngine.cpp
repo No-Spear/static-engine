@@ -37,7 +37,7 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
             break;
         }
     }
-    
+
     // 만약 분석 결과가 없다면 예외 발생.
     if(output->vecBehaviors.size() == 0)
         throw engine_Exception("ScriptAnalyze","s","현재 엔진의 분석 결과 탐지된 내용이 없습니다.");
@@ -289,8 +289,8 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         ST_BEHAVIOR CreateObject;
         CreateObject.strUrl.append("Local Macro");
         CreateObject.Severity=8;
-        CreateObject.strName="Calling a function used in a malicious macro";
-        CreateObject.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        CreateObject.strName="Calling CreateObject function used in a malicious macro";
+        CreateObject.strDesc="악성 매크로에서 사용되는 CreateObject 함수를 호출";
         vecBehaiors.push_back(CreateObject);
         count++;
     }
@@ -301,8 +301,8 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         ST_BEHAVIOR allocateMemory;
         allocateMemory.strUrl.append("Local Macro");
         allocateMemory.Severity=8;
-        allocateMemory.strName="Calling a function used in a malicious macro";
-        allocateMemory.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        allocateMemory.strName="Calling allocateMemory function used in a malicious macro";
+        allocateMemory.strDesc="악성 매크로에서 사용되는 allocateMemory 함수를 호출";
         vecBehaiors.push_back(allocateMemory);
         count++;
     }
@@ -313,8 +313,8 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         ST_BEHAVIOR copyMemory;
         copyMemory.strUrl.append("Local Macro");
         copyMemory.Severity=8;
-        copyMemory.strName="Calling allocateMemory function used in a malicious macro";
-        copyMemory.strDesc="악성 매크로에서 사용되는 allocateMemory 함수를 호출";
+        copyMemory.strName="Calling copyMemory function used in a malicious macro";
+        copyMemory.strDesc="악성 매크로에서 사용되는 copyMemory 함수를 호출";
         vecBehaiors.push_back(copyMemory);
         count++;
     }
@@ -325,8 +325,8 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         ST_BEHAVIOR shellExecute;
         shellExecute.strUrl.append("Local Macro");
         shellExecute.Severity=8;
-        shellExecute.strName="Calling a function used in a malicious macro";
-        shellExecute.strDesc="악성 매크로에서 사용되는 함수를 호출";
+        shellExecute.strName="Calling shellExecute function used in a malicious macro";
+        shellExecute.strDesc="악성 매크로에서 사용되는 shellExecute 함수를 호출";
         vecBehaiors.push_back(shellExecute);
         count++;
     }
