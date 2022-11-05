@@ -1,7 +1,7 @@
 #include "CScriptAnalyzeEngine.h"
 
 // 엔진 객체 생성자
-CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4, "ScriptAnayze")
+CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4, "ScriptAnalyze")
 {
 
 }
@@ -15,6 +15,7 @@ CScriptAnalyzeEngine::~CScriptAnalyzeEngine()
 // 추출된 스크립트에서 악성 행위를 판단하는 함수
 bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
+    
     for(int i =0; i< input->vecScriptFIles.size(); i++)
     {
         int location =  input->vecScriptFIles[i].second.first;
@@ -36,6 +37,11 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
             break;
         }
     }
+    
+    // 만약 분석 결과가 없다면 예외 발생.
+    if(output->vecBehaviors.size() == 0)
+        throw engine_Exception("ScriptAnalyze","s","현재 엔진의 분석 결과 탐지된 내용이 없습니다.");
+
     return true;    
 }
 
@@ -146,7 +152,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
         vecBehaiors.push_back(autoOpen);
         count++;
     }
-    
+
     std::regex macro1(R"(Workbook_Open)");
     if(std::regex_search(script, match, macro1))
     {
