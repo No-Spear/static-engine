@@ -22,10 +22,13 @@ CScriptExtractionEngine.o: CException.h CEngineSuper.h CScriptExtractionEngine.h
 
 CScriptAnalyzeEngine.o: CException.h CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
 
-CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CNoSpear.cpp
+CMacroExtractionEngine.o: CException.h CEngineSuper.h CMacroExtractionEngine.h CMacroExtractionEngine.cpp
+	$(CC) -c -o $@ CMacroExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
+
+CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CMacroExtractionEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CStatic-Engine: sha256.o CException.o CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CNoSpear.o
+CStatic-Engine: sha256.o CException.o CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CMacroExtractionEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o ${outpath}/$@
 
 clean:
