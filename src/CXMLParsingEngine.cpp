@@ -1,25 +1,38 @@
 #include "CXMLParsingEngine.h"
 
-CXMLParsingEngine::CXMLParsingEngine(){}
+CXMLParsingEngine::CXMLParsingEngine()
+{}
 
-CXMLParsingEngine::~CXMLParsingEngine(){}
+CXMLParsingEngine::~CXMLParsingEngine()
+{}
 
 using std::string;
 bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
-
+    std::map<string,string> files;
     if(!isDocument(input->vecInputFiles[0].first))return false; //문서 파일 검사
 
-    string xmlBuffer = unzipDocument(input->vecInputFiles[0].first);
+    std::vector<string> fileNames = unzipDocument(input->vecInputFiles[0].first);
 
-    if(xmlBuffer == NoFile)return false;
+    if(fileNames.size() == NoFile)return false;
 
     // OOXML 검사 부분 추가
     CXMLAnalyzeModule AnalyzeModule;
-    AnalyzeModule.Analyze(xmlBuffer, output);
-    std::cout << xmlBuffer << std::endl;
-
+    AnalyzeModule.Analyze(fileNames, output);
+    
+    removeTempFiles(fileNames);
+    
     return true;
+}
+
+void CXMLParsingEngine::removeTempFiles(std::vector<string> fileNames)
+{
+    int r;
+    for(string file : fileNames)
+    {
+        r = remove(file.c_str());
+    }
+
 }
 
 
@@ -33,7 +46,7 @@ bool CXMLParsingEngine::isDocument(const string filePath)
     string ext = getFileExt(filePath); //파일 확장자 가져오기
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
 
-    std::cout << fileSignature << std::endl;
+    // std::cout << fileSignature << std::endl;
 
     if (fileSignature.substr(0, 4) != OoxmlSignature)
     {
@@ -84,23 +97,21 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
     for(int i =0; i<2;i++)
     {   
         int a = readFile.get();
-        std::cout << a << std::endl;
+        // std::cout << a << std::endl;
         fileSignature += std::to_string(a);
     }
 
     return fileSignature;
 }
 
-string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 모든 xml 읽기 
+std::vector<string> CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 모든 xml 읽기 
 {   
-    std::regex re("\\<\\?.*\\?\\>");
-    string xmlBuffer;
+    std::vector<string> fileNames;
     this->OOXML = zip_open(filePath.c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
     if(this->OOXML == NULL)
     {
         std::cout << "파일을 열 수 없습니다." << std::endl;
-        xmlBuffer = NoFile;
-        return xmlBuffer;
+        return fileNames;
     }
 
     int i, n = zip_entries_total(OOXML);
@@ -114,29 +125,32 @@ string CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 �
         if(isdir == 1)continue;
 
         string name(string(zip_entry_name(OOXML)));
-        if(name.find(".rels")==string::npos && name.find(".xml") == string::npos)continue; // .rels .xml 이외에 파일 무시
-
+        std::set<std::string> exceptionExts = {"png","jpg","svg","jpeg"};
+        if(exceptionExts.find(getFileExt(name)) != exceptionExts.end())continue;
         char * buf = NULL;
         size_t bufsize= 0;
-        zip_entry_read(OOXML, (void **)&buf, &bufsize);
-
-        string tempBuf = string(buf);        
-        // if(i == 0) xmlBuffer = xmlBuffer + tempBuf; 
-        // if(i == 0) continue;
-
-        tempBuf = std::regex_replace(tempBuf,re,""); // xml 선언부분 제거
-        xmls.insert(std::pair(name,tempBuf));
-        xmlBuffer = xmlBuffer + tempBuf;
+        name = makeFileName(name);
+        // std::cout << name << std::endl;
+        zip_entry_fread(OOXML,name.c_str());
+        fileNames.push_back(name);
 
     }
-    // for(std::map<string,string>::iterator it = xmls.begin(); it != xmls.end(); it++){
-    //     std::cout << it->first << std::endl;
-    //     std::cout << it->second << std::endl;
-    // }
-
+    
     
     organizeMemory();
 
-    return xmlBuffer;
+    return fileNames;
 
 }
+
+string CXMLParsingEngine::makeFileName(string name)
+{
+
+    int slashPosition = name.find_last_of('/');
+    string fileName = "../temp/" + name.substr(slashPosition+1);
+
+    return fileName;
+    
+
+}
+

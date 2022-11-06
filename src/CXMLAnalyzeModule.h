@@ -9,7 +9,8 @@
 #include <stdexcept>
 
 enum{
-    EQUATION_EDITOR_VOL,
+    EQUATION_EDITOR_VOL_V1,
+    EQUATION_EDITOR_VOL_V2,
     NORMAL_FILE
 };
 
@@ -21,12 +22,17 @@ class CXMLAnalyzeModule
 {
 public:
     CXMLAnalyzeModule();
-    bool Analyze(string xmls, ST_ANALYZE_RESULT* output);
+    bool Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT* output);
 
 private:
-    bool decodeScript(string xmls);
-    int AnalyzeByRegex();
+    string keyString;
+    std::map<string,string> decodeScript(std::vector<string> fileNames);
+    string replaceAll(const string &str, const string &pattern, const string &replace);
+    int AnalyzeByRegex(std::map<string, string> files);
+    bool checkFiles(std::map<string, string> files, std::regex re);
     bool returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* output);
+    std::map<string,string> readDocFiles(std::vector<string> fileNames);
     string decodingScript;
     std::map<int,string> regularExpressions;
+    
 };

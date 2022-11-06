@@ -1,9 +1,9 @@
 CC=g++
 CFLAGS=-o
 LDLIBS=-lzip -lcurl -lmysqlclient
-libpath=-L/var/lib/jenkins/workspace/zip/build
-incpath=-I/var/lib/jenkins/workspace/zip/src
-outpath=/var/lib/jenkins/workspace/static-engine/build
+libpath=-L/home/anu1/projectDir/zip/build
+incpath=-I/home/anu1/projectDir/zip/src
+outpath=/home/anu1/projectDir/static-engine/build
 
 all:CStatic-Engine
 
@@ -12,6 +12,8 @@ sha256.o: sha256.h	sha256.cpp
 CException.o: CException.h CException.cpp
 
 CEngineSuper.o: CEngineSuper.h CEngineSuper.cpp
+
+CXMLAnalyzeModule.o :  CXMLAnalyzeModule.cpp CXMLParsingEngine.h
 
 CURLExtractionEngine.o: CException.h CEngineSuper.h CURLExtractionEngine.h CURLExtractionEngine.cpp
 	$(CC) -c -o $@ CURLExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
@@ -25,10 +27,14 @@ CScriptAnalyzeEngine.o: CException.h CEngineSuper.h CScriptAnalyzeEngine.h CScri
 CMacroExtractionEngine.o: CException.h CEngineSuper.h CMacroExtractionEngine.h CMacroExtractionEngine.cpp
 	$(CC) -c -o $@ CMacroExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CMacroExtractionEngine.h CNoSpear.cpp
+CXMLParsingEngine.o : CXMLParsingEngine.h CXMLParsingEngine.cpp CXMLAnalyzeModule.h
+	$(CC) -c -o $@ CXMLParsingEngine.cpp ${LDLIBS} ${libpath} ${incpath}
+
+CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CMacroExtractionEngine.h CXMLParsingEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CStatic-Engine: sha256.o CException.o CEngineSuper.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CMacroExtractionEngine.o CNoSpear.o
+CStatic-Engine: sha256.o CException.o CEngineSuper.o CXMLAnalyzeModule.o
+ CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CMacroExtractionEngine.o CXMLParsingEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o ${outpath}/$@
 
 clean:

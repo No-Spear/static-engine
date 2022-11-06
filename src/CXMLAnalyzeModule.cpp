@@ -2,23 +2,17 @@
 
 CXMLAnalyzeModule::CXMLAnalyzeModule()
 {
-
-    regularExpressions.insert(std::pair(EQUATION_EDITOR_VOL,"RegularExpression"));
-    //분석 완료시 추가될 부분
+    regularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V1,"ole10native"));
+    regularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V2,"equationnative"));
 
 }
 
-bool CXMLAnalyzeModule::Analyze(string xmls, ST_ANALYZE_RESULT* output)
+bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT* output)
 {
     int AnalyzeResult;
 
-    if(!decodeScript(xmls))
-    {
-        std::cout << "Fail script decode" <<std::endl;
-        return false;
-    }
-
-    AnalyzeResult = AnalyzeByRegex();
+    std::map<string, string> files = decodeScript(fileNames);
+    AnalyzeResult = AnalyzeByRegex(files);
 
     if(returnResult(AnalyzeResult,output)) return true;
 
@@ -27,37 +21,126 @@ bool CXMLAnalyzeModule::Analyze(string xmls, ST_ANALYZE_RESULT* output)
 }
 
 
-bool CXMLAnalyzeModule::decodeScript(string xmls)
+std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> fileNames)
 {
     //분석 완료 시 추가 예정
+    std::map<string,string> files = readDocFiles(fileNames);
+    keyString = "";
+    for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
+    {
+        if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
+        if(int(u_char(it->second[0])) != 208 && int(u_char(it->second[1])) != 207 )continue;
+
+        for(int i = 1280; i < 1310; i += 2)
+        {
+            keyString = keyString + it->second[i];
+        }
+        
+
+
+    }
+
+    return files;
 }
 
-int CXMLAnalyzeModule::AnalyzeByRegex()
+string CXMLAnalyzeModule::replaceAll(const string &str, const string &pattern, const string &replace)
+{
+    string result = str;
+    string::size_type pos = 0;
+    string::size_type offset = 0;
+
+    while((pos = result.find(pattern, offset)) != string::npos)
+    {
+        result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
+        offset = pos + replace.size();
+    }
+
+    return result;
+}
+
+int CXMLAnalyzeModule::AnalyzeByRegex(std::map<string, string> files)
 {
 
     for(std::map<int,string>::iterator it = regularExpressions.begin();
         it != regularExpressions.end();
         it++)
     {
-        std::regex re(it->second);
-        if(std::regex_match(decodingScript, re)) return it->first;
+        std::cout << it->second << std::endl;
+        std::regex re(it->second,std::regex::grep | std::regex::icase);
+        if(std::regex_match(it->second,re)) return it->first;
+    }
+    
+    return NORMAL_FILE;
+
+}
+
+bool CXMLAnalyzeModule::checkFiles(std::map<string, string> files, std::regex re)
+{
+
+    for(std::map<string,string>::iterator it = files.begin();
+        it != files.end();
+        it++)
+    {
+        if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
+        
+        
+        if(std::regex_match(it->second,re))return true;
+
     }
 
-    return NORMAL_FILE;
+    return false;
 
 }
 
 bool CXMLAnalyzeModule::returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* output)
 {
+    ST_BEHAVIOR behavior;
     switch(AnalyzeResult)
     {
-        case EQUATION_EDITOR_VOL:
-            //수식편집기 취약점 output Behaviors에 입력
-            // case 추가
+        case EQUATION_EDITOR_VOL_V1:
+            std::cout << "EQUATION_EDITOR_VOL_V1" << std::endl;
+            behavior.Severity = 8;
+            behavior.strDesc = "수식편집기 호출";
+            behavior.strName = "수식편집기 취약점";
+            behavior.strUrl = "";
+            output->vecBehaviors.push_back(behavior);
+            break;
+        case EQUATION_EDITOR_VOL_V2:
+            std::cout << "EQUATION_EDITOR_VOL_V2" << std::endl;
+            behavior.Severity = 8;
+            behavior.strDesc = "수식편집기 호출";
+            behavior.strName = "수식편집기 취약점";
+            behavior.strUrl = "";
+            output->vecBehaviors.push_back(behavior);
+            break;    
         default:
             std::cout << "Normal File" << std::endl; 
             return false;  
     }
 
     return true;
+}
+
+std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> fileNames)
+{
+    std::map<string,string> files;
+    for(string name : fileNames)
+    {
+        string file;
+        
+        std::ifstream in(name, std::ifstream::binary);
+        if(!in.is_open())continue;
+
+        in.seekg(0,std::ios::end);
+        int size = in.tellg();
+        file.resize(size);
+        in.seekg(0,std::ios::beg);
+        in.read(&file[0],size);
+        in.close();
+        files.insert(std::pair(name,file));
+
+    }
+
+    
+    return files;
 }
