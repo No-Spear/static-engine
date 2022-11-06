@@ -13,6 +13,9 @@ CException.o: CException.h CException.cpp
 
 CEngineSuper.o: CEngineSuper.h CEngineSuper.cpp
 
+CXMLParsingEngine.o : CXMLParsingEngine.h CXMLParsingEngine.cpp CXMLAnalyzeModule.h
+	$(CC) -c -o $@ CXMLParsingEngine.cpp ${LDLIBS} ${libpath} ${incpath}
+
 CXMLAnalyzeModule.o :  CXMLAnalyzeModule.cpp CXMLParsingEngine.h
 
 CURLExtractionEngine.o: CException.h CEngineSuper.h CURLExtractionEngine.h CURLExtractionEngine.cpp
@@ -27,14 +30,10 @@ CScriptAnalyzeEngine.o: CException.h CEngineSuper.h CScriptAnalyzeEngine.h CScri
 CMacroExtractionEngine.o: CException.h CEngineSuper.h CMacroExtractionEngine.h CMacroExtractionEngine.cpp
 	$(CC) -c -o $@ CMacroExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CXMLParsingEngine.o : CXMLParsingEngine.h CXMLParsingEngine.cpp CXMLAnalyzeModule.h
-	$(CC) -c -o $@ CXMLParsingEngine.cpp ${LDLIBS} ${libpath} ${incpath}
-
 CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CMacroExtractionEngine.h CXMLParsingEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
 
-CStatic-Engine: sha256.o CException.o CEngineSuper.o CXMLAnalyzeModule.o
- CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CMacroExtractionEngine.o CXMLParsingEngine.o CNoSpear.o
+CStatic-Engine: sha256.o CException.o CEngineSuper.o CXMLAnalyzeModule.o CURLExtractionEngine.o CDownloadFromUrlEngine.o CScriptExtractionEngine.o CScriptAnalyzeEngine.o CMacroExtractionEngine.o CXMLParsingEngine.o CNoSpear.o
 	$(CC) $^ $(LOADLIBES) ${LDLIBS} ${libpath} ${incpath} -o ${outpath}/$@
 
 clean:
