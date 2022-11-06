@@ -53,9 +53,11 @@ private:
     MYSQL connect;
     MYSQL_RES* result; 
     MYSQL_ROW row;
+    bool macroFlag;
     std::vector<CEngineSuper*> m_Engines;
 
     std::string makeValue(const ST_REPORT& outReport);
+    void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport);
 
 public:
     CNoSpear();

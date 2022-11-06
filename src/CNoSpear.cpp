@@ -13,63 +13,6 @@ std::string extractFileHash(const std::string filepath)
     return filepath.substr(slashlocation+1, (dotlocation-slashlocation-1));
 }
 
-// DB에 저장하기 위한 결과를 만드는 함수
-void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport)
-{
-    // 서버로 보낼 평균 위험도
-    float totalSeverity = 0;
-    // 분석 결과의 사이즈
-    int behaviorSize = result.vecBehaviors.size();
-    
-    // NSeverity 결정을 위해
-    for(int i =0; i< behaviorSize; i++)
-        totalSeverity += result.vecBehaviors[i].Severity;
-
-    // 악성행위의 정보가 있다면
-    if(behaviorSize != 0)
-    {
-        // 위험도의 평균을 구하고 이를 전체 위험도에 더함.
-        totalSeverity = totalSeverity / behaviorSize;
-        if(totalSeverity < 2.5)
-            outReport.nSeverity += 1;
-        else if(totalSeverity < 5)
-            outReport.nSeverity += 2;
-        else if(totalSeverity < 7.5)
-            outReport.nSeverity += 3;
-        else
-            outReport.nSeverity += 4;
-
-        // 만약 전체 결과의 위험도가 5이하 라면 의심파일
-        if(outReport.nSeverity <= 5 )
-            outReport.strDetectName.append("Suspicious File");
-        // 위험도가 5초과 10이하라면 악성파일로 규정
-        else if(outReport.nSeverity <= 10)
-        {
-            if(result.vecBehaviors[0].strName.find("msdt") != std::string::npos)
-                outReport.strDetectName.append("Follina");
-            else 
-                outReport.strDetectName.append("Malware File");
-        }
-
-        outReport.strHash.append(sampleFile.strFileHash);
-        outReport.strName.append(sampleFile.strFileName);
-
-        outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
-        outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
-    }
-    // 행위 결과 값이 없다면
-    else
-    {
-        outReport.strHash.append(sampleFile.strFileHash);
-        outReport.strName.append(sampleFile.strFileName);
-        // 만약 위험도가 0이라면 정상파일, 0을 넘는다면 의심파일로 설정한다.
-        if(outReport.nSeverity == 0)
-            outReport.strDetectName.append("Normal File");
-        else
-            outReport.strDetectName.append("Suspicious File");
-    }    
-}
-
 // 엔진에게 결과를 보내는 함수
 bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
 {
@@ -94,6 +37,7 @@ bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
 // 정적엔진 CNoSpear 생성자.
 CNoSpear::CNoSpear()
 {
+    this->macroFlag = false;
     this->m_Engines.push_back(new CURLExtractEngine());
     this->m_Engines.push_back(new CDownloadFromUrlEngine());
     this->m_Engines.push_back(new CScriptExtractionEngine());
@@ -132,6 +76,71 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     values = values + vecValues + ")";
 
     return values;
+}
+
+// DB에 저장하기 위한 결과를 만드는 함수
+void CNoSpear::makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport)
+{
+    // 서버로 보낼 평균 위험도
+    float totalSeverity = 0;
+    // 분석 결과의 사이즈
+    int behaviorSize = result.vecBehaviors.size();
+    
+    // NSeverity 결정을 위해
+    for(int i =0; i< behaviorSize; i++)
+        totalSeverity += result.vecBehaviors[i].Severity;
+
+    // 악성행위의 정보가 있다면
+    if(behaviorSize != 0)
+    {
+        // 위험도의 평균을 구하고 이를 전체 위험도에 더함.
+        totalSeverity = totalSeverity / behaviorSize;
+        // 만약 매크로 플래그가 켜있지 않다면 
+        if(this->macroFlag == false)
+            if(totalSeverity < 2.5)
+                outReport.nSeverity += 1;
+            else if(totalSeverity < 5)
+                outReport.nSeverity += 2;
+            else if(totalSeverity < 7.5)
+                outReport.nSeverity += 3;
+            else
+                outReport.nSeverity += 4;
+        // 매크로 플래그가 켜져있고 악성행위가 있다면 위험도를 행위 판단의 평균으로 변경
+        else
+            outReport.nSeverity += totalSeverity;
+        
+
+        // 만약 전체 결과의 위험도가 5이하 라면 의심파일
+        if(outReport.nSeverity <= 5 )
+            outReport.strDetectName.append("Suspicious File");
+        // 위험도가 5초과 10이하라면 악성파일로 규정
+        else if(outReport.nSeverity <= 10)
+        {
+            if(result.vecBehaviors[0].strName.find("msdt") != std::string::npos)
+                outReport.strDetectName.append("Follina");
+            else if(result.vecBehaviors[0].strUrl.find("Macro") != std::string::npos)
+                outReport.strDetectName.append("Malicious VBA Scirpt Macro");
+            else 
+                outReport.strDetectName.append("Malware File");
+        }
+
+        outReport.strHash.append(sampleFile.strFileHash);
+        outReport.strName.append(sampleFile.strFileName);
+
+        outReport.vecBehaviors.reserve(result.vecBehaviors.size() + outReport.vecBehaviors.size());
+        outReport.vecBehaviors.insert(outReport.vecBehaviors.end(), result.vecBehaviors.begin(), result.vecBehaviors.end());
+    }
+    // 행위 결과 값이 없다면
+    else
+    {
+        outReport.strHash.append(sampleFile.strFileHash);
+        outReport.strName.append(sampleFile.strFileName);
+        // 만약 위험도가 0이라면 정상파일, 0을 넘는다면 의심파일로 설정한다.
+        if(outReport.nSeverity == 0)
+            outReport.strDetectName.append("Normal File");
+        else
+            outReport.strDetectName.append("Suspicious File");
+    }
 }
 
 bool CNoSpear::SaveResult(const ST_REPORT& outReport)
@@ -184,8 +193,10 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
                 input.vecURLs.reserve(output.vecExtractedUrls.size() + input.vecURLs.size());
                 input.vecURLs.insert(input.vecURLs.end(), output.vecExtractedUrls.begin(), output.vecExtractedUrls.end());
+
                 // url이 있으면 위험도를 3증가.
                 outReport.nSeverity += 3;
+
                 std::cout << "Extracted URLs:" << std::endl;
                 for(int i = 0; i< output.vecExtractedUrls.size(); i++)
                     std::cout << output.vecExtractedUrls[i] << std::endl;
@@ -228,9 +239,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 std::cout << std::endl;
             }
             else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
-            {
-                this->m_Engines[0]->Analyze(&input, &output);
-                
+            {                
                 std::cout << "Analyze Result:" << std::endl;
                 for(int i= 0; i< output.vecBehaviors.size(); i++)
                 {
@@ -246,11 +255,15 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
                 input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
 
+                // VBA Sciprt가 있다면 MacroFlag를 설정한다.
+                this->macroFlag = true;
+
                 for(int i =0; i<output.vecExtractedScript.size(); i++)
                 {
-                    std::cout << "Extracted Macro:" << std::endl;
-                    // std::cout << output.vecExtractedScript[i].first << std::endl;
-                    std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
+                    std::cout << "Extracted Macro(Maximun print = 30):" << std::endl;
+                    for(int j = 0; j < 30; j++)
+                        std::cout << output.vecExtractedScript[i].first[j];
+                    std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
             }
