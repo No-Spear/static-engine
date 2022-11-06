@@ -24,10 +24,6 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 {
     //분석 완료 시 추가 예정
     std::map<string,string> files = readDocFiles(fileNames);
-    for (string a : fileNames)
-    {
-        std::cout << a << std::endl;
-    }
     keyString = "";
     for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
     {
@@ -36,6 +32,7 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 
         for(int i = 1280; i < 1310; i += 2)
         {
+            if(it->second[i] == ' ') continue;
             keyString = keyString + it->second[i];
         }
         
@@ -133,8 +130,10 @@ std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> file
         string file;
         
         std::ifstream in(name, std::ifstream::binary);
-        if(!in.is_open())continue;
-
+        if(!in.is_open()){
+            std::cout << "file Can't Open" << std::endl;
+            continue;
+        }
         in.seekg(0,std::ios::end);
         int size = in.tellg();
         file.resize(size);

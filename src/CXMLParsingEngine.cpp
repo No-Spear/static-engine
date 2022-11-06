@@ -13,14 +13,14 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     if(!isDocument(input->vecInputFiles[0].first))return false; //문서 파일 검사
 
     std::vector<string> fileNames = unzipDocument(input->vecInputFiles[0].first);
-
+    changePrivilege(fileNames);
     if(fileNames.size() == NoFile)return false;
 
     // OOXML 검사 부분 추가
     CXMLAnalyzeModule AnalyzeModule;
     AnalyzeModule.Analyze(fileNames, output);
     
-    //removeTempFiles(fileNames);
+    removeTempFiles(fileNames);
     
     return true;
 }
@@ -151,6 +151,17 @@ string CXMLParsingEngine::makeFileName(string name)
 
     return fileName;
     
+
+}
+
+void CXMLParsingEngine::changePrivilege(std::vector<string> fileNames)
+{
+
+    for(string name : fileNames)
+    {
+        if(chmod(name.c_str(), 0555)) std::cout << "권한 변경 실패" << std::endl;
+    }
+   
 
 }
 

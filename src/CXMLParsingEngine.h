@@ -9,6 +9,7 @@
 #include <map>
 #include <stdexcept>
 #include <zip.h>
+#include <sys/stat.h>
 
 
 
@@ -35,5 +36,6 @@ private:
     string getFileSignature(const string filePath);
     std::vector<string> unzipDocument(const string filePath);
     string makeFileName(string name);
+    void changePrivilege(std::vector<string> fileNames);
 
 };
