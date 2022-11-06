@@ -14,7 +14,7 @@
 
 using std::string;
 
-class CXMLParsingEngine
+class CXMLParsingEngine : public CEngineSuper
 {
 public:
     const int NoFile = 0;   

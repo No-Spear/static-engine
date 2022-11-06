@@ -13,7 +13,6 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
 
     std::map<string, string> files = decodeScript(fileNames);
     AnalyzeResult = AnalyzeByRegex(files);
-
     if(returnResult(AnalyzeResult,output)) return true;
 
 
@@ -25,6 +24,10 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 {
     //분석 완료 시 추가 예정
     std::map<string,string> files = readDocFiles(fileNames);
+    for (string a : fileNames)
+    {
+        std::cout << a << std::endl;
+    }
     keyString = "";
     for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
     {
@@ -39,7 +42,7 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 
 
     }
-
+    std::cout << "keyString : " << keyString << std::endl;
     return files;
 }
 
@@ -65,9 +68,8 @@ int CXMLAnalyzeModule::AnalyzeByRegex(std::map<string, string> files)
         it != regularExpressions.end();
         it++)
     {
-        std::cout << it->second << std::endl;
         std::regex re(it->second,std::regex::grep | std::regex::icase);
-        if(std::regex_match(it->second,re)) return it->first;
+        if(std::regex_search(keyString,re)) return it->first;
     }
     
     return NORMAL_FILE;
@@ -84,7 +86,9 @@ bool CXMLAnalyzeModule::checkFiles(std::map<string, string> files, std::regex re
         if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
         
         
-        if(std::regex_match(it->second,re))return true;
+        if(std::regex_search(it->second,re)){ 
+            return true;
+        }
 
     }
 

@@ -1,6 +1,6 @@
 #include "CXMLParsingEngine.h"
 
-CXMLParsingEngine::CXMLParsingEngine()
+CXMLParsingEngine::CXMLParsingEngine() : CEngineSuper(1, "XMLParsing")
 {}
 
 CXMLParsingEngine::~CXMLParsingEngine()
@@ -20,7 +20,7 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     CXMLAnalyzeModule AnalyzeModule;
     AnalyzeModule.Analyze(fileNames, output);
     
-    removeTempFiles(fileNames);
+    //removeTempFiles(fileNames);
     
     return true;
 }

@@ -18,9 +18,10 @@ enum{
 
 using std::string;
 
-class CXMLAnalyzeModule
+class CXMLAnalyzeModule 
 {
 public:
+;
     CXMLAnalyzeModule();
     bool Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT* output);
 
