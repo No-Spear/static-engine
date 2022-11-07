@@ -118,7 +118,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> UrlList;
 
-    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
+    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
     std::smatch match;
 
     // Word 문서의 contentxml의 정의
@@ -206,7 +206,7 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> urlList;
 
-    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
+    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
@@ -294,7 +294,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> urlList;
 
-    std::regex re(R"(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/oleObject"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")");
+    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
