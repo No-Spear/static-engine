@@ -27,7 +27,7 @@ public:
     bool CompoundAnalyze(string filePath,  ST_ANALYZE_RESULT* output);
 
 private:
-    string keyString;
+    std::vector<string> keyStrings;
     std::map<string,string> decodeScript(std::vector<string> fileNames);
     void getKeyString(string filePath);
     // string replaceAll(const string &str, const string &pattern, const string &replace);

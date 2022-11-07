@@ -37,9 +37,9 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 {
     //분석 완료 시 추가 예정
     std::map<string,string> files = readDocFiles(fileNames);
-    keyString = "";
     for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
-    {
+    {   
+        string keyString = "";
         if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
         if(int(u_char(it->second[0])) != 208 && int(u_char(it->second[1])) != 207 )continue;
 
@@ -50,15 +50,17 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
         }
         
 
-
+        std::cout << "keyString : " << keyString << std::endl;
+        keyStrings.push_back(keyString);
     }
-    std::cout << "keyString : " << keyString << std::endl;
+    
     return files;
 }
 
 void CXMLAnalyzeModule::getKeyString(string filePath)
 {
     string file;
+    string keyString = "";
     std::ifstream in(filePath, std::ifstream::binary);
     if(!in.is_open()){
         std::cout << "file Can't Open" << std::endl;
@@ -77,7 +79,7 @@ void CXMLAnalyzeModule::getKeyString(string filePath)
         keyString = keyString + file[i];
     }
     std::cout << "keyString : " << keyString << std::endl;
-    
+    keyStrings.push_back(keyString);
 }
 
 // string CXMLAnalyzeModule::replaceAll(const string &str, const string &pattern, const string &replace)
@@ -103,6 +105,7 @@ int CXMLAnalyzeModule::AnalyzeByRegex()
         it++)
     {
         std::regex re(it->second,std::regex::grep | std::regex::icase);
+        for(string keyString : keyStrings)
         if(std::regex_search(keyString,re)) return it->first;
     }
     
