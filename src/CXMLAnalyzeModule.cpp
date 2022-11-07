@@ -12,13 +12,26 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
     int AnalyzeResult;
 
     std::map<string, string> files = decodeScript(fileNames);
-    AnalyzeResult = AnalyzeByRegex(files);
+    AnalyzeResult = AnalyzeByRegex();
     if(returnResult(AnalyzeResult,output)) return true;
 
 
     return false;
 }
 
+bool CXMLAnalyzeModule::CompoundAnalyze(string filePath,  ST_ANALYZE_RESULT* output)
+{
+    int AnalyzeResult;
+
+    getKeyString(filePath);
+
+    AnalyzeResult = AnalyzeByRegex();
+
+    if(returnResult(AnalyzeResult,output)) return true;
+
+    return false;    
+
+}
 
 std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> fileNames)
 {
@@ -43,22 +56,47 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
     return files;
 }
 
-string CXMLAnalyzeModule::replaceAll(const string &str, const string &pattern, const string &replace)
+void CXMLAnalyzeModule::getKeyString(string filePath)
 {
-    string result = str;
-    string::size_type pos = 0;
-    string::size_type offset = 0;
-
-    while((pos = result.find(pattern, offset)) != string::npos)
-    {
-        result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
-        offset = pos + replace.size();
+    string file;
+    std::cout << filePath << std::endl;
+    std::ifstream in(filePath, std::ifstream::binary);
+    if(!in.is_open()){
+        std::cout << "file Can't Open" << std::endl;
+        return;
     }
+    in.seekg(0,std::ios::end);
+    int size = in.tellg();
+    file.resize(size);
+    in.seekg(0,std::ios::beg);
+    in.read(&file[0],size);
+    in.close();
 
-    return result;
+    for(int i = 1280; i < 1310; i += 2)
+    {
+        if(file[i] == ' ') continue;
+        keyString = keyString + file[i];
+    }
+        
+    
 }
 
-int CXMLAnalyzeModule::AnalyzeByRegex(std::map<string, string> files)
+// string CXMLAnalyzeModule::replaceAll(const string &str, const string &pattern, const string &replace)
+// {
+//     string result = str;
+//     string::size_type pos = 0;
+//     string::size_type offset = 0;
+
+//     while((pos = result.find(pattern, offset)) != string::npos)
+//     {
+//         result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
+//         offset = pos + replace.size();
+//     }
+
+//     return result;
+// }
+
+int CXMLAnalyzeModule::AnalyzeByRegex()
 {
 
     for(std::map<int,string>::iterator it = regularExpressions.begin();
@@ -73,25 +111,25 @@ int CXMLAnalyzeModule::AnalyzeByRegex(std::map<string, string> files)
 
 }
 
-bool CXMLAnalyzeModule::checkFiles(std::map<string, string> files, std::regex re)
-{
+// bool CXMLAnalyzeModule::checkFiles(std::map<string, string> files, std::regex re)
+// {
 
-    for(std::map<string,string>::iterator it = files.begin();
-        it != files.end();
-        it++)
-    {
-        if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
+//     for(std::map<string,string>::iterator it = files.begin();
+//         it != files.end();
+//         it++)
+//     {
+//         if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos) continue;
         
         
-        if(std::regex_search(it->second,re)){ 
-            return true;
-        }
+//         if(std::regex_search(it->second,re)){ 
+//             return true;
+//         }
 
-    }
+//     }
 
-    return false;
+//     return false;
 
-}
+// }
 
 bool CXMLAnalyzeModule::returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* output)
 {

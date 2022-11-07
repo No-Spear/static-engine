@@ -31,7 +31,7 @@ private:
     size_t bufferSize;
     void removeTempFiles(std::vector<string> fileNames);
     void organizeMemory();
-    bool isDocument(const string filePath);
+    bool isDocument(const string filePath, const string Signature);
     string getFileExt(const string filePath);
     string getFileSignature(const string filePath);
     std::vector<string> unzipDocument(const string filePath);

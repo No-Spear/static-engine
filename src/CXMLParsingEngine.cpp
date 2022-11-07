@@ -9,20 +9,40 @@ CXMLParsingEngine::~CXMLParsingEngine()
 using std::string;
 bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
+    const string OoxmlSignature = "8075";
+    const string compoundSignature = "208207";
+    CXMLAnalyzeModule AnalyzeModule;    
     std::map<string,string> files;
-    if(!isDocument(input->vecInputFiles[0].first))return false; //문서 파일 검사
-
+    if(!isDocument(input->vecInputFiles[0].first,OoxmlSignature))
+    {
+        if(!isDocument(input->vecInputFiles[0].first,compoundSignature))
+        {
+            std::cout << "지원하지 않는 형식의 파일입니다." << std::endl;
+            return false; //문서 파일 검사
+        }else{
+            if(AnalyzeModule.CompoundAnalyze(input->vecInputFiles[0].first, output))return true;
+            return false;
+            
+        }
+        
+    }
     std::vector<string> fileNames = unzipDocument(input->vecInputFiles[0].first);
     changePrivilege(fileNames);
     if(fileNames.size() == NoFile)return false;
 
-    // OOXML 검사 부분 추가
-    CXMLAnalyzeModule AnalyzeModule;
-    AnalyzeModule.Analyze(fileNames, output);
-    
+
+    if(AnalyzeModule.Analyze(fileNames, output))
+    {
+        removeTempFiles(fileNames);
+        return true;
+    }
+
     removeTempFiles(fileNames);
+    return false;
     
-    return true;
+    
+    
+    
 }
 
 void CXMLParsingEngine::removeTempFiles(std::vector<string> fileNames)
@@ -40,19 +60,17 @@ void CXMLParsingEngine::organizeMemory(){
     free(this->OOXML);
 }
 
-bool CXMLParsingEngine::isDocument(const string filePath) 
+bool CXMLParsingEngine::isDocument(const string filePath, const string Signature) 
 {
-    const string OoxmlSignature = "8075";
+
+    const size_t signatureSize = Signature.size();
+
     string ext = getFileExt(filePath); //파일 확장자 가져오기
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
 
-    // std::cout << fileSignature << std::endl;
-
-    if (fileSignature.substr(0, 4) != OoxmlSignature)
-    {
-        std::cout << "OOXML 형식만 지원됩니다." << std::endl;
-        return false;
-    }
+    std::cout << fileSignature << std::endl;
+    std::cout << signatureSize << std::endl;
+    if (fileSignature.substr(0, signatureSize) != Signature)return false;
 
     std::set<std::string> setDocExt = { "doc", "docx", "docm", "dotm" };
     std::set<std::string> setPptExt = { "ppt", "pptx", "pptm", "potm" };
