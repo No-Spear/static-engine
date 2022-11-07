@@ -1,3 +1,4 @@
+#include "CXMLParsingEngine.h"
 #include "CURLExtractionEngine.h"
 #include "CDownloadFromUrlEngine.h"
 #include "CScriptExtractionEngine.h"
@@ -38,10 +39,8 @@ bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
 CNoSpear::CNoSpear()
 {
     this->macroFlag = false;
-    this->m_Engines.push_back(new CURLExtractEngine());
-    this->m_Engines.push_back(new CDownloadFromUrlEngine());
-    this->m_Engines.push_back(new CScriptExtractionEngine());
-    this->m_Engines.push_back(new CScriptAnalyzeEngine());
+    this->xmlFlag = false;
+    this->m_Engines.push_back(new CXMLParsingEngine());
 }
 
 // 정적엔진 CNoSpear 소멸자
@@ -96,7 +95,7 @@ void CNoSpear::makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_
         // 위험도의 평균을 구하고 이를 전체 위험도에 더함.
         totalSeverity = totalSeverity / behaviorSize;
         // 만약 매크로 플래그가 켜있지 않다면 
-        if(this->macroFlag == false)
+        if(this->macroFlag == false & this->xmlFlag == false)
             if(totalSeverity < 2.5)
                 outReport.nSeverity += 1;
             else if(totalSeverity < 5)
@@ -183,10 +182,37 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
             // 현재 분석하는 엔진이 어떠한 엔진인지 출력
             std::cout << this->m_Engines[0]->getEngineType() << "Engine 시작"  <<std::endl;
             // 각 엔진의 분석 실행
-            this->m_Engines[0]->Analyze(&input, &output);
-
+            // XML엔진의 실패 성공을 위해 인수를 받는다.(예외처리가 없기 때문)
+            bool failchecker = this->m_Engines[0]->Analyze(&input, &output);
+            // XMLParsing == 수식편집기 취약점을 탐색
+            if(this->m_Engines[0]->getEngineType() == "XMLParsing")
+            {
+                std::cout << std::endl;
+                // 만약 수식 편집기 취약점이 없다면 기존의 엔진을 동작
+                if(failchecker == false)
+                {
+                    this->m_Engines.push_back(new CURLExtractEngine());
+                    this->m_Engines.push_back(new CDownloadFromUrlEngine());
+                    this->m_Engines.push_back(new CScriptExtractionEngine());
+                    this->m_Engines.push_back(new CScriptAnalyzeEngine());
+                }
+                // 그것이 아니면 수식편집기 취약점 플래그를 on.
+                else
+                {
+                    this->xmlFlag = true;
+                    std::cout << "Analyze Result: " << std::endl;
+                    for(int i =0; i < output.vecBehaviors.size(); i++)
+                    {
+                        std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                        std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                        std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                        std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                    }
+                    std::cout << std::endl;
+                }
+            }
             // URLExtraction엔진의 경우 
-            if(this->m_Engines[0]->getEngineType() == "URLExtraction")
+            else if(this->m_Engines[0]->getEngineType() == "URLExtraction")
             {
                 // 분석했던 파일을 제거
                 input.vecInputFiles.pop_back();

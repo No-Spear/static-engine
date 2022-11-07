@@ -54,6 +54,7 @@ private:
     MYSQL_RES* result; 
     MYSQL_ROW row;
     bool macroFlag;
+    bool xmlFlag;
     std::vector<CEngineSuper*> m_Engines;
 
     std::string makeValue(const ST_REPORT& outReport);
