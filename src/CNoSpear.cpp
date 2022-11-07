@@ -208,7 +208,6 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                         std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
                         std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
                     }
-                    std::cout << std::endl;
                 }
             }
             // URLExtraction엔진의 경우 
@@ -258,8 +257,14 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         
                 for(int i = 0; i< output.vecExtractedScript.size(); i++)
                 {
-                    std::cout << "Extracted Script:" << std::endl;
-                    std::cout << output.vecExtractedScript[i].first << std::endl;
+                    std::cout << "Extracted Script:(If VBS Maximum ouput is 30 bytes)" << std::endl;
+                    if(output.vecExtractedScript[i].second.second == VBS)
+                    {
+                        for(int j = 0; j < 30; j++)
+                            std::cout << output.vecExtractedScript[i].first[j];
+                    }
+                    else
+                        std::cout << output.vecExtractedScript[i].first << std::endl;
                     std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
