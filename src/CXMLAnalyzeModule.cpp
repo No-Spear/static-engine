@@ -59,7 +59,6 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 void CXMLAnalyzeModule::getKeyString(string filePath)
 {
     string file;
-    std::cout << filePath << std::endl;
     std::ifstream in(filePath, std::ifstream::binary);
     if(!in.is_open()){
         std::cout << "file Can't Open" << std::endl;
@@ -77,7 +76,7 @@ void CXMLAnalyzeModule::getKeyString(string filePath)
         if(file[i] == ' ') continue;
         keyString = keyString + file[i];
     }
-        
+    std::cout << "keyString : " << keyString << std::endl;
     
 }
 

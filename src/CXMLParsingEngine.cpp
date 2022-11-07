@@ -1,6 +1,6 @@
 #include "CXMLParsingEngine.h"
 
-CXMLParsingEngine::CXMLParsingEngine() : CEngineSuper(1, "XMLParsing")
+CXMLParsingEngine::CXMLParsingEngine() : CEngineSuper(0, "XMLParsing")
 {}
 
 CXMLParsingEngine::~CXMLParsingEngine()
@@ -68,8 +68,6 @@ bool CXMLParsingEngine::isDocument(const string filePath, const string Signature
     string ext = getFileExt(filePath); //파일 확장자 가져오기
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
 
-    std::cout << fileSignature << std::endl;
-    std::cout << signatureSize << std::endl;
     if (fileSignature.substr(0, signatureSize) != Signature)return false;
 
     std::set<std::string> setDocExt = { "doc", "docx", "docm", "dotm" };
