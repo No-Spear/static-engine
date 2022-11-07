@@ -27,9 +27,13 @@ std::string CScriptExtractionEngine::checkFileType(const std::string fpath)
 void CScriptExtractionEngine::getMeanfulScript(std::string& script)
 {
     std::regex first(R"(<script>[\s]*[\/A-Z\s]*)");
-    std::regex last(R"((\/\/[A-Za-z]*)[\s]*</script>)");
+    std::regex last(R"((\/\/[A-Za-z]*)?[\s]*</script>)");
     script = std::regex_replace(script, first, "");
     script = std::regex_replace(script, last, "");
+    // 스트링 객체 사이즈 조정
+    script.resize(script.size());
+    // 메모리 재할당을 통한 낭비 메모리 제거
+    script.shrink_to_fit();
 }
 
 bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
