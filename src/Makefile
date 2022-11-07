@@ -24,6 +24,7 @@ CURLExtractionEngine.o: CException.h CEngineSuper.h CURLExtractionEngine.h CURLE
 CDownloadFromUrlEngine.o: sha256.h CException.h CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
 
 CScriptExtractionEngine.o: CException.h CEngineSuper.h CScriptExtractionEngine.h CScriptExtractionEngine.cpp
+	$(CC) -c -o $@ CScriptExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
 CScriptAnalyzeEngine.o: CException.h CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
 
