@@ -27,7 +27,7 @@ std::string CScriptExtractionEngine::checkFileType(const std::string fpath)
 void CScriptExtractionEngine::getMeanfulScript(std::string& script)
 {
     std::regex first(R"(<script>[\s]*[\/A-Z\s]*)");
-    std::regex last(R"([\s]*</script>)");
+    std::regex last(R"((\/\/[A-Za-z]*)[\s]*</script>)");
     script = std::regex_replace(script, first, "");
     script = std::regex_replace(script, last, "");
 }
@@ -79,13 +79,67 @@ int CScriptExtractionEngine::getHtmlScriptType(const std::string scriptData)
         return JS;
 }
 
-bool CScriptExtractionEngine::getDocmScriptData(const char* fpath)
+bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
 {
-    return true;
-}
+    // 파일 형식에 따른 매크로 파일의 위치
+    std::string location;
 
-bool CScriptExtractionEngine::getDotmScriptData(const char* fpath)
-{
+    // 다운 받은 파일에 대한 형식에 따른 매크로 추출 위치를 정해준다.
+    switch (checkFileType(fpath).front())
+    {
+    case 'd':
+        location.append("word/vbaProject.bin");
+        break;
+    case 'x':
+        location.append("xl/vbaProject.bin");
+        break;
+    case 'p':
+        location.append("ppt/vbaProject.bin");
+        break;
+    default:
+        throw engine_Exception("SciptExtraction", "s", "매크로 추출을 지원하지않는 형식의 문서 입니다.");
+    }
+
+    // 해당 파일의 데이터를 접근하기 위한 zip_t 구조체    
+    zip_t* downloadFile;
+    downloadFile = zip_open(fpath, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
+    
+    // 만약 다운받은 파일을 열 수 없다면
+    if(downloadFile == NULL)
+        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일을 열 수 없습니다.");
+    
+    if(zip_entry_open(downloadFile, location.c_str()) != 0)
+        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일의 매크로 파일의 전달 받은 위치의 파일을 열 수 없습니다.");
+
+    // 문서파일에서 매크로 파일을 엔진에 저장한다..
+    if(zip_entry_fread(downloadFile, "vbaProject.bin") < 0) 
+        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일의 매크로 파일의 내용을 확인할 수 없습니다.");
+    
+    // 추출된 파일을 바이너리 형식으로 읽는다.
+    std::ifstream macroFile("./vbaProject.bin", std::ios::binary);
+    // 만약 파일을 열기가 실패했다면
+    if(macroFile.fail())
+        throw engine_Exception("ScriptExtraction", "s","다운받은 파일에서 추출된 매크로 파일을 열 수 없습니다.");
+    
+    // 읽을 파일에 대한 사이즈를 구하기 위해 파일의 맨끝으로 이동한다.
+    macroFile.seekg(0,std::ios::end);
+    int fileSize = macroFile.tellg();
+    // 파일을 다시 맨 처음으로 이동시킨다.
+    macroFile.seekg(0, std::ios::beg);
+    // 파일에 대한 내용을 받을 스트링 객체 생성 및 사이즈 조정
+    std::string macroData;
+    macroData.resize(fileSize);
+    macroFile.read(&macroData[0], fileSize);
+
+    // 추출된 파일을 전부 읽은 후 삭제한다.
+    if(remove("./vbaProject.bin") != 0)
+        throw engine_Exception("MacroExtractio","s","다운받은 파일에서 추출된 매크로 파일을 삭제할 수 없습니다.");
+    
+    // 추출된 매크로 데이터를 스크립트 리스트에 집어 넣는다.
+    // 스크립트 데이터, url의 위치, 추출된 스크립트 타입
+    // 순으로 넣는다.
+    scriptlist.push_back(std::make_pair(macroData, std::make_pair(i, VBS)));
+
     return true;
 }
 
@@ -98,7 +152,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         // 파일 타입에 대한 정보를 받을 변수
         std::string filetype =  checkFileType(input->vecInputFiles[i].first);
         // 만약 받은 파일이 html이라면
-        if(filetype.compare("html") == 0)
+        if(filetype == "html")
         { 
             // html 파일에서 script와 스크립트 타입을 확인한다.
             getHtmlScriptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
@@ -106,21 +160,16 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
             getMeanfulScript(output->vecExtractedScript[i].first);
             return true;
         }
-        // 만약 받은 파일이 docm이라면
-        else if(filetype.compare("docm") == 0)
+        // 만약 받은 파일이 docm, xlsm, ppsm(매크로 탑제 파일)), otm, xltm, pptm(템플릿 파일)
+        else if(filetype == "docm" | filetype == "xlsm" | filetype == "ppsm" |
+                filetype == "dotm" | filetype == "xltm" | filetype == "pptm")
         {
-
-            return true;
-        }
-        // 만약 받은 파일이 dotm이라면
-        else if(filetype.compare("dotm") == 0)
-        {
-
+            getMacroSciptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
             return true;
         }
         // 아무것도 해당하지 않는다면 
         else
-            throw engine_Exception("ScriptExtraction", "s", "현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
+            throw engine_Exception("ScriptExtraction", "s", filetype, "형식은 현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
     }
     return true;
 }
