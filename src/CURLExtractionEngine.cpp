@@ -217,7 +217,7 @@ std::string ExcelParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre("https?://[A-Za-z0-9./]*");
+    std::regex scondre(R"(https?:\/\/[\w/.-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -324,7 +324,7 @@ std::string PowerPointParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre("https?://[A-Za-z0-9./]*");
+    std::regex scondre(R"(https?:\/\/[\w/.-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
