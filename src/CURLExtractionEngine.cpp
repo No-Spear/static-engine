@@ -156,7 +156,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
             // 현재 추출한 데이터를 전체 버퍼에 담는다.
             buffer.append(bufferForCopy);
 
-            std::cout << "현재 탐색하는 파일:" <<contentxml[0] << std::endl;
+            std::cout << "현재 탐색하는 파일: " << contentxml[0] << std::endl;
             // 기본적인 xm위치를 제거와 동시에 메모리 정리
             contentxml.erase(contentxml.begin());
             contentxml.shrink_to_fit();
@@ -176,9 +176,9 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     }
     std::cout << std::endl;
 
-    // oleObject와 tempate를 확인하기 위한 정규표현식
+    // oleObject와 tempate를 잡기 위한 정규표현식
     std::regex re2(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
-    // Target="External"인지 확인하기 위한 정규표현식
+    // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re3(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch tempmatch;
 
@@ -187,7 +187,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
         // TargetMode="External"의 검색 결과를 담기 위한 객체
         std::string matchData;
         matchData.append(match.str());
-        // TargetMode="External이 해당하는 XML데이터만 담는다.
+        // TargetMode="External이 해당하는 XML
         if(std::regex_search(matchData, tempmatch, re3))
             UrlList.push_back(parsingUrl(match.str()));
         buffer = match.suffix();
@@ -260,7 +260,10 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> urlList;
 
-    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
+    // oleObject와 tempate를 잡기 위한 정규표현식
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    // Target="External"인 데이터만 잡기 위한 정규표현식
+    std::regex re2(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
@@ -276,12 +279,17 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     for(int i =0; i< contentxml.size(); i++)
     {
         try{
+            std::cout << "햔재 탐색하는 파일: " << contentxml[i] << std::endl;
             buffer = this->container->getStreamData(contentxml[i].c_str());
+            std::smatch tempmatch;
 
             // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
             std::string xml(buffer);
-            while (std::regex_search(xml, match, re)) {
-                urlList.push_back(parsingUrl(match.str()));
+            while (std::regex_search(xml, match, re1)) {
+                std::string matchData;
+                matchData.append(match.str());
+                if(std::regex_search(matchData, tempmatch, re2))
+                    urlList.push_back(parsingUrl(match.str()));
                 xml = match.suffix();
             }
         } catch (std::exception & e)
@@ -348,7 +356,10 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> urlList;
 
-    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
+    // oleObject와 tempate를 잡기 위한 정규표현식
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    // Target="External"인 데이터만 잡기 위한 정규표현식
+    std::regex re2(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
@@ -365,19 +376,24 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     for(int i =0; i< contentxml.size(); i++)
     {
         try{
+            std::cout << "햔재 탐색하는 파일: " << contentxml[i] << std::endl;
             buffer = this->container->getStreamData(contentxml[i].c_str());
+            std::smatch tempmatch;
 
             // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
             std::string xml(buffer);
-            while (std::regex_search(xml, match, re)) {
-                urlList.push_back(parsingUrl(match.str()));
+            while (std::regex_search(xml, match, re1)) {
+                std::string matchData;
+                matchData.append(match.str());
+                if(std::regex_search(matchData, tempmatch, re2))
+                    urlList.push_back(parsingUrl(match.str()));
                 xml = match.suffix();
             }
         } catch (std::exception & e)
         {
             std::cout << "하위 스트림인 " << contentxml[i] << "을 열 수 없습니다." <<std::endl;
             continue;
-        }  
+        }
     }
     return urlList;
 }
