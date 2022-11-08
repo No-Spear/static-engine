@@ -93,6 +93,24 @@ WordParser::~WordParser()
     
 }
 
+// 정제되지 않은 xml.rels에서 xml데이터를 뽑아오는 함수
+std::string WordParser::parsingXml(const std::string input)
+{
+    // Target 부분을 추출하기 위한 정규표현식
+    std::smatch match;
+    std::regex target(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+    std::regex_search(input, match, target);
+
+    // 첫번째 "와 마지막 "의 위치를 찾는다.
+    int firstloc = match.str().find_first_of('"');
+    firstloc+=1;
+    int lastloc = match.str().find_last_of('"');
+    lastloc-=1;
+    int len = lastloc-firstloc+1;
+    // 해당 파일형식자를 새로운 스트링에 담는다.
+    return match.str().substr(firstloc, len);
+}
+
 // Word 문서에서 얻은 스트림 데이터에서 Url 데이터만 가져오는 함수
 std::string WordParser::parsingUrl(const std::string input)
 {
@@ -104,7 +122,7 @@ std::string WordParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre("https?://[A-Za-z0-9./]*");
+    std::regex scondre(R"(https?:\/\/[\w/.-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -114,32 +132,68 @@ std::string WordParser::parsingUrl(const std::string input)
 std::vector<std::string> WordParser::getUrlList(std::string samplePath)
 {
     // 문서파일의 스트림 데이터를 받을 포인터
-    char* buffer;
+    std::string buffer;
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> UrlList;
 
-    std::regex re(R""(<Relationship[\s]*Id=[\s]*"[A-Za-z0-9]*"[\s]*Type[\s]*=[\s]*"[A-Za-z0-9-:/.]*\/(oleObject|attachedTemplate)"[\s]*Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#]*"[\s]*TargetMode[\s]*=[\s]*"External")"");
+    // 또다른 xml.rel가 있는지 확인하기 위한 정규식
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*settings"[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
     std::smatch match;
 
     // Word 문서의 contentxml의 정의
-    const char* contentxml = "word/_rels/document.xml.rels";
+    std::vector<std::string> contentxml;
+    contentxml.push_back("word/_rels/document.xml.rels");
 
     // 문서파일의 스트림 데이터를 열수 있는지 확인.
     // 해당 구간에서 문제가 발생하면 예외처리 루틴이 동작
     this->container->open(samplePath.c_str());
-    
-    // 해당 구간에서 문제가 발생한다면 예외처리 루틴이 동작
-    buffer = (char*)this->container->getStreamData(contentxml);
+    while(!contentxml.empty())
+    {
+        try{    
+            std::string bufferForCopy;
+            // 해당 구간에서 문제가 발생한다면 예외처리 루틴이 동작
+            bufferForCopy.append((char*)this->container->getStreamData(contentxml[0].c_str()));
+            // 현재 추출한 데이터를 전체 버퍼에 담는다.
+            buffer.append(bufferForCopy);
+
+            std::cout << "현재 탐색하는 파일:" <<contentxml[0] << std::endl;
+            // 기본적인 xm위치를 제거와 동시에 메모리 정리
+            contentxml.erase(contentxml.begin());
+            contentxml.shrink_to_fit();
+            
+            while(std::regex_search(bufferForCopy, match, re1))
+            {
+                contentxml.push_back("word/_rels/"+parsingXml(match.str())+".rels");
+                bufferForCopy = match.suffix();
+            }
+        }catch(std::exception& e)
+        {
+            std::cout << contentxml[0] << "파일이 존재하지 않아 열 수 없습니다." <<std::endl;
+            // 맨처음의 데이터를 지우고 메모리 정리
+            contentxml.erase(contentxml.begin());
+            contentxml.shrink_to_fit();
+        }
+    }
+    std::cout << std::endl;
+
+    // oleObject와 tempate를 확인하기 위한 정규표현식
+    std::regex re2(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    // Target="External"인지 확인하기 위한 정규표현식
+    std::regex re3(R"(TargetMode[\s]*=[\s]*"External")");
+    std::smatch tempmatch;
 
     // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-    std::string xml((char*)buffer);
-    while (std::regex_search(xml, match, re)) {
-        UrlList.push_back(parsingUrl(match.str()));
-        xml = match.suffix();
+    while (std::regex_search(buffer, match, re2)) {
+        // TargetMode="External"의 검색 결과를 담기 위한 객체
+        std::string matchData;
+        matchData.append(match.str());
+        // TargetMode="External이 해당하는 XML데이터만 담는다.
+        if(std::regex_search(matchData, tempmatch, re3))
+            UrlList.push_back(parsingUrl(match.str()));
+        buffer = match.suffix();
     }
     return UrlList;
 }
-
 // Excel 문서 형식에 대한 생성자
 ExcelParser::ExcelParser(ContainerParserSuper* pContainer) : DocumentParserSuper(pContainer)
 {

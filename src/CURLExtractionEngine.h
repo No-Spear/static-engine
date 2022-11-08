@@ -81,6 +81,7 @@ public:
 class WordParser : public DocumentParserSuper
 {
 private:
+    std::string parsingXml(const std::string input);                        // 정제되지 않은 xml.rels에서 xml데이터를 뽑아오는 함수
     std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
 
 public:
