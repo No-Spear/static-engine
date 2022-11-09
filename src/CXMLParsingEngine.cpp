@@ -9,39 +9,43 @@ CXMLParsingEngine::~CXMLParsingEngine()
 using std::string;
 bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
-    const string OoxmlSignature = "8075";
-    const string compoundSignature = "208207";
+
     CXMLAnalyzeModule AnalyzeModule;    
-    std::map<string,string> files;
-    if(!isDocument(input->vecInputFiles[0].first,OoxmlSignature))
+    const string OoxmlSignature = "8075";
+    const string compoundSignature = "208207";    
+    const string inputFile = input->vecInputFiles[0].first;
+    std::vector<string> vecFileContainer;
+    bool result = false;
+
+
+    if(isDocument(inputFile,OoxmlSignature))
     {
-        if(!isDocument(input->vecInputFiles[0].first,compoundSignature))
-        {
-            std::cout << "지원하지 않는 형식의 파일입니다." << std::endl;
-            return false; //문서 파일 검사
-        }else{
-            if(AnalyzeModule.CompoundAnalyze(input->vecInputFiles[0].first, output))return true;
+        vecFileContainer = unzipDocument(inputFile);
+        if(vecFileContainer.empty())
             return false;
-            
-        }
+
+        result = AnalyzeModule.Analyze(vecFileContainer, output);
+        removeTempFiles(vecFileContainer);
         
     }
-    std::vector<string> fileNames = unzipDocument(input->vecInputFiles[0].first);
-    changePrivilege(fileNames);
-    if(fileNames.size() == NoFile)return false;
-
-
-    if(AnalyzeModule.Analyze(fileNames, output))
+    else if(isDocument(inputFile,compoundSignature))
     {
-        removeTempFiles(fileNames);
-        return true;
+        vecFileContainer.push_back(inputFile);
+        result = AnalyzeModule.Analyze(vecFileContainer, output);
     }
-
-    removeTempFiles(fileNames);
-    return false;
+    else
+        try
+        {
+            throw "Unspecified type data";
+        }
+        catch (const std::exception& e)
+        {
+            printf("%s\n",e.what());
+            return false;
+        }
+        
     
-    
-    
+    return result;
     
 }
 
@@ -55,10 +59,6 @@ void CXMLParsingEngine::removeTempFiles(std::vector<string> fileNames)
 
 }
 
-
-void CXMLParsingEngine::organizeMemory(){
-    free(this->OOXML);
-}
 
 bool CXMLParsingEngine::isDocument(const string filePath, const string Signature) 
 {
@@ -135,49 +135,34 @@ std::vector<string> CXMLParsingEngine::unzipDocument(const string filePath) // �
     {  
         zip_entry_openbyindex(OOXML,i);
         
-        
-            
         int isdir = zip_entry_isdir(OOXML);
-        if(isdir == 1)continue;
+        if(isdir == 1)
+            continue;
 
         string name(string(zip_entry_name(OOXML)));
+
         std::set<std::string> exceptionExts = {"png","jpg","svg","jpeg"};
-        if(exceptionExts.find(getFileExt(name)) != exceptionExts.end())continue;
+        if(exceptionExts.find(getFileExt(name)) != exceptionExts.end())
+            continue;
+        
         char * buf = NULL;
         size_t bufsize= 0;
-        name = makeFileName(name);
-        // std::cout << name << std::endl;
+        int slashPosition = name.find_last_of('/');
+        name = "../temp/" + name.substr(slashPosition+1);
+
         zip_entry_fread(OOXML,name.c_str());
         fileNames.push_back(name);
 
     }
     
-    
-    organizeMemory();
-
-    return fileNames;
-
-}
-
-string CXMLParsingEngine::makeFileName(string name)
-{
-
-    int slashPosition = name.find_last_of('/');
-    string fileName = "../temp/" + name.substr(slashPosition+1);
-
-    return fileName;
-    
-
-}
-
-void CXMLParsingEngine::changePrivilege(std::vector<string> fileNames)
-{
-
     for(string name : fileNames)
     {
         if(chmod(name.c_str(), 0555)) std::cout << "권한 변경 실패" << std::endl;
     }
    
+    free(this->OOXML);
 
+    return fileNames;
 }
+
 
