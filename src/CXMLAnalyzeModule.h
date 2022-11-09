@@ -31,13 +31,13 @@ private:
     // int AnalyzeEqnEditBinData(const std::vector<BYTE>& vecBinData, ST_ANALYZE_RESULT* output);
 
 
-    std::vector<string> keyStrings;
-    std::map<int,string> regularExpressions;
+    std::vector<string> vecKeyStrings;
+    std::map<int,string> mapRegularExpressions;
 
     int AnalyzeByRegex();
     
-    std::map<string,string> readDocFiles(std::vector<string> fileNames);
-    std::map<string,string> decodeScript(std::vector<string> fileNames);
+    std::map<string,string> readDocFiles(std::vector<string> vecfileContainer);
+    std::map<string,string> decodeScript(std::vector<string> vecfileContainer);
 
     bool returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* output);
     

@@ -49,10 +49,10 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     
 }
 
-void CXMLParsingEngine::removeTempFiles(std::vector<string> fileNames)
+void CXMLParsingEngine::removeTempFiles(std::vector<string> vecfileContainer)
 {
     int r;
-    for(string file : fileNames)
+    for(string file : vecfileContainer)
     {
         r = remove(file.c_str());
     }
@@ -113,7 +113,6 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
     for(int i =0; i<2;i++)
     {   
         int a = readFile.get();
-        // std::cout << a << std::endl;
         fileSignature += std::to_string(a);
     }
 
@@ -122,12 +121,12 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
 
 std::vector<string> CXMLParsingEngine::unzipDocument(const string filePath) // 문서파일 모든 xml 읽기 
 {   
-    std::vector<string> fileNames;
+    std::vector<string> vecfileContainer;
     this->OOXML = zip_open(filePath.c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
     if(this->OOXML == NULL)
     {
         std::cout << "파일을 열 수 없습니다." << std::endl;
-        return fileNames;
+        return vecfileContainer;
     }
 
     int i, n = zip_entries_total(OOXML);
@@ -141,8 +140,8 @@ std::vector<string> CXMLParsingEngine::unzipDocument(const string filePath) // �
 
         string name(string(zip_entry_name(OOXML)));
 
-        std::set<std::string> exceptionExts = {"png","jpg","svg","jpeg"};
-        if(exceptionExts.find(getFileExt(name)) != exceptionExts.end())
+        std::set<std::string> setExceptionExts = {"png","jpg","svg","jpeg"};
+        if(setExceptionExts.find(getFileExt(name)) != setExceptionExts.end())
             continue;
         
         char * buf = NULL;
@@ -151,18 +150,18 @@ std::vector<string> CXMLParsingEngine::unzipDocument(const string filePath) // �
         name = "../temp/" + name.substr(slashPosition+1);
 
         zip_entry_fread(OOXML,name.c_str());
-        fileNames.push_back(name);
+        vecfileContainer.push_back(name);
 
     }
     
-    for(string name : fileNames)
+    for(string name : vecfileContainer)
     {
         if(chmod(name.c_str(), 0555)) std::cout << "권한 변경 실패" << std::endl;
     }
    
     free(this->OOXML);
 
-    return fileNames;
+    return vecfileContainer;
 }
 
 

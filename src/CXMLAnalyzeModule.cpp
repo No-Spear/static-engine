@@ -2,8 +2,8 @@
 
 CXMLAnalyzeModule::CXMLAnalyzeModule()
 {
-    regularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V1,"ole10native"));
-    regularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V2,"equationnative"));
+    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V1,"ole10native"));
+    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V2,"equationnative"));
 
 }
 
@@ -20,10 +20,10 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
 }
 
 
-std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> fileNames)
+std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> vecFileContainer)
 {
     //분석 완료 시 추가 예정
-    std::map<string,string> files = readDocFiles(fileNames);
+    std::map<string,string> files = readDocFiles(vecFileContainer);
     for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
     {   
         // std::string& strScriptContext = ConvertMBSFromUnicode(it->second);
@@ -46,7 +46,7 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
         
 
         std::cout << "keyString : " << keyString << std::endl;
-        keyStrings.push_back(keyString);
+        vecKeyStrings.push_back(keyString);
     }
     
     return files;
@@ -55,15 +55,15 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> file
 int CXMLAnalyzeModule::AnalyzeByRegex()
 {
 
-    for(std::map<int,string>::iterator it = regularExpressions.begin();
-        it != regularExpressions.end();
+    for(std::map<int,string>::iterator it = mapRegularExpressions.begin();
+        it != mapRegularExpressions.end();
         it++)
     {
         int vulnerabilityNumber = it->first;
         string strRegularExpression = it->second;
         
         std::regex re(strRegularExpression,std::regex::grep | std::regex::icase);
-        for(string keyString : keyStrings)
+        for(string keyString : vecKeyStrings)
         if(std::regex_search(keyString,re)) 
             return vulnerabilityNumber;
     }
@@ -101,10 +101,10 @@ bool CXMLAnalyzeModule::returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* outpu
     return true;
 }
 
-std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> fileNames)
+std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> vecFileContainer)
 {
     std::map<string,string> files;
-    for(string name : fileNames)
+    for(string name : vecFileContainer)
     {
         string file;
         

@@ -22,6 +22,7 @@ public:
 
     CXMLParsingEngine();
     ~CXMLParsingEngine();
+
     bool Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output);
 
 private:
@@ -30,7 +31,7 @@ private:
     std::map<string,string> xmls;
     zip_t* OOXML;
     size_t bufferSize;
-    void removeTempFiles(std::vector<string> fileNames);
+    void removeTempFiles(std::vector<string> vecfileContainer);
     bool isDocument(const string filePath, const string Signature);
     string getFileExt(const string filePath);
     string getFileSignature(const string filePath);
