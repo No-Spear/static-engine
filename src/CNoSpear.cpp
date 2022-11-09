@@ -157,7 +157,7 @@ bool CNoSpear::SaveResult(const ST_REPORT& outReport)
 
     string values = makeValue(outReport);
 
-    string sql ="INSERT INTO analysisResultTable(nseverity,detectName,sha256,name,behaviors) VALUES" + values;
+    string sql ="INSERT INTO analysisResultTable(nserverity,detectName,sha256,name,behaviors) VALUES" + values;
     std::cout << sql <<std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
