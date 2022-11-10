@@ -46,8 +46,22 @@ bool OOXMLParser::close(void)
 // OOXML 형식의 문서 파일의 스트림 데이터를 얻는 함수
 char* OOXMLParser::getStreamData(const char* location)
 {   
+    // 파일의 내용이 많이 제대로 xml파일이 읽히지 않은 버그로 인해 index통한 추출 사용을 위한 변수
+    int i = 0;
+    // 파일의 끝 엔트리가 끝나거나 열고자 하는 엔트리를 찾을때까지
+    while(true)
+    {
+        if(zip_entry_openbyindex(this->OOXML, i)!= 0)
+            break;
+        if(strcmp(location, zip_entry_name(this->OOXML)) == 0)
+            break;
+        // 원하는 파일이 아니라면 다시 닫는다.
+        zip_entry_close(this->OOXML);
+        i++;
+    }
+
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
-    if(zip_entry_opencasesensitive(this->OOXML, location) != 0) 
+    if(zip_entry_openbyindex(this->OOXML, i) != 0) 
         throw engine_Exception("URLExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
     // 문서파일에서 상위, 하위 Stream 데이터를 buf에 저장한다.
     if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
