@@ -36,20 +36,20 @@ bool CScriptExtractionEngine::checkFileDownloadStatus(const std::string fpath, i
     std::string buf;
     file.open(fpath, std::ios::in);
     // 만약 파일을 열기 싪패했다면
-    if(file)
+    if(!file)
         throw engine_Exception("ScriptExtraction", "sis", "DownloadEngine에서 받아온", i ,"번째 파일이 정상적으로 다운로드되지 못했습니다.");
 
-    // // 파일의 마지막 위치로 이동한다.
-    // file.seekg(0, std::ios::end);
-    // // 파일의 크기를 얻어온다.
-    // int size = file.tellg();
-    // // 스트링 객체의 크기를 재조정한다.
-    // buf.resize(size);
-    // // 파일을 다시 맨앞으로 이동한다.
-    // file.seekg(0, std::ios::beg);
+    // 파일의 마지막 위치로 이동한다.
+    file.seekg(0, std::ios::end);
+    // 파일의 크기를 얻어온다.
+    int size = file.tellg();
+    // 스트링 객체의 크기를 재조정한다.
+    buf.resize(size);
+    // 파일을 다시 맨앞으로 이동한다.
+    file.seekg(0, std::ios::beg);
 
     // 파일에서 사이즈(200)만큼 데이터를 읽는다.
-    file.read(&buf[0], 200);
+    file.read(&buf[0], size);
     file.close();
     if(std::regex_search(buf, match, re))
         throw engine_Exception("ScriptExtraction", "sis", "DownloadEngine에서 받아온", i ,"번째 파일이 정상적으로 다운로드되지 못했습니다.");
@@ -191,7 +191,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
             checkFileDownloadStatus(input->vecInputFiles[i].first, i);
         } catch(std::exception& e)
         {
-            std::cout << e.what();
+            std::cout << e.what() << std::endl;
             continue;
         }
         // 파일 타입에 대한 정보를 받을 변수
