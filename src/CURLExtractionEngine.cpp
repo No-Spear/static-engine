@@ -47,7 +47,7 @@ bool OOXMLParser::close(void)
 char* OOXMLParser::getStreamData(const char* location)
 {   
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
-    if(zip_entry_open(this->OOXML, location) != 0) 
+    if(zip_entry_opencasesensitive(this->OOXML, location) != 0) 
         throw engine_Exception("URLExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
     // 문서파일에서 상위, 하위 Stream 데이터를 buf에 저장한다.
     if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
@@ -148,6 +148,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     // 문서파일의 스트림 데이터를 열수 있는지 확인.
     // 해당 구간에서 문제가 발생하면 예외처리 루틴이 동작
     this->container->open(samplePath.c_str());
+    
     while(!contentxml.empty())
     {
         try{    
@@ -169,7 +170,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
             }
         }catch(std::exception& e)
         {
-            std::cout << contentxml[0] << "파일이 존재하지 않아 열 수 없습니다.\n" <<std::endl;
+            std::cout << contentxml[0] << "파일이 존재하지 않아 열 수 없습니다." << std::endl;
             // 맨처음의 데이터를 지우고 메모리 정리
             contentxml.erase(contentxml.begin());
             contentxml.shrink_to_fit();
