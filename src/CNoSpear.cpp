@@ -59,8 +59,8 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     values = values + "," + "'" + outReport.strName + "'";
     std::string vecValues = ", \"{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
-        string tempName = replace_all(outReport.vecBehaviors[i].strName,"\'",""); 
-        tempName = replace_all(tempName,"\"","");        
+        string tempName = replaceAll(outReport.vecBehaviors[i].strName,"\'",""); 
+        tempName = replaceAll(tempName,"\"","");        
         if(i == 0){
             vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "{";    
         }else{
