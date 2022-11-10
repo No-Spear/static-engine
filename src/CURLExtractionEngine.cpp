@@ -49,10 +49,11 @@ char* OOXMLParser::getStreamData(const char* location)
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
     if(zip_entry_open(this->OOXML, location) != 0) 
         throw engine_Exception("URLExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
-
     // 문서파일에서 상위, 하위 Stream 데이터를 buf에 저장한다.
     if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
         throw engine_Exception("URLExtraction", "s", "상위, 하위 스트림 파일을 확인할 수 없습니다.");
+
+    zip_entry_close(this->OOXML);
 
     return (char*)this->buffer;
 }
@@ -122,7 +123,7 @@ std::string WordParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre(R"(https?[\w.%/:-]*)");
+    std::regex scondre(R"(https?[\w.%/?=:-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -168,16 +169,15 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
             }
         }catch(std::exception& e)
         {
-            std::cout << contentxml[0] << "파일이 존재하지 않아 열 수 없습니다." <<std::endl;
+            std::cout << contentxml[0] << "파일이 존재하지 않아 열 수 없습니다.\n" <<std::endl;
             // 맨처음의 데이터를 지우고 메모리 정리
             contentxml.erase(contentxml.begin());
             contentxml.shrink_to_fit();
         }
     }
-    std::cout << std::endl;
 
     // oleObject와 tempate를 잡기 위한 정규표현식
-    std::regex re2(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    std::regex re2(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
     // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re3(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch tempmatch;
@@ -217,7 +217,7 @@ std::string ExcelParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre(R"(https?[\w.%/:-]*)");
+    std::regex scondre(R"(https?[\w.%/?=:-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -261,7 +261,7 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     std::vector<std::string> urlList;
 
     // oleObject와 tempate를 잡기 위한 정규표현식
-    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
     // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re2(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
@@ -324,7 +324,7 @@ std::string PowerPointParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre(R"(https?[\w.%/:-]*)");
+    std::regex scondre(R"(https?[\w.%/?=:-]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -357,7 +357,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     std::vector<std::string> urlList;
 
     // oleObject와 tempate를 잡기 위한 정규표현식
-    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
     // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re2(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch match;
@@ -376,7 +376,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     for(int i =0; i< contentxml.size(); i++)
     {
         try{
-            std::cout << "햔재 탐색하는 파일: " << contentxml[i] << std::endl;
+            std::cout << "현재 탐색하는 파일: " << contentxml[i] << std::endl;
             buffer = this->container->getStreamData(contentxml[i].c_str());
             std::smatch tempmatch;
 
