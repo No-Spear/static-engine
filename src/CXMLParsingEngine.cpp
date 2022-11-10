@@ -68,7 +68,11 @@ bool CXMLParsingEngine::isDocument(const string filePath, const string Signature
     string ext = getFileExt(filePath); //파일 확장자 가져오기
     string fileSignature = getFileSignature(filePath); //파일 시그니처 가져오기
 
-    if (fileSignature.substr(0, signatureSize) != Signature)return false;
+    if (fileSignature == "")
+        return false;
+
+    if (fileSignature.substr(0, signatureSize) != Signature)
+        return false;
 
     std::set<std::string> setDocExt = { "doc", "docx", "docm", "dotm" };
     std::set<std::string> setPptExt = { "ppt", "pptx", "pptm", "potm" };
@@ -83,7 +87,8 @@ bool CXMLParsingEngine::isDocument(const string filePath, const string Signature
 string CXMLParsingEngine::getFileExt(const string filePath)
 {
 
-    int dotPosition = filePath.find_last_of('.');
+    int dotPosition = 0;
+    dotPosition = filePath.find_last_of('.');
     string ext = filePath.substr(dotPosition+1);
 
     return ext;
@@ -106,6 +111,7 @@ string CXMLParsingEngine::getFileSignature(const string filePath)
         }catch (const std::exception& e)
         {
             printf("%s\n",e.what());
+            fileSignature = "";
             return fileSignature;
         }
     }

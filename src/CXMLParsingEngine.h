@@ -17,8 +17,12 @@ using std::string;
 
 class CXMLParsingEngine : public CEngineSuper
 {
+private:
+    std::map<string,string> xmls;
+    zip_t* OOXML;
+    size_t bufferSize;
+
 public:
-    const int NoFile = 0;   
 
     CXMLParsingEngine();
     ~CXMLParsingEngine();
@@ -27,10 +31,6 @@ public:
 
 private:
 
-
-    std::map<string,string> xmls;
-    zip_t* OOXML;
-    size_t bufferSize;
     void removeTempFiles(std::vector<string> vecfileContainer);
     bool isDocument(const string filePath, const string Signature);
     string getFileExt(const string filePath);

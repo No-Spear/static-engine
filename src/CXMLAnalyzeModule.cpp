@@ -11,7 +11,11 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
 {
     int AnalyzeResult;
 
-    std::map<string, string> files = decodeScript(fileNames);
+    {
+        ExtractEqnEditData(fileNames);
+        // 취약점 추출 함수 추가 
+    }
+
     AnalyzeResult = AnalyzeByRegex();
     if(returnResult(AnalyzeResult,output)) return true;
 
@@ -20,14 +24,15 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
 }
 
 
-std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> vecFileContainer)
+void CXMLAnalyzeModule::ExtractEqnEditData(std::vector<string> vecFileContainer)
 {
-    //분석 완료 시 추가 예정
-    std::map<string,string> files = readDocFiles(vecFileContainer);
-    for(std::map<string,string>::iterator it = files.begin(); it != files.end(); it++)
+    std::map<string,string> mapFileContentsContainer = readDocFiles(vecFileContainer);
+    for(std::map<string,string>::iterator it = mapFileContentsContainer.begin();
+    it != mapFileContentsContainer.end(); 
+    it++)
     {   
         // std::string& strScriptContext = ConvertMBSFromUnicode(it->second);
-        // 유니코드 to ascii 만들기
+
         std::string& strScriptContext = it->second;
 
         string keyString = "";
@@ -38,18 +43,18 @@ std::map<string,string> CXMLAnalyzeModule::decodeScript(std::vector<string> vecF
         if(int(u_char(strScriptContext[0])) != 208 && int(u_char(strScriptContext[1])) != 207 )
             continue;
 
+        if(strScriptContext.size() < 1310)
+            continue;
+
         for(int i = 1280; i < 1310; i += 2)
         {
             if(strScriptContext[i] == ' ') continue;
             keyString = keyString + strScriptContext[i];
         }
-        
-
         std::cout << "keyString : " << keyString << std::endl;
         vecKeyStrings.push_back(keyString);
     }
     
-    return files;
 }
 
 int CXMLAnalyzeModule::AnalyzeByRegex()
@@ -103,7 +108,7 @@ bool CXMLAnalyzeModule::returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* outpu
 
 std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> vecFileContainer)
 {
-    std::map<string,string> files;
+    std::map<string,string> mapFileContentsContainer;
     for(string name : vecFileContainer)
     {
         string file;
@@ -119,10 +124,10 @@ std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> vecF
         in.seekg(0,std::ios::beg);
         in.read(&file[0],size);
         in.close();
-        files.insert(std::pair(name,file));
+        mapFileContentsContainer.insert(std::pair(name,file));
 
     }
 
     
-    return files;
+    return mapFileContentsContainer;
 }
