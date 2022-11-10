@@ -59,8 +59,8 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     values = values + "," + "'" + outReport.strName + "'";
     std::string vecValues = ", \"{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
-        replace_all(outReport.vecBehaviors[i].strName,"\'",""); 
-        replace_all(outReport.vecBehaviors[i].strName,"\"","");        
+        string tempName = replace_all(outReport.vecBehaviors[i].strName,"\'",""); 
+        tempName = replace_all(tempName,"\"","");        
         if(i == 0){
             vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "{";    
         }else{
@@ -68,7 +68,7 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
         }
         vecValues = vecValues + "'serverity' : " + "'" +std::to_string(outReport.vecBehaviors[i].Severity)+ "'";
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
-        vecValues = vecValues + ", 'Name' : " + "'" + outReport.vecBehaviors[i].strName + "'";
+        vecValues = vecValues + ", 'Name' : " + "'" + tempName + "'";
         vecValues = vecValues + "}";
 
 
@@ -81,23 +81,22 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     return values;
 }
 
-std::string CNoSpear::replace_all(
-    __in const std::string &message, 
-    __in const std::string &pattern, 
-    __in const std::string &replace
-    ) {
-    
-    std::string result = message;
-    std::string::size_type pos = 0;
-    std::string::size_type offset = 0;
- 
-    while ((pos = result.find(pattern, offset)) != std::string::npos)
-    {
-        result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
-        offset = pos + replace.size();
-    }
- 
-    return result;
+std::string replaceAll(std::string &str, const std::string& from, const std::string& to) {
+
+	size_t start_pos = 0; //string처음부터 검사
+
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos)  //from을 찾을 수 없을 때까지
+
+	{
+
+		str.replace(start_pos, from.length(), to);
+
+		start_pos += to.length(); // 중복검사를 피하고 from.length() > to.length()인 경우를 위해서
+
+	}
+
+	return str;
+
 }
 
 // DB에 저장하기 위한 결과를 만드는 함수
