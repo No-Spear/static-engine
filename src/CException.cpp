@@ -14,7 +14,10 @@ engine_Exception::engine_Exception(const char* engine, const char* pszFormat, ..
     
     while(pszFormat[count] != '\0')
     {
-        this->exceptionDetail.append(va_arg(detail, char*));
+        if(pszFormat[count] == 's')
+            this->exceptionDetail.append(va_arg(detail, char*));
+        else if(pszFormat[count] == 'i')
+            this->exceptionDetail.append(std::to_string(va_arg(detail, int)));
         count++;
     }
     va_end(detail);
