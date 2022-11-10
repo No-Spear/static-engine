@@ -36,7 +36,7 @@ bool CXMLParsingEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     else
         try
         {
-            throw "Unspecified type data";
+            throw std::runtime_error("Unspecified type data");            
         }
         catch (const std::exception& e)
         {
@@ -75,7 +75,7 @@ bool CXMLParsingEngine::isDocument(const string filePath, const string Signature
         return false;
 
     std::set<std::string> setDocExt = { "doc", "docx", "docm", "dotm" };
-    std::set<std::string> setPptExt = { "ppt", "pptx", "pptm", "potm" };
+    std::set<std::string> setPptExt = { "ppt", "pptx", "pptm", "potm", "ppsx" };
     std::set<std::string> setXlsExt = { "xls", "xlsx", "xlsm", "xltm" };
     if (setDocExt.find(ext) != setDocExt.end())return true;  /* OOXML DOC */ ;
     if (setPptExt.find(ext) != setPptExt.end())return true;  /* OOXML DOC */ ;
