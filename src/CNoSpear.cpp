@@ -81,7 +81,7 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     return values;
 }
 
-std::string replaceAll(std::string& str, const std::string& from, const std::string& to) {
+std::string replaceAll(std::string str, const std::string from, const std::string to) {
 
 	size_t start_pos = 0; //string처음부터 검사
 
