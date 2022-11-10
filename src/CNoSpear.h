@@ -59,7 +59,7 @@ private:
 
     std::string makeValue(const ST_REPORT& outReport);
     void makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_RESULT result, ST_REPORT& outReport);
-    std::string replaceAll(std::string &str, const std::string& from, const std::string& to);
+    std::string replaceAll(std::string& str, const std::string& from, const std::string& to);
     
 public:
     CNoSpear();
