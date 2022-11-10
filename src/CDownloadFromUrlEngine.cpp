@@ -137,12 +137,16 @@ string CDownloadFromUrlEngine::getFileName(string url)
 
 string CDownloadFromUrlEngine::getDomain(string url)
 {
-    string encoded_slash = "\%2f";
-    while(1)
-    {     
-        if(url.find("\%2f") == string::npos)break;
-        url.replace(url.find("\%2f"),encoded_slash.length(),"/");
-    }
+    string encodedSlashLower = "\%2f";
+    string encodedSlashUpper = "\%2F";
+    string encodedColonLower = "\%3a";
+    string encodedColonUpper = "\%3A";
+
+    url = replaceAll(url, encodedSlashLower, "/");
+    url = replaceAll(url, encodedSlashUpper, "/");
+    url = replaceAll(url, encodedColonLower, ":");
+    url = replaceAll(url, encodedColonUpper, ":");
+
     std::istringstream ss(url);
     string tempUrl;
     std::vector<string> domain;
@@ -166,6 +170,18 @@ string CDownloadFromUrlEngine::getDomain(string url)
 
 }
 
+std::string CDownloadFromUrlEngine::replaceAll(std::string str, const std::string from, const std::string to) {
+
+	size_t start_pos = 0; //string처음부터 검사
+
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos)  //from을 찾을 수 없을 때까지
+	{
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // 중복검사를 피하고 from.length() > to.length()인 경우를 위해서
+	}
+	return str;
+
+}
 
 ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
 {

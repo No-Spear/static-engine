@@ -39,6 +39,7 @@ private:
     MYSQL_RES* result; 
     MYSQL_ROW row;
     CURL * curl;
+    std::string replaceAll(std::string str, const std::string from, const std::string to);
     bool queryCnCUrl(string url,string fileName,ST_RESPONSE * Response);
     void getPath(ST_RESPONSE *Response);
     string getExtension(string fileName);
