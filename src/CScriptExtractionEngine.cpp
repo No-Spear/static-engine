@@ -23,6 +23,39 @@ std::string CScriptExtractionEngine::checkFileType(const std::string fpath)
     return ftype;
 }
 
+// C&C 서버에서 다운받아온 파일에 대한 상태를 확인하는 함수
+bool CScriptExtractionEngine::checkFileDownloadStatus(const std::string fpath, int i)
+{
+    // <title> 4XX or 5XX를 잡기 위한 정규 표현식
+    std::regex re("(<title>(4|5)[0-9]{2})");
+    std::smatch match;
+    
+    // 다운받은 파일을 검증하기 위해 연다.
+    std::ifstream file;
+    // 파일에 대한 데이터를 받을 버퍼
+    std::string buf;
+    file.open(fpath, std::ios::in);
+    // 만약 파일을 열기 싪패했다면
+    if(file)
+        throw engine_Exception("ScriptExtraction", "sis", "DownloadEngine에서 받아온", i ,"번째 파일이 정상적으로 다운로드되지 못했습니다.");
+
+    // // 파일의 마지막 위치로 이동한다.
+    // file.seekg(0, std::ios::end);
+    // // 파일의 크기를 얻어온다.
+    // int size = file.tellg();
+    // // 스트링 객체의 크기를 재조정한다.
+    // buf.resize(size);
+    // // 파일을 다시 맨앞으로 이동한다.
+    // file.seekg(0, std::ios::beg);
+
+    // 파일에서 사이즈(200)만큼 데이터를 읽는다.
+    file.read(&buf[0], 200);
+    file.close();
+    if(std::regex_search(buf, match, re))
+        throw engine_Exception("ScriptExtraction", "sis", "DownloadEngine에서 받아온", i ,"번째 파일이 정상적으로 다운로드되지 못했습니다.");
+    return true;
+}
+
 // 추출된 스크립트에서 의미 있는 내용만 추출하는 함수
 void CScriptExtractionEngine::getMeanfulScript(std::string& script)
 {
@@ -153,6 +186,14 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
     // 현재 inputfile의 vecfile의 수만큼 반복하여 파일의 형식을 찾는다.
     for(int i =0; i < input->vecInputFiles.size(); i++)
     {
+        // 받아온 파일에 대해 1차적으로 검증
+        try{
+            checkFileDownloadStatus(input->vecInputFiles[i].first, i);
+        } catch(std::exception& e)
+        {
+            std::cout << e.what();
+            continue;
+        }
         // 파일 타입에 대한 정보를 받을 변수
         std::string filetype =  checkFileType(input->vecInputFiles[i].first);
         // 만약 받은 파일이 html이라면
@@ -173,7 +214,11 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         }
         // 아무것도 해당하지 않는다면 
         else
-            throw engine_Exception("ScriptExtraction", "s", filetype, "형식은 현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
+            throw engine_Exception("ScriptExtraction", "ss", filetype, "형식은 현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
     }
+    
+    // 만약 추출된 스크립트가 아무것도 없다면 에러 발생
+    if(output->vecExtractedScript.empty())
+        throw engine_Exception("ScriptExtraction", "s", "엔진에서 추출된 스크립트 파일이 아무것도 없습니다.");
     return true;
 }
