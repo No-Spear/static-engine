@@ -59,6 +59,7 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     values = values + "," + "'" + outReport.strName + "'";
     std::string vecValues = ", \"{";
     for(int i = 0; i < outReport.vecBehaviors.size(); i++){
+        replace_all(strName,"\'",outReport.vecBehaviors[i].strName);        
         if(i == 0){
             vecValues = vecValues + "'Behavior_" + std::to_string(i) + "' :" + "{";    
         }else{
@@ -68,6 +69,8 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
         vecValues = vecValues + ", 'Name' : " + "'" + outReport.vecBehaviors[i].strName + "'";
         vecValues = vecValues + "}";
+
+
      
     }
     vecValues = vecValues + "}\"";
@@ -75,6 +78,25 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
     values = values + vecValues + ")";
 
     return values;
+}
+
+std::string CNoSpear::replace_all(
+    __in const std::string &message, 
+    __in const std::string &pattern, 
+    __in const std::string &replace
+    ) {
+    
+    std::string result = message;
+    std::string::size_type pos = 0;
+    std::string::size_type offset = 0;
+ 
+    while ((pos = result.find(pattern, offset)) != std::string::npos)
+    {
+        result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
+        offset = pos + replace.size();
+    }
+ 
+    return result;
 }
 
 // DB에 저장하기 위한 결과를 만드는 함수
