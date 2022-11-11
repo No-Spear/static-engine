@@ -63,6 +63,9 @@ char* OOXMLParser::getStreamData(const char* location)
     // OOXML 객체의 상위, 하위 Stream 데이터를 얻어온다.
     if(zip_entry_openbyindex(this->OOXML, i) != 0) 
         throw engine_Exception("URLExtraction", "s", "전달 받은 위치의 파일을 열 수 없습니다.");
+    
+    std::cout << "현재 탐색하는 파일: " << zip_entry_name(this->OOXML) << std::endl;
+    
     // 문서파일에서 상위, 하위 Stream 데이터를 buf에 저장한다.
     if(zip_entry_read(this->OOXML, &buffer, &bufsize) < 0) 
         throw engine_Exception("URLExtraction", "s", "상위, 하위 스트림 파일을 확인할 수 없습니다.");
@@ -172,7 +175,6 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
             // 현재 추출한 데이터를 전체 버퍼에 담는다.
             buffer.append(bufferForCopy);
 
-            std::cout << "현재 탐색하는 파일: " << contentxml[0] << std::endl;
             // 기본적인 xm위치를 제거와 동시에 메모리 정리
             contentxml.erase(contentxml.begin());
             contentxml.shrink_to_fit();
