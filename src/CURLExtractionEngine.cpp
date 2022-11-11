@@ -369,8 +369,8 @@ std::vector<std::string> PowerPointParser::getContenxmlList(const char* highStre
 // 문서파일을 열고 문서파일의 스트림 데이터에서 Url을 추출하고 돌려주는 함수
 std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
 {
-    // 문서파일의 스트림 데이터를 받을 포인터
-    char* buffer;
+    // 문서파일의 상위스트림 데이터를 받을 포인터
+    char* highStreambuffer;
     // 문서파일의 스트림 데이터서 뽑은 Url을 받을 벡터
     std::vector<std::string> urlList;
 
@@ -381,37 +381,49 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     std::smatch match;
 
     //문서파일이 해당 위치에 있는지 확인
-    if(!this->container->open(samplePath.c_str()))
-        return urlList;
+    this->container->open(samplePath.c_str());
     
+    const char* highStram = "ppt/_rels/presentation.xml.rels";
     // 상위 스트림에 대한 정보를 가져온다.
-    char* highStream = this->container->getStreamData("ppt/_rels/presentation.xml.rels");
-    // PowerPoint 문서의 상위 stream에서  contentxml 리스트를 가져온다.
-    std::vector<std::string> contentxml = getContenxmlList(highStream);
-    std::cout << "상위 스트림에서 하위 스트림의 데이터를 가져왔습니다." << std::endl;
+    highStreambuffer = this->container->getStreamData(highStram);
 
-    // contentxml의 수 만큼 url을 찾아낸다.
-    for(int i =0; i< contentxml.size(); i++)
-    {
-        try{
-            buffer = this->container->getStreamData(contentxml[i].c_str());
-            std::smatch tempmatch;
-
-            // 문서파일의 스트림 데이터에서 OleObject의 Url만 뽑아 낸다.
-            std::string xml(buffer);
-            while (std::regex_search(xml, match, re1)) {
-                std::string matchData;
-                matchData.append(match.str());
-                if(std::regex_search(matchData, tempmatch, re2))
-                    urlList.push_back(parsingUrl(match.str()));
-                xml = match.suffix();
-            }
-        } catch (std::exception & e)
+    try{
+        // PowerPoint 문서의 상위 stream에서  contentxml 리스트를 가져온다.
+        std::vector<std::string> contentxml = getContenxmlList(highStreambuffer);
+        std::cout << "상위 스트림에서 하위 스트림의 데이터를 가져왔습니다." << std::endl;
+        
+        // 전체 xml.rels데이터를 담을 스트링 객체
+        std::string buffer;
+        // contentxml의 수 만큼 url을 찾아낸다.
+        while(!contentxml.empty())
         {
-            std::cout << "하위 스트림인 " << contentxml[i] << "을 열 수 없습니다." <<std::endl;
-            continue;
+            try{
+                buffer.append(this->container->getStreamData(contentxml[0].c_str()));
+                // 추출된 데이터를 전체 버퍼에 담는다.
+
+                contentxml.erase(contentxml.begin());
+                contentxml.shrink_to_fit();
+            } catch (std::exception & e)
+            {
+                std::cout << "하위 스트림인 " << contentxml[0] << "을 열 수 없습니다." <<std::endl;
+                contentxml.erase(contentxml.begin());
+                contentxml.shrink_to_fit();
+                continue;
+            }
         }
+        while (std::regex_search(buffer, match, re1)) {
+            std::string matchData;
+            std::smatch tempmatch;
+            matchData.append(match.str());
+            if(std::regex_search(matchData, tempmatch, re2))
+                urlList.push_back(parsingUrl(match.str()));
+            buffer = match.suffix();
+        }
+    }catch(std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
     }
+
     this->container->close();
     return urlList;
 }
