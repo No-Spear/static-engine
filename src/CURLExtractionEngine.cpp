@@ -134,7 +134,7 @@ std::string WordParser::parsingUrl(const std::string input)
 {
     // 1차 정규식을 통해 Target="~"부분을 가져온다.
     std::smatch firstmatch;
-    std::regex firstre(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+    std::regex firstre(R"(Target[\s]*=[\s]*"[\w\s-_.~!*'();:@&=+$,/?%#\[\]]*")");
     std::regex_search(input, firstmatch, firstre);
 
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
@@ -229,7 +229,7 @@ std::string ExcelParser::parsingUrl(const std::string input)
 {
     // 1차 정규식을 통해 Target="~"부분을 가져온다.
     std::smatch firstmatch;
-    std::regex firstre(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+    std::regex firstre(R"(Target[\s]*=[\s]*"[\w\s-_.~!*'();:@&=+$,/?%#\[\]]*")");
     std::regex_search(input, firstmatch, firstre);
 
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
@@ -338,7 +338,7 @@ std::string PowerPointParser::parsingUrl(const std::string input)
 {
     // 1차 정규식을 통해 Target="~"부분을 가져온다.
     std::smatch firstmatch;
-    std::regex firstre(R"(Target[\s]*=[\s]*"[a-zA-Z0-9-_.~!*'();:@&=+$,/?%#\[\]]*")");
+    std::regex firstre(R"(Target[\s]*=[\s]*"[\w\s-_.~!*'();:@&=+$,/?%#\[\]]*")");
     std::regex_search(input, firstmatch, firstre);
 
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
