@@ -209,6 +209,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
             UrlList.push_back(parsingUrl(match.str()));
         buffer = match.suffix();
     }
+    this->container->close();
     return UrlList;
 }
 // Excel 문서 형식에 대한 생성자
@@ -314,6 +315,7 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
             continue;
         }
     }
+    this->container->close();
     return urlList;
 }
 
@@ -410,6 +412,7 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
             continue;
         }
     }
+    this->container->close();
     return urlList;
 }
 
