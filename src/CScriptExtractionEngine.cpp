@@ -151,6 +151,9 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
     // 문서파일에서 매크로 파일을 엔진에 저장한다..
     if(zip_entry_fread(downloadFile, "vbaProject.bin") < 0) 
         throw engine_Exception("ScriptExtraction", "s", "다운받은 파일의 매크로 파일의 내용을 확인할 수 없습니다.");
+
+    // zip 파일을 닫고 메모리를 정리한다.
+    zip_entry_close(downloadFile);
     
     // 추출된 파일을 바이너리 형식으로 읽는다.
     std::ifstream macroFile("./vbaProject.bin", std::ios::binary);
