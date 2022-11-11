@@ -98,7 +98,6 @@ class ExcelParser : public DocumentParserSuper
 {
 private:
     std::string parsingUrl(const std::string input);                        // 정제되지 않은 Url 데이터에서 Url을 돌려주는 함수
-    std::string parsingContentxml(const std::string input);                 // 정제되지 않은 상위 stream에서 contentxml을 돌려주는 함수
     std::vector<std::string> getContenxmlList(const char* highStream);      // 상위 스트림의 데이터에서 하위 스트림 리스트를 돌려주는 함수
 
 public:
