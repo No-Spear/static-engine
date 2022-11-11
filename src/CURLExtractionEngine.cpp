@@ -296,7 +296,6 @@ std::vector<std::string> ExcelParser::getUrlList(std::string samplePath)
     for(int i =0; i< contentxml.size(); i++)
     {
         try{
-            std::cout << "햔재 탐색하는 파일: " << contentxml[i] << std::endl;
             buffer = this->container->getStreamData(contentxml[i].c_str());
             std::smatch tempmatch;
 
@@ -393,7 +392,6 @@ std::vector<std::string> PowerPointParser::getUrlList(std::string samplePath)
     for(int i =0; i< contentxml.size(); i++)
     {
         try{
-            std::cout << "현재 탐색하는 파일: " << contentxml[i] << std::endl;
             buffer = this->container->getStreamData(contentxml[i].c_str());
             std::smatch tempmatch;
 
