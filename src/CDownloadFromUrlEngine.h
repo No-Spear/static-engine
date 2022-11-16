@@ -27,6 +27,12 @@ struct ST_RESPONSE{
 
 class CDownloadFromUrlEngine : public CEngineSuper
 {
+private:
+    MYSQL* conn;
+    MYSQL connect;
+    MYSQL_RES* result; 
+    MYSQL_ROW row;
+    CURL * curl;
 
 public:
     CDownloadFromUrlEngine();
@@ -34,18 +40,16 @@ public:
     bool Analyze(const ST_ANALYZE_PARAM *input, ST_ANALYZE_RESULT *output);
 
 private:
-    MYSQL* conn;
-    MYSQL connect;
-    MYSQL_RES* result; 
-    MYSQL_ROW row;
-    CURL * curl;
-    std::string replaceAll(std::string str, const std::string from, const std::string to);
+
+    ST_RESPONSE getFileFromUrl(string url);
+    
     bool queryCnCUrl(string url,string fileName,ST_RESPONSE * Response);
     void getPath(ST_RESPONSE *Response);
     string getExtension(string fileName);
     string getFileName(string url);   
     string getDomain(string url);
-    ST_RESPONSE getFileFromUrl(string url);
+    std::string replaceAll(std::string str, const std::string from, const std::string to);
     static size_t writeBufferCallback(unsigned char* contents, size_t size, size_t nmemb, ST_RESPONSE* Response);
+    
 
 };
