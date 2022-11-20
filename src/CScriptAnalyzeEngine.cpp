@@ -19,17 +19,23 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
     for(int i =0; i< input->vecScriptFIles.size(); i++)
     {
         int location =  input->vecScriptFIles[i].second.first;
+
+        std::string url;    
+        if(location == -1)
+            url.append("Not");
+        url.append(input->vecURLs[location]);
+
         switch (input->vecScriptFIles[i].second.second)
         {
         case JS:
-            checkFollina(input->vecScriptFIles[i].first, input->vecURLs[location], output->vecBehaviors);
+            checkFollina(input->vecScriptFIles[i].first, url, output->vecBehaviors);
             break;
         
         case PS:
             break;
         
         case VBS:
-            checkMacro(input->vecScriptFIles[i].first, output->vecBehaviors);
+            checkMacro(input->vecScriptFIles[i].first, url, output->vecBehaviors);
             break;
         
         default:
@@ -127,7 +133,7 @@ bool CScriptAnalyzeEngine::checkFollina(std::string script, std::string url ,std
     return false;
 }
 
-bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIOR>& vecBehaiors)
+bool CScriptAnalyzeEngine::checkMacro(std::string script, std::string urlorNot, std::vector<ST_BEHAVIOR>& vecBehaiors)
 {
     /* 
         악성매크로 의심 리스트
@@ -139,13 +145,18 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     // 탐지 됬는지 확인하기 위한 변수
     int count = 0;
     std::smatch match;
+    std::string url;
+    if(urlorNot == "Not")
+        url.append("Local Macro");
+    else
+        url.append(urlorNot);
 
     std::regex macro0(R"(AutoOpen)");
     // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
     if(std::regex_search(script, match, macro0))
     {
         ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
+        autoOpen.strUrl.append(url);
         autoOpen.Severity=7;
         autoOpen.strName="Calling AutoOpen function used in a malicious macro";
         autoOpen.strDesc="악성 매크로에서 사용되는 AutoOpen 함수를 호출";
@@ -157,7 +168,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro1))
     {
         ST_BEHAVIOR Workbook_Open;
-        Workbook_Open.strUrl.append("Local Macro");
+        Workbook_Open.strUrl.append(url);
         Workbook_Open.Severity=7;
         Workbook_Open.strName="Calling Workbook_Open function used in a malicious macro";
         Workbook_Open.strDesc="악성 매크로에서 사용되는 Workbook_Open 함수를 호출";
@@ -169,7 +180,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro2))
     {
         ST_BEHAVIOR Document_Open;
-        Document_Open.strUrl.append("Local Macro");
+        Document_Open.strUrl.append(url);
         Document_Open.Severity=7;
         Document_Open.strName="Calling Document_Open function used in a malicious macro";
         Document_Open.strDesc="악성 매크로에서 사용되는 Document_Open 함수를 호출";
@@ -181,7 +192,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro3))
     {
         ST_BEHAVIOR DocumentOpen;
-        DocumentOpen.strUrl.append("Local Macro");
+        DocumentOpen.strUrl.append(url);
         DocumentOpen.Severity=7;
         DocumentOpen.strName="Calling a function used in a malicious macro";
         DocumentOpen.strDesc="악성 매크로에서 사용되는 함수를 호출";
@@ -193,7 +204,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro4))
     {
         ST_BEHAVIOR AutoExec;
-        AutoExec.strUrl.append("Local Macro");
+        AutoExec.strUrl.append(url);
         AutoExec.Severity=10;
         AutoExec.strName="Calling AutoExec function used in a malicious macro";
         AutoExec.strDesc="악성 매크로에서 사용되는 AutoExec 함수를 호출";
@@ -205,7 +216,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro5))
     {
         ST_BEHAVIOR AutoExit;
-        AutoExit.strUrl.append("Local Macro");
+        AutoExit.strUrl.append(url);
         AutoExit.Severity=9;
         AutoExit.strName="Calling AutoExit function used in a malicious macro";
         AutoExit.strDesc="악성 매크로에서 사용되는 AutoExit 함수를 호출";
@@ -217,7 +228,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro6))
     {
         ST_BEHAVIOR Auto_Close;
-        Auto_Close.strUrl.append("Local Macro");
+        Auto_Close.strUrl.append(url);
         Auto_Close.Severity=7;
         Auto_Close.strName="Calling Auto_Close function used in a malicious macro";
         Auto_Close.strDesc="악성 매크로에서 사용되는 Auto_Close 함수를 호출";
@@ -229,7 +240,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro7))
     {
         ST_BEHAVIOR autoOpen;
-        autoOpen.strUrl.append("Local Macro");
+        autoOpen.strUrl.append(url);
         autoOpen.Severity=7;
         autoOpen.strName="Calling AutoClose function used in a malicious macro";
         autoOpen.strDesc="악성 매크로에서 사용되는 AutoClose 함수를 호출";
@@ -240,7 +251,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro8))
     {
         ST_BEHAVIOR DocumentChange;
-        DocumentChange.strUrl.append("Local Macro");
+        DocumentChange.strUrl.append(url);
         DocumentChange.Severity=9;
         DocumentChange.strName="Calling DocumentChange function used in a malicious macro";
         DocumentChange.strDesc="악성 매크로에서 사용되는 DocumentChange 함수를 호출";
@@ -252,7 +263,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro9))
     {
         ST_BEHAVIOR AutoNew;
-        AutoNew.strUrl.append("Local Macro");
+        AutoNew.strUrl.append(url);
         AutoNew.Severity=10;
         AutoNew.strName="Calling AutoNew function used in a malicious macro";
         AutoNew.strDesc="악성 매크로에서 사용되는 AutoNew 함수를 호출";
@@ -263,7 +274,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro10))
     {
         ST_BEHAVIOR Document_New;
-        Document_New.strUrl.append("Local Macro");
+        Document_New.strUrl.append(url);
         Document_New.Severity=9;
         Document_New.strName="Calling a function used in a malicious macro";
         Document_New.strDesc="악성 매크로에서 사용되는 함수를 호출";
@@ -275,7 +286,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro11))
     {
         ST_BEHAVIOR NewDocument;
-        NewDocument.strUrl.append("Local Macro");
+        NewDocument.strUrl.append(url);
         NewDocument.Severity=8;
         NewDocument.strName="Calling Document_New function used in a malicious macro";
         NewDocument.strDesc="악성 매크로에서 사용되는 Document_New 함수를 호출";
@@ -287,7 +298,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro12))
     {
         ST_BEHAVIOR CreateObject;
-        CreateObject.strUrl.append("Local Macro");
+        CreateObject.strUrl.append(url);
         CreateObject.Severity=8;
         CreateObject.strName="Calling CreateObject function used in a malicious macro";
         CreateObject.strDesc="악성 매크로에서 사용되는 CreateObject 함수를 호출";
@@ -299,7 +310,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro13))
     {
         ST_BEHAVIOR allocateMemory;
-        allocateMemory.strUrl.append("Local Macro");
+        allocateMemory.strUrl.append(url);
         allocateMemory.Severity=8;
         allocateMemory.strName="Calling allocateMemory function used in a malicious macro";
         allocateMemory.strDesc="악성 매크로에서 사용되는 allocateMemory 함수를 호출";
@@ -311,7 +322,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro14))
     {
         ST_BEHAVIOR copyMemory;
-        copyMemory.strUrl.append("Local Macro");
+        copyMemory.strUrl.append(url);
         copyMemory.Severity=8;
         copyMemory.strName="Calling copyMemory function used in a malicious macro";
         copyMemory.strDesc="악성 매크로에서 사용되는 copyMemory 함수를 호출";
@@ -323,7 +334,7 @@ bool CScriptAnalyzeEngine::checkMacro(std::string script, std::vector<ST_BEHAVIO
     if(std::regex_search(script, match, macro15))
     {
         ST_BEHAVIOR shellExecute;
-        shellExecute.strUrl.append("Local Macro");
+        shellExecute.strUrl.append(url);
         shellExecute.Severity=8;
         shellExecute.strName="Calling shellExecute function used in a malicious macro";
         shellExecute.strDesc="악성 매크로에서 사용되는 shellExecute 함수를 호출";
