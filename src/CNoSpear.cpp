@@ -70,9 +70,6 @@ std::string CNoSpear::makeValue(const ST_REPORT& outReport)
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
         vecValues = vecValues + ", 'Name' : " + "'" + tempName + "'";
         vecValues = vecValues + "}";
-
-
-     
     }
     vecValues = vecValues + "}\"";
 
@@ -86,17 +83,12 @@ std::string CNoSpear::replaceAll(std::string str, const std::string from, const 
 	size_t start_pos = 0; //string처음부터 검사
 
 	while ((start_pos = str.find(from, start_pos)) != std::string::npos)  //from을 찾을 수 없을 때까지
-
 	{
-
 		str.replace(start_pos, from.length(), to);
-
 		start_pos += to.length(); // 중복검사를 피하고 from.length() > to.length()인 경우를 위해서
-
 	}
 
 	return str;
-
 }
 
 // DB에 저장하기 위한 결과를 만드는 함수
@@ -286,7 +278,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     }
                     else
                         std::cout << output.vecExtractedScript[i].first << std::endl;
-                    std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
+                    std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
             }
@@ -400,5 +392,4 @@ int main(int argc, char** argv)
     delete staticEngine;
 
     return 0;
-
 }
