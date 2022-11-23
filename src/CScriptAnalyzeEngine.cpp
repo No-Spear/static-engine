@@ -19,11 +19,11 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
     for(int i =0; i< input->vecScriptFIles.size(); i++)
     {
         int location =  input->vecScriptFIles[i].second.first;
-
         std::string url;    
         if(location == -1)
             url.append("Not");
-        url.append(input->vecURLs[location]);
+        else
+            url.append(input->vecURLs[location]);
 
         switch (input->vecScriptFIles[i].second.second)
         {
