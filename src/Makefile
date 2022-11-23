@@ -24,12 +24,10 @@ CURLExtractionEngine.o: CException.h CEngineSuper.h CURLExtractionEngine.h CURLE
 CDownloadFromUrlEngine.o: sha256.h CException.h CEngineSuper.h CDownloadFromUrlEngine.h CDownloadFromUrlEngine.cpp
 
 CScriptExtractionEngine.o: CException.h CEngineSuper.h CScriptExtractionEngine.h CScriptExtractionEngine.cpp
-	$(CC) -c -o $@ CScriptExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
 CScriptAnalyzeEngine.o: CException.h CEngineSuper.h CScriptAnalyzeEngine.h CScriptAnalyzeEngine.cpp
 
 CMacroExtractionEngine.o: CException.h CEngineSuper.h CMacroExtractionEngine.h CMacroExtractionEngine.cpp
-	$(CC) -c -o $@ CMacroExtractionEngine.cpp ${LDLIBS} ${libpath} ${incpath}
 
 CNoSpear.o: CURLExtractionEngine.h CDownloadFromUrlEngine.h CScriptExtractionEngine.h CScriptAnalyzeEngine.h CMacroExtractionEngine.h CXMLParsingEngine.h CNoSpear.cpp
 	$(CC) -c -o $@ CNoSpear.cpp ${LDLIBS} ${libpath} ${incpath}
