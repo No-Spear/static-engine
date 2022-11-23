@@ -57,19 +57,33 @@ bool CScriptExtractionEngine::checkFileDownloadStatus(const std::string fpath, i
 }
 
 // 추출된 스크립트에서 의미 있는 내용만 추출하는 함수
-void CScriptExtractionEngine::getMeanfulScript(std::string& script)
+void CScriptExtractionEngine::getMeanfulScript(std::string& script, std::string type)
 {
-    // HTML 전용
-    std::regex first(R"(<script>[\s]*[\/A-Z\s]*)");
-    std::regex last(R"((\/\/[A-Za-z]*)?[\s]*</script>)");
-    script = std::regex_replace(script, first, "");
-    script = std::regex_replace(script, last, "");
-    // 스트링 객체 사이즈 조정
-    script.resize(script.size());
-    // 메모리 재할당을 통한 낭비 메모리 제거
-    script.shrink_to_fit();
-
-    // Macro 전용
+    if(type == "html")
+    {
+        // HTML 전용
+        std::regex first(R"(<script>[\s]*[\/A-Z\s]*)");
+        std::regex last(R"((\/\/[A-Za-z]*)?[\s]*</script>)");
+        script = std::regex_replace(script, first, "");
+        script = std::regex_replace(script, last, "");
+        // 스트링 객체 사이즈 조정
+        script.resize(script.size());
+        // 메모리 재할당을 통한 낭비 메모리 제거
+        script.shrink_to_fit();
+    }
+    else if(type == "vba")
+    {
+        // olevba 결과 출력 정제용
+        // - - - 를 제거하기 위한 정규표현식
+        std::regex first(R"(\s? - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \s)");
+        std::regex last(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
+        script = std::regex_replace(script, first, "");
+        script = std::regex_replace(script, last, "");
+        // 스트링 객체 사이즈 조정
+        script.resize(script.size());
+        // 메모리 재할당을 통한 낭비 메모리 제거
+        script.shrink_to_fit();
+    }
 }
 
 bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
@@ -100,7 +114,12 @@ bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::v
     std::smatch match;
 
     while (std::regex_search(buf, match, re)) {
-        scriptlist.push_back(std::make_pair(match.str(), std::make_pair(i, getHtmlScriptType(match.str()))));
+        // 정규표현식을 통해 찾은 스크립트를 저장.
+        std::string mstr = match.str();
+        // 스크립트 데이터를 정제
+        getMeanfulScript(mstr, "html");
+        // 정제된 스크립트 데이터를 배열에 저장
+        scriptlist.push_back(std::make_pair(mstr, std::make_pair(i, getHtmlScriptType(mstr))));
         buf = match.suffix();
     }
     if(scriptlist.empty())
@@ -132,7 +151,7 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
     // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
     int ret = system(olevba.c_str());
     if(ret != 0)
-        throw engine_Exception("MacroExtractio","s","OleVBA를 통해 vba코드를 추출할 수 없습니다.");
+        throw engine_Exception("MacroExtraction","s","olevba를 통해 vba코드를 추출할 수 없습니다.");
     
     // 추출된 파일을 바이너리 형식으로 읽는다.
     std::ifstream macroFile("./result.log", std::ios::binary);
@@ -154,9 +173,30 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
         throw engine_Exception("MacroExtractio","s","다운받은 파일에서 추출된 매크로 분석 파일을 삭제할 수 없습니다.");
 
     // 추출된 매크로 데이터를 스크립트 리스트에 집어 넣는다.
-    // 스크립트 데이터, url의 위치, 추출된 스크립트 타입
-    // 순으로 넣는다.
-    scriptlist.push_back(std::make_pair(macroData, std::make_pair(i, VBS)));
+    // 스크립트 데이터, url의 위치, 추출된 스크립트 타입 순으로 넣는다.
+    int curr;
+    int prev = 0;
+    curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+    while(curr != std::string::npos)
+    {
+        if(prev == 0)
+        {
+            prev = curr +1;
+            curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+            continue;
+        }
+        std::string split = macroData.substr(prev, curr-prev);
+        getMeanfulScript(split,"vba");
+        scriptlist.push_back(std::make_pair(split, std::make_pair(i, VBS)));
+        prev = curr +1;
+        curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+    }
+    std::string lastsplit = macroData.substr(prev, curr-prev);
+    getMeanfulScript(lastsplit, "vba");
+    lastsplit.pop_back();
+    lastsplit.pop_back();
+    lastsplit.pop_back();
+    scriptlist.push_back(std::make_pair(lastsplit, std::make_pair(i, VBS)));
 
     return true;
 }
@@ -187,7 +227,6 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
             // html 파일에서 script와 스크립트 타입을 확인한다.
             getHtmlScriptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
             // 추출된 스크립트에서 의미 있는 스크립트만 추출한다.
-            getMeanfulScript(output->vecExtractedScript[i].first);
             return true;
         }
         // 만약 받은 파일이 docm, xlsm, ppsm(매크로 탑제 파일)), otm, xltm, pptm(템플릿 파일)
