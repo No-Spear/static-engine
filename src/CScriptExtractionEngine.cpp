@@ -75,7 +75,7 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script, std::string 
     {
         // olevba 결과 출력 정제용
         // - - - 를 제거하기 위한 정규표현식
-        std::regex first(R"(\s? - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \s)");
+        std::regex first(R"(\s?(- ){38}\s?)");
         std::regex last(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
         script = std::regex_replace(script, first, "");
         script = std::regex_replace(script, last, "");
