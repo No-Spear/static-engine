@@ -45,8 +45,14 @@ std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
     if(zip_entry_fread(this->macroFile, "vbaProject.bin") < 0) 
         throw engine_Exception("MacroExtraction", "s", "매크로 파일이 있는 파일의 내용을 확인할 수 없습니다.");
     
-    // 추출된 파일을 바이너리 형식으로 읽는다.
-    std::ifstream macroFile("./vbaProject.bin", std::ios::binary);
+    // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
+    int ret = system("olevba vbaProject.bin --decode -c >> result.log");
+    if(ret != 0)
+        throw engine_Exception("MacroExtractio","s","OleVBA를 통해 vba코드를 추출할 수 없습니다.");
+
+    // 추출된 파일을 읽는다.
+    std::ifstream macroFile("./result.log");
+    
     // 만약 파일을 열기가 실패했다면
     if(macroFile.fail())
         throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 열 수 없습니다.");
@@ -58,6 +64,7 @@ std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
     macroFile.seekg(0, std::ios::beg);
     // 파일에 대한 내용을 받을 스트링 객체 생성 및 사이즈 조정
     std::string macroData;
+
     macroData.resize(fileSize);
     macroFile.read(&macroData[0], fileSize);
 
@@ -65,6 +72,9 @@ std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
     if(remove("./vbaProject.bin") != 0)
         throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 삭제할 수 없습니다.");
     
+    // 추출된 vba결과를 전부 읽은 후 삭제한다.
+    if(remove("./result.log") != 0)
+        throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 삭제할 수 없습니다.");
     return macroData;
 }
 
