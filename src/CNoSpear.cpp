@@ -273,12 +273,16 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     std::cout << "Extracted Script:(If VBS Maximum ouput is 30 bytes)" << std::endl;
                     if(output.vecExtractedScript[i].second.second == VBS)
                     {
-                        for(int j = 0; j < 30; j++)
+                        int loop = output.vecExtractedScript[i].first.size();
+                        if (loop > 30)
+                            loop = 30;
+                        for(int j = 0; j < loop; j++)
                             std::cout << output.vecExtractedScript[i].first[j];
+                        std::cout << "\n";
                     }
                     else
                         std::cout << output.vecExtractedScript[i].first << std::endl;
-                    std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
+                    std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
             }
@@ -305,7 +309,10 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 for(int i =0; i<output.vecExtractedScript.size(); i++)
                 {
                     std::cout << "Extracted Macro(Maximun print = 30):" << std::endl;
-                    for(int j = 0; j < 30; j++)
+                    int loop = output.vecExtractedScript[i].first.size();
+                        if (loop > 30)
+                            loop = 30;
+                    for(int j = 0; j < loop; j++)
                         std::cout << output.vecExtractedScript[i].first[j];
                     std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
