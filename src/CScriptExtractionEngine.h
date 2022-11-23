@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <regex>
-#include <zip.h>
 
 class CScriptExtractionEngine : public CEngineSuper {
 private:

@@ -59,6 +59,7 @@ bool CScriptExtractionEngine::checkFileDownloadStatus(const std::string fpath, i
 // 추출된 스크립트에서 의미 있는 내용만 추출하는 함수
 void CScriptExtractionEngine::getMeanfulScript(std::string& script)
 {
+    // HTML 전용
     std::regex first(R"(<script>[\s]*[\/A-Z\s]*)");
     std::regex last(R"((\/\/[A-Za-z]*)?[\s]*</script>)");
     script = std::regex_replace(script, first, "");
@@ -67,6 +68,8 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script)
     script.resize(script.size());
     // 메모리 재할당을 통한 낭비 메모리 제거
     script.shrink_to_fit();
+
+    // Macro 전용
 }
 
 bool CScriptExtractionEngine::getHtmlScriptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
@@ -119,44 +122,20 @@ int CScriptExtractionEngine::getHtmlScriptType(const std::string scriptData)
 bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
 {
     // 파일 형식에 따른 매크로 파일의 위치
-    std::string location;
-
-    // 다운 받은 파일에 대한 형식에 따른 매크로 추출 위치를 정해준다.
-    switch (checkFileType(fpath).front())
-    {
-    case 'd':
-        location.append("word/vbaProject.bin");
-        break;
-    case 'x':
-        location.append("xl/vbaProject.bin");
-        break;
-    case 'p':
-        location.append("ppt/vbaProject.bin");
-        break;
-    default:
-        throw engine_Exception("SciptExtraction", "s", "매크로 추출을 지원하지않는 형식의 문서 입니다.");
-    }
-
-    // 해당 파일의 데이터를 접근하기 위한 zip_t 구조체    
-    zip_t* downloadFile;
-    downloadFile = zip_open(fpath, ZIP_DEFAULT_COMPRESSION_LEVEL, 'r');
+    std::string olevba;
     
-    // 만약 다운받은 파일을 열 수 없다면
-    if(downloadFile == NULL)
-        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일을 열 수 없습니다.");
-    
-    if(zip_entry_open(downloadFile, location.c_str()) != 0)
-        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일의 매크로 파일의 전달 받은 위치의 파일을 열 수 없습니다.");
+    // olevba 명령어 삽입.
+    olevba.append("olevba ");
+    olevba.append(fpath);
+    olevba.append(" --decode -c >> result.log");
 
-    // 문서파일에서 매크로 파일을 엔진에 저장한다..
-    if(zip_entry_fread(downloadFile, "vbaProject.bin") < 0) 
-        throw engine_Exception("ScriptExtraction", "s", "다운받은 파일의 매크로 파일의 내용을 확인할 수 없습니다.");
-
-    // zip 파일을 닫고 메모리를 정리한다.
-    zip_entry_close(downloadFile);
+    // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
+    int ret = system(olevba.c_str());
+    if(ret != 0)
+        throw engine_Exception("MacroExtractio","s","OleVBA를 통해 vba코드를 추출할 수 없습니다.");
     
     // 추출된 파일을 바이너리 형식으로 읽는다.
-    std::ifstream macroFile("./vbaProject.bin", std::ios::binary);
+    std::ifstream macroFile("./result.log", std::ios::binary);
     // 만약 파일을 열기가 실패했다면
     if(macroFile.fail())
         throw engine_Exception("ScriptExtraction", "s","다운받은 파일에서 추출된 매크로 파일을 열 수 없습니다.");
@@ -170,11 +149,10 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
     std::string macroData;
     macroData.resize(fileSize);
     macroFile.read(&macroData[0], fileSize);
-
-    // 추출된 파일을 전부 읽은 후 삭제한다.
-    if(remove("./vbaProject.bin") != 0)
-        throw engine_Exception("MacroExtractio","s","다운받은 파일에서 추출된 매크로 파일을 삭제할 수 없습니다.");
     
+    if(remove("./result.log") != 0)
+        throw engine_Exception("MacroExtractio","s","다운받은 파일에서 추출된 매크로 분석 파일을 삭제할 수 없습니다.");
+
     // 추출된 매크로 데이터를 스크립트 리스트에 집어 넣는다.
     // 스크립트 데이터, url의 위치, 추출된 스크립트 타입
     // 순으로 넣는다.
