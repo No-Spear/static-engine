@@ -15,7 +15,7 @@ std::string extractFileHash(const std::string filepath)
 }
 
 // 엔진에게 결과를 보내는 함수
-bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)
+bool sendStaticEngineResult(const char* pipe, const ST_SERVER_REPORT report)    
 {
     int filedes = atoi(pipe);
     if(filedes < 0)
@@ -324,7 +324,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
         } catch(const std::exception& e)
         {
             std::cout << "\n" << e.what() << "\n" << std::endl;
-            if(strstr(e.what(),"Url이 없습니다."))
+            if(strstr(e.what(),"Url이 없습니다.") != NULL | strstr(e.what(), "현재 지원하지 않는 문서 형식 입니다.") != NULL)
             {
                 // 현재 배열에 등록된 엔진 객체 소멸
                 this->m_Engines.clear();
