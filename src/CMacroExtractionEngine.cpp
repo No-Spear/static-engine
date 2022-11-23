@@ -24,7 +24,7 @@ std::string CMacroExtractionEngine::extractFileExetoPath(const std::string docpa
 }
 
 // 분석을 의뢰한 파일에서 매크로 파일을 가져오는 함수
-std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
+bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
 {   
     std::string olevba;
 
@@ -58,9 +58,48 @@ std::string CMacroExtractionEngine::getMacroDataFromFile(const char* location)
     // 추출된 vba결과를 전부 읽은 후 삭제한다.
     if(remove("./result.log") != 0)
         throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 삭제할 수 없습니다.");
-    return macroData;
+
+    // 매크로 정재 및 분리
+    int curr;
+    int prev = 0;
+    curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+    while(curr != std::string::npos)
+    {
+        if(prev == 0)
+        {
+            prev = curr +1;
+            curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+            continue;
+        }
+        std::string split = macroData.substr(prev, curr-prev);
+        getMeanFulMacroData(split);
+        scriptlist.push_back(std::make_pair(split, std::make_pair(-1, VBS)));
+        prev = curr +1;
+        curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+    }
+    std::string lastsplit = macroData.substr(prev, curr-prev);
+    getMeanFulMacroData(lastsplit);
+    lastsplit.pop_back();
+    lastsplit.pop_back();
+    lastsplit.pop_back();
+    scriptlist.push_back(std::make_pair(lastsplit, std::make_pair(-1, VBS)));
+
+    return true;
 }
 
+void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
+{
+    // olevba 결과 출력 정제용
+    // - - - 를 제거하기 위한 정규표현식
+    std::regex first(R"(\s?(- ){38}\s?)");
+    std::regex last(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
+    script = std::regex_replace(script, first, "");
+    script = std::regex_replace(script, last, "");
+    // 스트링 객체 사이즈 조정
+    script.resize(script.size());
+    // 메모리 재할당을 통한 낭비 메모리 제거
+    script.shrink_to_fit();
+}
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::string macroData;
@@ -69,12 +108,9 @@ bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_R
       | extractFileExetoPath(pszFile).front() == 'x'
       | extractFileExetoPath(pszFile).front() == 'p' 
       )
-        macroData = (std::string)getMacroDataFromFile(pszFile.c_str());
+        getMacroDataFromFile(pszFile.c_str(), output->vecExtractedScript);
     else
         throw engine_Exception("MacroExtraction", "s", "매크로 추출을 지원하지않는 형식의 문서 입니다.");
- 
-    // 출력에 다운로드된 url의 위치는 -1로 안쓰는 숫자를 사용한다.
-    // 추출된 파일에 대한 데이터를 분석엔진에 넘겨준다.
-    output->vecExtractedScript.push_back(std::make_pair(macroData, std::make_pair(-1, VBS)));
+
     return true;
 }
