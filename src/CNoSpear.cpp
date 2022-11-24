@@ -132,7 +132,7 @@ void CNoSpear::makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_
             if(result.vecBehaviors[0].strName.find("msdt") != std::string::npos)
                 outReport.strDetectName.append("Follina");
             else if(result.vecBehaviors[0].strUrl.find("Macro") != std::string::npos)
-                outReport.strDetectName.append("Malicious VBA Scirpt Macro");
+                outReport.strDetectName.append("Malicious Macro(VBA or XLM)");
             else 
                 outReport.strDetectName.append("Malware File");
         }
