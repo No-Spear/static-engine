@@ -92,8 +92,10 @@ void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
     // olevba 결과 출력 정제용
     // - - - 를 제거하기 위한 정규표현식
     std::regex first(R"(\s?(- ){38}\s?)");
-    std::regex last(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
+    std::regex second(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
+    std::regex last(R"([&()]|(,\d)|["])");
     script = std::regex_replace(script, first, "");
+    script = std::regex_replace(script, second, "");
     script = std::regex_replace(script, last, "");
     // 스트링 객체 사이즈 조정
     script.resize(script.size());
