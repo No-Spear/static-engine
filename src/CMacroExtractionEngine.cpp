@@ -63,7 +63,6 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
     std::regex useless(R"(XLMMacroDeobfuscator: pywin32 is not installed \(only is required if you want to use MS Excel\)\nolevba [0-9.]* on Python [0-9.]* - http:\/\/decalage.info\/python\/oletools)");
     macroData = std::regex_replace(macroData, useless, "");
 
-    std::cout << macroData << std::endl;
     // 매크로 정재 및 분리
     int curr;
     int prev = 0;
