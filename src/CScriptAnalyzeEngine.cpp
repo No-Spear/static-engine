@@ -1,5 +1,35 @@
 #include "CScriptAnalyzeEngine.h"
 
+std::string base64_decoder(const std::string& input)
+{
+    static const std::string b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+ 
+    std::string result;
+    std::vector<int> T(256, -1);
+ 
+    for (int i = 0; i < 64; i++)
+        T[b[i]] = i;
+ 
+    int val = 0;
+    int valb = -8;
+ 
+    for (u_char c : input) 
+    {
+        if (T[c] == -1)
+            break;
+ 
+        val = (val << 6) + T[c];
+        valb += 6;
+ 
+        if (valb >= 0) 
+        {
+            result.push_back(char((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return result;
+}
+
 // 엔진 객체 생성자
 CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4, "ScriptAnalyze")
 {
@@ -153,9 +183,30 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     else
         url.append(urlorNot);
 
+    std::string replaceScript = script;
+
+    std::regex sBytes(R"(sBytes = )");
+    if(std::regex_search(replaceScript, match, sBytes))
+    {
+        // sBytes = sByte 를 모두 제거
+        std::regex remove(R"(\nsBytes = sBytes  )");
+        replaceScript = std::regex_replace(replaceScript, remove, "");
+
+        // 제거된 내용에서 sByte에 해당하는 내용을 찾아낸다.
+        std::regex Encode(R"(sBytes = [\w]*)");
+        std::regex_search(replaceScript, match, Encode);
+
+        std::string sbyte = match.str();
+        // sByte = 을 제거
+        sbyte.erase(0,9);
+        sbyte = base64_decoder(sbyte);
+
+        replaceScript = std::regex_replace(replaceScript, Encode, sbyte);
+    }
+
     std::regex macro0(R"(AutoOpen)");
     // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
-    if(std::regex_search(script, match, macro0))
+    if(std::regex_search(replaceScript, match, macro0))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append(url);
@@ -167,7 +218,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro1(R"(Workbook_Open)");
-    if(std::regex_search(script, match, macro1))
+    if(std::regex_search(replaceScript, match, macro1))
     {
         ST_BEHAVIOR Workbook_Open;
         Workbook_Open.strUrl.append(url);
@@ -179,7 +230,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro2(R"(Document_Open)");
-    if(std::regex_search(script, match, macro2))
+    if(std::regex_search(replaceScript, match, macro2))
     {
         ST_BEHAVIOR Document_Open;
         Document_Open.strUrl.append(url);
@@ -191,7 +242,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro3(R"(DocumentOpen)");
-    if(std::regex_search(script, match, macro3))
+    if(std::regex_search(replaceScript, match, macro3))
     {
         ST_BEHAVIOR DocumentOpen;
         DocumentOpen.strUrl.append(url);
@@ -203,7 +254,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro4(R"(AutoExec)");
-    if(std::regex_search(script, match, macro4))
+    if(std::regex_search(replaceScript, match, macro4))
     {
         ST_BEHAVIOR AutoExec;
         AutoExec.strUrl.append(url);
@@ -215,7 +266,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro5(R"(AutoExit)");
-    if(std::regex_search(script, match, macro5))
+    if(std::regex_search(replaceScript, match, macro5))
     {
         ST_BEHAVIOR AutoExit;
         AutoExit.strUrl.append(url);
@@ -227,7 +278,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro6(R"(Auto_Close)");
-    if(std::regex_search(script, match, macro6))
+    if(std::regex_search(replaceScript, match, macro6))
     {
         ST_BEHAVIOR Auto_Close;
         Auto_Close.strUrl.append(url);
@@ -239,7 +290,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro7(R"(AutoClose)");
-    if(std::regex_search(script, match, macro7))
+    if(std::regex_search(replaceScript, match, macro7))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append(url);
@@ -251,7 +302,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro8(R"(DocumentChange)");
-    if(std::regex_search(script, match, macro8))
+    if(std::regex_search(replaceScript, match, macro8))
     {
         ST_BEHAVIOR DocumentChange;
         DocumentChange.strUrl.append(url);
@@ -263,7 +314,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro9(R"(AutoNew)");
-    if(std::regex_search(script, match, macro9))
+    if(std::regex_search(replaceScript, match, macro9))
     {
         ST_BEHAVIOR AutoNew;
         AutoNew.strUrl.append(url);
@@ -275,7 +326,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro10(R"(Document_New)");
-    if(std::regex_search(script, match, macro10))
+    if(std::regex_search(replaceScript, match, macro10))
     {
         ST_BEHAVIOR Document_New;
         Document_New.strUrl.append(url);
@@ -287,7 +338,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro11(R"(NewDocument)");
-    if(std::regex_search(script, match, macro11))
+    if(std::regex_search(replaceScript, match, macro11))
     {
         ST_BEHAVIOR NewDocument;
         NewDocument.strUrl.append(url);
@@ -299,7 +350,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro12(R"(CreateObject)");
-    if(std::regex_search(script, match, macro12))
+    if(std::regex_search(replaceScript, match, macro12))
     {
         ST_BEHAVIOR CreateObject;
         CreateObject.strUrl.append(url);
@@ -311,7 +362,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro13(R"(allocateMemory)");
-    if(std::regex_search(script, match, macro13))
+    if(std::regex_search(replaceScript, match, macro13))
     {
         ST_BEHAVIOR allocateMemory;
         allocateMemory.strUrl.append(url);
@@ -323,7 +374,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro14(R"(copyMemory)");
-    if(std::regex_search(script, match, macro14))
+    if(std::regex_search(replaceScript, match, macro14))
     {
         ST_BEHAVIOR copyMemory;
         copyMemory.strUrl.append(url);
@@ -335,7 +386,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro15(R"(shellExecute)");
-    if(std::regex_search(script, match, macro15))
+    if(std::regex_search(replaceScript, match, macro15))
     {
         ST_BEHAVIOR shellExecute;
         shellExecute.strUrl.append(url);
