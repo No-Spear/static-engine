@@ -59,6 +59,11 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
     if(remove("./result.log") != 0)
         throw engine_Exception("MacroExtractio","s","추출된 매크로 파일을 삭제할 수 없습니다.");
 
+    // 시작에 나오는 내용을 제거하기 위한 정규표현식
+    std::regex useless(R"(XLMMacroDeobfuscator: pywin32 is not installed \(only is required if you want to use MS Excel\)\nolevba [0-9.]* on Python [0-9.]* - http:\/\/decalage.info\/python\/oletools)");
+    macroData = std::regex_replace(macroData, useless, "");
+
+    std::cout << macroData << std::endl;
     // 매크로 정재 및 분리
     int curr;
     int prev = 0;
