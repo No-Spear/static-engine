@@ -35,8 +35,10 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
     // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
     int ret = system(olevba.c_str());
     if(ret != 0)
+    {
+        remove("./result.log");
         throw engine_Exception("MacroExtractio","s","OleVBA를 통해 vba코드를 추출할 수 없습니다.");
-
+    }
     // 추출된 파일을 읽는다.
     std::ifstream macroFile("./result.log");
     
