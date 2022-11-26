@@ -287,16 +287,18 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 std::cout << std::endl;
             }
             else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
-            {                
+            {
                 std::cout << "Analyze Result:" << std::endl;
-                for(int i= 0; i< output.vecBehaviors.size(); i++)
-                {
-                    std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
-                    std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
-                    std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
-                    std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
-                }
-                
+                if(output.vecBehaviors.size() == 0)
+                    std::cout << "\n현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
+                else
+                    for(int i= 0; i< output.vecBehaviors.size(); i++)
+                    {
+                        std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                        std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                        std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                        std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                    }
             }
             else if(this->m_Engines[0]->getEngineType() == "MacroExtraction")
             {
@@ -334,7 +336,6 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 this->m_Engines.push_back(new CMacroExtractionEngine());
                 // 스크립트 분석엔진 삽입.
                 this->m_Engines.push_back(new CScriptAnalyzeEngine());
-                // this->m_Engines.push_back(new COLE);
                 // this->m_Engines.push_back(new CDDE);
                 continue;
             }

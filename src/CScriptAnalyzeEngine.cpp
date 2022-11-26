@@ -76,8 +76,8 @@ bool CScriptAnalyzeEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RES
     }
 
     // 만약 분석 결과가 없다면 예외 발생.
-    if(output->vecBehaviors.size() == 0)
-        throw engine_Exception("ScriptAnalyze","s","현재 엔진의 분석 결과 탐지된 내용이 없습니다.");
+    // if(output->vecBehaviors.size() == 0)
+    //     throw engine_Exception("ScriptAnalyze","s","현재 엔진의 분석 결과 탐지된 내용이 없습니다.");
 
     return true;    
 }
