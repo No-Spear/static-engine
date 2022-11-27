@@ -4,6 +4,7 @@
 #include "CScriptExtractionEngine.h"
 #include "CScriptAnalyzeEngine.h"
 #include "CMacroExtractionEngine.h"
+#include "CDDEAnalyzeEngine.h"
 #include "CNoSpear.h"
 
 // 전달받은 파일의 위치에서 파일의 hash값을 추출해내는 함수
@@ -286,11 +287,11 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 }
                 std::cout << std::endl;
             }
-            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
+            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze" | this->m_Engines[0]->getEngineType() == "DDEAnalyze")
             {
                 std::cout << "Analyze Result:" << std::endl;
                 if(output.vecBehaviors.size() == 0)
-                    std::cout << "\n현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
+                    std::cout << "현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
                 else
                     for(int i= 0; i< output.vecBehaviors.size(); i++)
                     {
@@ -336,7 +337,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 this->m_Engines.push_back(new CMacroExtractionEngine());
                 // 스크립트 분석엔진 삽입.
                 this->m_Engines.push_back(new CScriptAnalyzeEngine());
-                // this->m_Engines.push_back(new CDDE);
+                this->m_Engines.push_back(new CDDEAnalyzeEngine());
                 continue;
             }
             makeOutputReport(sampleFile, output, outReport);
