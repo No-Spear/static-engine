@@ -41,6 +41,7 @@ CNoSpear::CNoSpear()
 {
     this->macroFlag = false;
     this->xmlFlag = false;
+    this->ddeFalg = false;
     this->m_Engines.push_back(new CXMLParsingEngine());
 }
 
@@ -110,7 +111,7 @@ void CNoSpear::makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_
         // 위험도의 평균을 구하고 이를 전체 위험도에 더함.
         totalSeverity = totalSeverity / behaviorSize;
         // 만약 매크로 플래그가 켜있지 않다면 
-        if(this->macroFlag == false & this->xmlFlag == false)
+        if(this->macroFlag == false & this->xmlFlag == false & this->ddeFalg == false)
             if(totalSeverity < 2.5)
                 outReport.nSeverity += 1;
             else if(totalSeverity < 5)
@@ -134,6 +135,8 @@ void CNoSpear::makeOutputReport(const ST_FILE_INFO sampleFile ,const ST_ANALYZE_
                 outReport.strDetectName.append("Follina");
             else if(result.vecBehaviors[0].strUrl.find("Macro") != std::string::npos)
                 outReport.strDetectName.append("Malicious Macro(VBA or XLM)");
+            else if (result.vecBehaviors[0].strName.find("DDE") != std::string::npos)
+                outReport.strDetectName.append("Dynamic Data Exchange");
             else 
                 outReport.strDetectName.append("Malware File");
         }
@@ -287,7 +290,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 }
                 std::cout << std::endl;
             }
-            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze" | this->m_Engines[0]->getEngineType() == "DDEAnalyze")
+            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
             {
                 std::cout << "Analyze Result:" << std::endl;
                 if(output.vecBehaviors.size() == 0)
@@ -320,6 +323,24 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
+            }
+            else if(this->m_Engines[0]->getEngineType() == "DDEAnalyze")
+            {
+                std::cout << "Analyze Result:" << std::endl;
+                if(output.vecBehaviors.size() == 0)
+                    std::cout << "현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
+                else
+                {
+                    this->ddeFalg = true;
+                    for(int i= 0; i< output.vecBehaviors.size(); i++)
+                    {
+                        std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                        std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                        std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                        std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                    }
+                }
+                    
             }
             else
                 throw engine_Exception("Static-Engine","s",this->m_Engines[0]->getEngineType(), "Engine은 현재 지원하지 않는 엔진입니다.");
