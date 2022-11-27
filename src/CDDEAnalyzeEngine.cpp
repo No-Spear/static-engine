@@ -89,17 +89,17 @@ bool CDDEAnalyzeEngine::checkDDEKeyword(const std::string location, const std::s
     int count = 0;
     std::smatch match;
 
-    std::regex dde0(R"([\s]*DDE[\s]*)");
-    if(std::regex_search(xmlData, match, dde0))
-    {
-        ST_BEHAVIOR DDE;
-        DDE.strUrl.append(location);
-        DDE.Severity = 8;
-        DDE.strName="Call DDE Keyword in XML Data";
-        DDE.strDesc="Dynamic Data Exchange에서 사용되는 DDE 키워드 호출";
-        vecBehaviors.push_back(DDE);
-        count++;
-    }
+    // std::regex dde0(R"([\s]*DDE[\s]*)");
+    // if(std::regex_search(xmlData, match, dde0))
+    // {
+    //     ST_BEHAVIOR DDE;
+    //     DDE.strUrl.append(location);
+    //     DDE.Severity = 8;
+    //     DDE.strName="Call DDE Keyword in XML Data";
+    //     DDE.strDesc="Dynamic Data Exchange에서 사용되는 DDE 키워드 호출";
+    //     vecBehaviors.push_back(DDE);
+    //     count++;
+    // }
 
     std::regex dde1(R"(DDEAUTO)");
     if(std::regex_search(xmlData, match, dde1))
