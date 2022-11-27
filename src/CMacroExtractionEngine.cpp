@@ -112,9 +112,13 @@ bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_R
 {
     std::string macroData;
     std::string pszFile = input->vecInputFiles[0].first;
+
     if(extractFileExetoPath(pszFile).front() == 'd' 
+      | extractFileExetoPath(pszFile).front() == 'D'
       | extractFileExetoPath(pszFile).front() == 'x'
-      | extractFileExetoPath(pszFile).front() == 'p' 
+      | extractFileExetoPath(pszFile).front() == 'X'
+      | extractFileExetoPath(pszFile).front() == 'p'
+      | extractFileExetoPath(pszFile).front() == 'P' 
       )
         getMacroDataFromFile(pszFile.c_str(), output->vecExtractedScript);
     else
