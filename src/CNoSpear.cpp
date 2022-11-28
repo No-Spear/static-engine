@@ -294,7 +294,11 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
             {
                 std::cout << "Analyze Result:" << std::endl;
                 if(output.vecBehaviors.size() == 0)
+                {
                     std::cout << "현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
+                    // 매크로 플래그를 꺼준다.
+                    this->macroFlag = false;
+                }
                 else
                     for(int i= 0; i< output.vecBehaviors.size(); i++)
                     {
@@ -309,7 +313,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
                 input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
 
-                // VBA Sciprt가 있다면 MacroFlag를 설정한다.
+                // 무조껀 매크로 플래그를 킨다.
                 this->macroFlag = true;
 
                 for(int i =0; i<output.vecExtractedScript.size(); i++)

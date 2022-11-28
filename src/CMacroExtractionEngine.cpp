@@ -108,6 +108,7 @@ void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
     // 메모리 재할당을 통한 낭비 메모리 제거
     script.shrink_to_fit();
 }
+
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::string macroData;
