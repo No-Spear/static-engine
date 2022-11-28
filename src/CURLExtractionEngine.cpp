@@ -140,7 +140,7 @@ std::string WordParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre(R"(https?[\w.%/?=:-]*)");
+    std::regex scondre(R"(https?[\w.%/?=:-@_]*)");
     std::regex_search(urlinput, secondmatch, scondre);
     return secondmatch.str();
 }
@@ -155,7 +155,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     std::vector<std::string> UrlList;
 
     // 또다른 xml.rel가 있는지 확인하기 위한 정규식
-    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*settings"[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
+    std::regex re1(R"(<Relationship[\w\s=!@#$%^&*()+=:;"',./`~-]*(S|s)ettings"[\w\s=!@#$%^&*()+=:;"',./`~-]*>)");
     std::smatch match;
 
     // Word 문서의 contentxml의 정의
@@ -194,7 +194,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
     }
 
     // oleObject와 tempate를 잡기 위한 정규표현식
-    std::regex re2(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
+    std::regex re2(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate|frame)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
     // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re3(R"(TargetMode[\s]*=[\s]*"External")");
     std::smatch tempmatch;
