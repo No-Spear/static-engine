@@ -140,9 +140,37 @@ std::string WordParser::parsingUrl(const std::string input)
     // 이후 2차 정규식을 통해 mhtml의 부분을 제거하고 순수 url을 가져온다.
     std::smatch secondmatch;
     std::string urlinput = firstmatch.str();
-    std::regex scondre(R"(https?[\w.%/?=:-@_]*)");
-    std::regex_search(urlinput, secondmatch, scondre);
-    return secondmatch.str();
+    std::string output;
+    // mhtml이 있는지 확인
+    std::regex mhtml(R"(mhtml:)");
+    if(std::regex_search(urlinput, secondmatch, mhtml))
+    {
+        // 만약 있다면 mhtml에서 url을 분리
+        std::regex https(R"(https?)");
+        // http or https가 있다면
+        if(std::regex_search(urlinput, secondmatch, https))
+        {
+            std::regex scondre(R"(https?[\w.%/?=:@_-]*)");
+            std::regex_search(urlinput, secondmatch, scondre);
+            output.append(secondmatch.str());
+        }
+        else
+        {
+            std::regex secondre(R"(mhtml:[\w:./_@-]*!)");
+            std::regex_search(urlinput, secondmatch, secondre);
+            output = std::regex_replace(secondmatch.str(), mhtml, "http://");
+            std::cout << output << std::endl;
+        }
+    }
+    else
+    {
+        std::regex scondre(R"(https?[\w.%/?=:@_-]*)");
+        std::regex_search(urlinput, secondmatch, scondre);
+        output.append(secondmatch.str());
+    }
+    if(output.back() == '!')
+        output.pop_back();
+    return output;
 }
 
 
@@ -193,7 +221,7 @@ std::vector<std::string> WordParser::getUrlList(std::string samplePath)
         }
     }
 
-    // oleObject와 tempate를 잡기 위한 정규표현식
+    // oleObject와 tempate, frame을 잡기 위한 정규표현식
     std::regex re2(R"(<Relationship[\w\s=!@#$%^&*?()+=:;"',./`~-]*(oleObject|attachedTemplate|frame)[\w\s=!@#$%^&*?()+=:;"',./`~-]*>)");
     // Target="External"인 데이터만 잡기 위한 정규표현식
     std::regex re3(R"(TargetMode[\s]*=[\s]*"External")");
