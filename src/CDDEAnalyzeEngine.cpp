@@ -1,7 +1,7 @@
 #include "CDDEAnalyzeEngine.h"
 
 // DDE분석엔진 생성자
-CDDEAnalyzeEngine::CDDEAnalyzeEngine() : CEngineSuper(5, "DDEAnalyze")
+CDDEAnalyzeEngine::CDDEAnalyzeEngine() : CEngineSuper(6, "DDEAnalyze")
 {
 
 }

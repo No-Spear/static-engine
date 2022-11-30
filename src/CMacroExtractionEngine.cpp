@@ -1,7 +1,7 @@
 #include "CMacroExtractionEngine.h"
 
 // 매크로가 있는지 확인하고 추출하는 엔진의 생성자
-CMacroExtractionEngine::CMacroExtractionEngine() : CEngineSuper(4, "MacroExtraction")
+CMacroExtractionEngine::CMacroExtractionEngine() : CEngineSuper(5, "MacroExtraction")
 {
 
 }

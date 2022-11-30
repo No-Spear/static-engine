@@ -196,14 +196,21 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
     while(!this->m_Engines.empty())
     {
         try{
+            // 행위 값의 위치를 나타내기 위한 변수
+            int behaviorLocation = output.vecBehaviors.size();
+            // 다운로드된 파일이 몇개인지 확인하기 위한 변수
+            int downloadcount;
             // 현재 분석하는 엔진이 어떠한 엔진인지 출력
             std::cout << this->m_Engines[0]->getEngineType() << "Engine 시작"  <<std::endl;
             // 각 엔진의 분석 실행
             // XML엔진의 실패 성공을 위해 인수를 받는다.(예외처리가 없기 때문)
             bool failchecker = this->m_Engines[0]->Analyze(&input, &output);
             // XMLParsing == 수식편집기 취약점을 탐색
-            if(this->m_Engines[0]->getEngineType() == "XMLParsing")
+
+            switch (this->m_Engines[0]->GetPriority())
             {
+            // XMLParsing
+            case 0:
                 std::cout << std::endl;
                 // 만약 수식 편집기 취약점이 없다면 기존의 엔진을 동작
                 if(failchecker == false)
@@ -218,7 +225,7 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 {
                     this->xmlFlag = true;
                     std::cout << "Analyze Result: " << std::endl;
-                    for(int i =0; i < output.vecBehaviors.size(); i++)
+                    for(int i = behaviorLocation; i < output.vecBehaviors.size(); i++)
                     {
                         std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
                         std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
@@ -226,10 +233,10 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                         std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
                     }
                 }
-            }
-            // URLExtraction엔진의 경우 
-            else if(this->m_Engines[0]->getEngineType() == "URLExtraction")
-            {
+                break;
+
+            // URLExtraction
+            case 1:
                 // 분석했던 파일을 제거
                 input.vecInputFiles.pop_back();
                 // URL 추출엔진에서 추출된 결과를 다음엔진의 값으로 넣을 수 있게 작업
@@ -243,20 +250,21 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 for(int i = 0; i< output.vecExtractedUrls.size(); i++)
                     std::cout << output.vecExtractedUrls[i] << std::endl;
                 std::cout << std::endl;
-            }
-            else if(this->m_Engines[0]->getEngineType() == "DownloadFromUrl")
-            {
+                break;
+            
+            // DownloadFromURL
+            case 2:
                 // 추출엔진의 결과를 입력으로 제공
                 input.vecInputFiles.reserve(output.vecExtractedFiles.size() + input.vecInputFiles.size());
                 input.vecInputFiles.insert(input.vecInputFiles.end(), output.vecExtractedFiles.begin(), output.vecExtractedFiles.end());
 
                 // Download된 파일의 수만큼 위험도를 증가
-                int downloadSize = output.vecExtractedFiles.size();
+                downloadcount = output.vecExtractedFiles.size();
                 // 단 Download된 파일에서 제공할 수있는 최대 위험도는 2로 설정.
-                if(downloadSize > 2)
+                if(downloadcount > 2)
                     outReport.nSeverity += 2;
                 else
-                    outReport.nSeverity += downloadSize;
+                    outReport.nSeverity += downloadcount;
         
                 // 다운로드된 파일 위치 정보 출력
                 for(int i = 0; i < output.vecExtractedFiles.size(); i++)
@@ -266,9 +274,10 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     std::cout << "CnC URL & Downloaded File Status: " << output.vecExtractedFiles[i].second << std::endl;
                 }
                 std::cout << std::endl;
-            }
-            else if(this->m_Engines[0]->getEngineType() == "ScriptExtraction")
-            {
+                break;
+            
+            // ScriptExtraction
+            case 3:
                 input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
                 input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
         
@@ -289,27 +298,29 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     std::cout << "Script Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
-            }
-            else if(this->m_Engines[0]->getEngineType() == "ScriptAnalyze")
-            {
+                break;
+            
+            // ScriptAnalyze
+            case 4:
                 std::cout << "Analyze Result:" << std::endl;
-                if(output.vecBehaviors.size() == 0)
+                if((behaviorLocation - output.vecBehaviors.size()) == 0)
                 {
                     std::cout << "현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
                     // 매크로 플래그를 꺼준다.
                     this->macroFlag = false;
                 }
                 else
-                    for(int i= 0; i< output.vecBehaviors.size(); i++)
+                    for(int i= behaviorLocation; i< output.vecBehaviors.size(); i++)
                     {
                         std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
                         std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
                         std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
                         std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
                     }
-            }
-            else if(this->m_Engines[0]->getEngineType() == "MacroExtraction")
-            {
+                break;
+            
+            // MacroExtraction
+            case 5:
                 input.vecScriptFIles.reserve(output.vecExtractedScript.size() + input.vecScriptFIles.size());
                 input.vecScriptFIles.insert(input.vecScriptFIles.end(), output.vecExtractedScript.begin(), output.vecExtractedScript.end());
 
@@ -327,16 +338,17 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                     std::cout << "\nScript Type is " << output.vecExtractedScript[i].second.second << std::endl;
                 }
                 std::cout << std::endl;
-            }
-            else if(this->m_Engines[0]->getEngineType() == "DDEAnalyze")
-            {
+                break;
+
+            // Dynamic Data Exchange
+            case 6:
                 std::cout << "Analyze Result:" << std::endl;
-                if(output.vecBehaviors.size() == 0)
+                if((behaviorLocation - output.vecBehaviors.size()) == 0)
                     std::cout << "현재 엔진에서 탐지된 결과가 없습니다.\n" << std::endl;
                 else
                 {
                     this->ddeFalg = true;
-                    for(int i= 0; i< output.vecBehaviors.size(); i++)
+                    for(int i= behaviorLocation; i< output.vecBehaviors.size(); i++)
                     {
                         std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
                         std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
@@ -344,11 +356,12 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                         std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
                     }
                 }
-                    
-            }
-            else
+                break;
+            
+            default:
                 throw engine_Exception("Static-Engine","s",this->m_Engines[0]->getEngineType(), "Engine은 현재 지원하지 않는 엔진입니다.");
-
+                break;
+            }
         } catch(const std::exception& e)
         {
             std::cout << "\n" << e.what() << "\n" << std::endl;
