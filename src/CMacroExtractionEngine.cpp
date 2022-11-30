@@ -27,9 +27,9 @@ std::string CMacroExtractionEngine::extractFileExetoPath(const std::string docpa
 bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
 {   
     std::string olevba;
-
+    std::regex space(R"( )");
     olevba.append("olevba ");
-    olevba.append(location);
+    olevba.append(std::regex_replace(location, space, "\\ "));
     olevba.append(" --decode -c >> result.log");
 
     // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
