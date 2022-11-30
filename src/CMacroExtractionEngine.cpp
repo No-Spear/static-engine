@@ -28,13 +28,17 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
 {   
     std::string olevba;
     std::regex space(R"( )");
+    std::regex leftbracket(R"(\()");
+    std::regex rightbracket(R"(\))");
     olevba.append("olevba ");
-    olevba.append(std::regex_replace(location, space, "\\ "));
+    std::string unspace = std::regex_replace(location, space, "\\ ");
+    std::string unleft = std::regex_replace(unspace, leftbracket, "\\(");
+    olevba.append(std::regex_replace(unleft, rightbracket, "\\)"));
     olevba.append(" --decode -c >> result.log");
 
     // python의 olevba를 통해 vbaProject.bin에서 vba파일을 가져온다.
     int ret = system(olevba.c_str());
-    if(ret != 0)
+    if(ret == 1280)
     {
         remove("./result.log");
         throw engine_Exception("MacroExtractio","s","OleVBA를 통해 vba코드를 추출할 수 없습니다.");
