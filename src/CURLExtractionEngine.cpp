@@ -559,5 +559,16 @@ bool CURLExtractEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT
     // 추출한 주소들을 각각 복사.
     output->vecExtractedUrls.reserve(urlList.size() + output->vecExtractedUrls.size());
     output->vecExtractedUrls.insert(output->vecExtractedUrls.end(), urlList.begin(), urlList.end());
+
+    for(int i = 0; i < output->vecExtractedUrls.size(); i++)
+    {
+        ST_BEHAVIOR url;
+        url.strUrl.append("Document Inner URL");
+        url.Severity = 0;
+        url.strName.append("문서 내부에 외부개체를 다운로드를 위한 URL이 있습니다.");
+        url.strDesc.append(output->vecExtractedUrls[i]);
+        url.strDesc.append("을 통해 파일을 다운 받고 있습니다.");
+        output->vecBehaviors.push_back(url);
+    }
     return true;
 }

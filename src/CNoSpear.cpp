@@ -246,10 +246,17 @@ bool CNoSpear::Analyze(const ST_FILE_INFO sampleFile, ST_REPORT& outReport)
                 // url이 있으면 위험도를 3증가.
                 outReport.nSeverity += 3;
 
-                std::cout << "Extracted URLs:" << std::endl;
-                for(int i = 0; i< output.vecExtractedUrls.size(); i++)
-                    std::cout << output.vecExtractedUrls[i] << std::endl;
-                std::cout << std::endl;
+                if((behaviorLocation - output.vecBehaviors.size()) != 0)
+                {
+                    for(int i = behaviorLocation; i < output.vecBehaviors.size(); i++)
+                    {
+                        std::cout << "Extracted Result: " << std::endl;
+                        std::cout << "URl: " << output.vecBehaviors[i].strUrl << std::endl;
+                        std::cout << "Malicious Name: " <<output.vecBehaviors[i].strName << std::endl;
+                        std::cout << "Descrition: " <<output.vecBehaviors[i].strDesc << std::endl;
+                        std::cout << "Severity: " << output.vecBehaviors[i].Severity << "\n" << std::endl;
+                    }
+                }
                 break;
             
             // DownloadFromURL
