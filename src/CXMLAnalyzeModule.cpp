@@ -2,8 +2,10 @@
 
 CXMLAnalyzeModule::CXMLAnalyzeModule()
 {
-    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V1,"ole10native"));
-    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V2,"equationnative"));
+
+
+    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V1,"[o][l][e][1][0][n][a][t][i][v][e]"));
+    mapRegularExpressions.insert(std::pair(EQUATION_EDITOR_VOL_V2,"[e][q][u][a][t][i][o][n][n][a][t][i][v][e]"));
 
 }
 
@@ -12,11 +14,10 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
     int AnalyzeResult;
 
     {
-        ExtractEqnEditData(fileNames);
+        AnalyzeResult = ExtractEqnEditData(fileNames);
         // 취약점 추출 함수 추가 
     }
 
-    AnalyzeResult = AnalyzeByRegex();
     if(returnResult(AnalyzeResult,output)) return true;
 
 
@@ -24,17 +25,50 @@ bool CXMLAnalyzeModule::Analyze(std::vector<string> fileNames, ST_ANALYZE_RESULT
 }
 
 
-void CXMLAnalyzeModule::ExtractEqnEditData(std::vector<string> vecFileContainer)
+// void CXMLAnalyzeModule::ExtractEqnEditData(std::vector<string> vecFileContainer)
+// {
+//     std::map<string,string> mapFileContentsContainer = readDocFiles(vecFileContainer);
+//     for(std::map<string,string>::iterator it = mapFileContentsContainer.begin();
+//     it != mapFileContentsContainer.end(); 
+//     it++)
+//     {   
+//         // std::string& strScriptContext = ConvertMBSFromUnicode(it->second);
+
+//         std::string& strScriptContext = it->second;
+
+//         string keyString = "";
+
+//         if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos)
+//             continue;
+
+//         if(int(u_char(strScriptContext[0])) != 208 && int(u_char(strScriptContext[1])) != 207 )
+//             continue;
+
+//         if(strScriptContext.size() < 1310)
+//             continue;
+
+//         for(int i = 1280; i < 1310; i += 2)
+//         {
+//             if(strScriptContext[i] == ' ') continue;
+//             keyString = keyString + strScriptContext[i];
+//         }
+//         std::cout << "keyString : " << keyString << std::endl;
+//         vecKeyStrings.push_back(keyString);
+//     }
+    
+// }
+
+int CXMLAnalyzeModule::ExtractEqnEditData(std::vector<string> vecFileContainer)
 {
     std::map<string,string> mapFileContentsContainer = readDocFiles(vecFileContainer);
     for(std::map<string,string>::iterator it = mapFileContentsContainer.begin();
     it != mapFileContentsContainer.end(); 
     it++)
     {   
-        // std::string& strScriptContext = ConvertMBSFromUnicode(it->second);
-
-        std::string& strScriptContext = it->second;
-
+        
+        std::string strScriptContext = it->second;
+        
+        strScriptContext.erase(remove(strScriptContext.begin(), strScriptContext.end(),'\0'),strScriptContext.end());
         string keyString = "";
 
         if(it->first.find(".rels") != string::npos && it->first.find(".xml") !=string::npos)
@@ -46,15 +80,24 @@ void CXMLAnalyzeModule::ExtractEqnEditData(std::vector<string> vecFileContainer)
         if(strScriptContext.size() < 1310)
             continue;
 
-        for(int i = 1280; i < 1310; i += 2)
+
+        for(std::map<int,string>::iterator ut = mapRegularExpressions.begin();
+            ut != mapRegularExpressions.end();
+            ut++)
         {
-            if(strScriptContext[i] == ' ') continue;
-            keyString = keyString + strScriptContext[i];
+            int vulnerabilityNumber = ut->first;
+            string strRegularExpression = ut->second;
+            std::smatch match;
+            std::regex re(strRegularExpression,std::regex::grep | std::regex::icase);
+            if(!std::regex_search(strScriptContext, match,re))
+                continue;
+
+            
+            std::cout << match[0].str() << std::endl;
+            return vulnerabilityNumber;
         }
-        std::cout << "keyString : " << keyString << std::endl;
-        vecKeyStrings.push_back(keyString);
     }
-    
+    return NORMAL_FILE;
 }
 
 int CXMLAnalyzeModule::AnalyzeByRegex()
@@ -118,10 +161,11 @@ std::map<string,string> CXMLAnalyzeModule::readDocFiles(std::vector<string> vecF
             std::cout << "file Can't Open" << std::endl;
             continue;
         }
+
         in.seekg(0,std::ios::end);
         int size = in.tellg();
         file.resize(size);
-        in.seekg(0,std::ios::beg);
+        in.seekg(0,std::ios::beg);     
         in.read(&file[0],size);
         in.close();
         mapFileContentsContainer.insert(std::pair(name,file));

@@ -31,7 +31,7 @@ public:
 
 private:
     
-    void ExtractEqnEditData(std::vector<string> vecfileContainer);
+    int ExtractEqnEditData(std::vector<string> vecfileContainer);
     int AnalyzeByRegex();
     std::map<string,string> readDocFiles(std::vector<string> vecfileContainer);
     bool returnResult(int AnalyzeResult, ST_ANALYZE_RESULT* output);
