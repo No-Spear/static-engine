@@ -164,10 +164,10 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
 {
     /* 
         악성매크로 의심 리스트
-        "AutoOpen", "Workbook_Open", "Document_Open", "DocumentOpen", 
+        "AutoOpen", "Workbook_Open", "Document_Open", "DocumentOpen", "Open"
         "AutoExec", "AutoExit", "Auto_Close", "AutoClose", "DocumentChange",
         "AutoNew", "Document_New", "NewDocument", "CreateObject()", "allocateMemory",
-        "copyMemory", "shellExecute"
+        "copyMemory", "shellExecute", "Environ", "Write", "Put", "Binary", "Shell"
     */
     // 탐지 됬는지 확인하기 위한 변수
     int count = 0;
@@ -390,6 +390,78 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
         shellExecute.strName="Calling shellExecute function used in a malicious macro";
         shellExecute.strDesc="악성 매크로에서 사용되는 shellExecute 함수를 호출";
         vecBehaviors.push_back(shellExecute);
+        count++;
+    }
+
+    std::regex macro16(R"(Environ)");
+    if(std::regex_search(replaceScript, match, macro16))
+    {
+        ST_BEHAVIOR Environ;
+        Environ.strUrl.append(url);
+        Environ.Severity=8;
+        Environ.strName="Calling Environ function used in a malicious macro";
+        Environ.strDesc="악성 매크로에서 사용되는 Environ 함수를 호출";
+        vecBehaviors.push_back(Environ);
+        count++;
+    }
+
+    std::regex macro17(R"(Open)");
+    if(std::regex_search(replaceScript, match, macro17))
+    {
+        ST_BEHAVIOR Open;
+        Open.strUrl.append(url);
+        Open.Severity=8;
+        Open.strName="Calling Open function used in a malicious macro";
+        Open.strDesc="악성 매크로에서 사용되는 Open 함수를 호출";
+        vecBehaviors.push_back(Open);
+        count++;
+    }
+
+    std::regex macro18(R"(Write)");
+    if(std::regex_search(replaceScript, match, macro18))
+    {
+        ST_BEHAVIOR Write;
+        Write.strUrl.append(url);
+        Write.Severity=8;
+        Write.strName="Calling Write function used in a malicious macro";
+        Write.strDesc="악성 매크로에서 사용되는 Write 함수를 호출";
+        vecBehaviors.push_back(Write);
+        count++;
+    }
+
+    std::regex macro19(R"(Put)");
+    if(std::regex_search(replaceScript, match, macro19))
+    {
+        ST_BEHAVIOR Put;
+        Put.strUrl.append(url);
+        Put.Severity=8;
+        Put.strName="Calling Put function used in a malicious macro";
+        Put.strDesc="악성 매크로에서 사용되는 Put 함수를 호출";
+        vecBehaviors.push_back(Put);
+        count++;
+    }
+    
+    std::regex macro20(R"(Binary)");
+    if(std::regex_search(replaceScript, match, macro20))
+    {
+        ST_BEHAVIOR Binary;
+        Binary.strUrl.append(url);
+        Binary.Severity=8;
+        Binary.strName="Calling Binary function used in a malicious macro";
+        Binary.strDesc="악성 매크로에서 사용되는 Binary 함수를 호출";
+        vecBehaviors.push_back(Binary);
+        count++;
+    }
+    
+    std::regex macro21(R"(Shell)");
+    if(std::regex_search(replaceScript, match, macro21))
+    {
+        ST_BEHAVIOR Shell;
+        Shell.strUrl.append(url);
+        Shell.Severity=8;
+        Shell.strName="Calling Shell function used in a malicious macro";
+        Shell.strDesc="악성 매크로에서 사용되는 Shell 함수를 호출";
+        vecBehaviors.push_back(Shell);
         count++;
     }
     
