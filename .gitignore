@@ -4,8 +4,12 @@
 # Complie File
 *.o
 
-# CNoSpearEngine
-CStatic-Engine
+# SpearCutter관련
+spearCutter
+libDocumentParser.a
+
+# cmake를 위한 공간
+cmake-temp
 
 # Database관련 파일
 DBconfig
@@ -13,3 +17,6 @@ DBconfig/*
 
 # 파일 다운로드관련 임시 폴더
 temp
+
+# DocumentParser 제거
+src/DocumentParser
