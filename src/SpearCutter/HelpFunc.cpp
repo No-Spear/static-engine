@@ -1,5 +1,5 @@
 #include "HelpFunc.h"
-#include "CNoSpear.h"
+#include "CSpearCutter.h"
 
 /*
  * 서버에게 파이프를 통해 결과를 전달하기 위해 사용하는 구조체

@@ -1,4 +1,4 @@
-#include "CNoSpear.h"
+#include "CSpearCutter.h"
 #include "HelpFunc.h"
 
 int main(int argc, char** argv)
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     sampleFile.strSampleFilePath = TCSFromMBS(std::string(argv[2]));
     sampleFiles.push_back(sampleFile);
 
-    CNoSpear spearCutter = CNoSpear();
+    CSpearCutter spearCutter = CSpearCutter();
     ST_REPORT outReport;
 
     std::cout << "SpearCutter Engine 분석 시작" << std::endl;
