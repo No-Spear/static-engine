@@ -32,4 +32,4 @@ Contact: profrog</br>
 #### 1.5.5 : 전 엔진 리펙토링 및 성능개선 작업</br>
 #### 2.0.0 : CPPCORE, DocumentParser를 사용하는 새로운 엔진으로 리펙토링</br>
 #### 2.0.1 : 엔진에서 서버로 보내는 정보가 누락되는 문제 해결</br>
-#### 2.0.2 : 각종 버그사항 및 CheckInternalCVE엔진 탐지 </br>
+#### 2.0.2 : 각종 버그사항 및 CheckInternalCVE엔진 탐지 및 </br>
