@@ -8,6 +8,23 @@ Static-engine a.k.a SpearCutter
 Word, Excel, PowerPoint 문서들을 파싱할 수 있는 문서 파싱 라이브러리 이다.
 Contact: profrog</br>
 
+## 프로젝트 구성 방법
+1. mkdir (NoSpaer Or Folder Name)
+2. cd (NoSpear Or Folder Name)
+3. git clone https://github.com/No-Spear/static-engine.git
+4. git clone https://github.com/profrog-jeon/cppcore.git
+5. cd cppcore && mkdir cmake-temp
+6. cd cmake-temp
+7. cmake ../Src && cmake --build .
+8. cd ../../static-engine
+9. Insert DocoumentParser to src and Return static-engine
+10. mkdir build
+11. mkdir cmake-temp && cd cmake-temp
+12. cmake ../src && cmake --build .
+13. mkdir temp && cd temp
+14. mkdir Download && mkdir Extracted
+
+
 ## Version
 #### 1.0.0 : CVE-2022-30190(Follina)를 잡을 수 있도록 엔진 구성</br>
 #### 1.0.1 : 파일이 제대로 다운받아지지 않는 문제 해결 및 예외처리 추가</br>
