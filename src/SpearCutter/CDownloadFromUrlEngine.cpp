@@ -2,11 +2,14 @@
 
 CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2, "DownloadFromUrl")
 {
- 
     char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
     char DBUser[] = "nospear";
     char DBPass[] = "nospear!";
     char DBName[] = "cncDB";
+    // char DBHost[] = "localhost";
+    // char DBUser[] = "root";
+    // char DBPass[] = "DBPW1234";
+    // char DBName[] = "VSERVER";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
   
@@ -85,7 +88,7 @@ void CDownloadFromUrlEngine::getPath(ST_RESPONSE *Response)
     string extension = getExtension(Response->fileName);
     string tempFileName = Response->fileName;
     Response->fileName = string(fileName) + extension; 
-    string newPath = "../temp/" + Response->fileName;
+    string newPath = "../temp/Download/" + Response->fileName;
     if(access(newPath.c_str(),F_OK)==0){
         remove(Response->path.c_str());
         Response->path = newPath;        
@@ -258,7 +261,7 @@ size_t CDownloadFromUrlEngine::writeBufferCallback(unsigned char* contents, size
 
 
     
-    string path = string("../temp/") + Response->fileName; 
+    string path = string("../temp/Download") + Response->fileName; 
 
     Response->path = path;
     writeFile.open(path, std::ios::binary | std::ios::app);

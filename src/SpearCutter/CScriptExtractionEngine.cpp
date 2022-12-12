@@ -215,39 +215,45 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         // 받아온 파일에 대해 1차적으로 검증
         try{
             // 만약 다운로드 엔진에서 다운로드 된 파일이 없을 경우
-            if(input->vecInputFiles[i].first == "../temp")
+            if(input->vecExtractedFiles[i].first == "../temp")
                 throw engine_Exception("ScriptExtraction", "isss", i, "번째 Url인 ", input->vecURLs[i].c_str(), "에서 다운로드 된 파일이 없습니다.");
 
-            checkFileDownloadStatus(input->vecInputFiles[i].first, i);
+            checkFileDownloadStatus(input->vecExtractedFiles[i].first, i);
         } catch(std::exception& e)
         {
             std::cout << e.what() << std::endl;
             continue;
         }
         // 파일 타입에 대한 정보를 받을 변수
-        std::string filetype =  checkFileType(input->vecInputFiles[i].first);
+        std::string filetype =  checkFileType(input->vecExtractedFiles[i].first);
         // 만약 받은 파일이 html이라면
         if(filetype == "html")
         { 
             // html 파일에서 script와 스크립트 타입을 확인한다.
-            getHtmlScriptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
+            getHtmlScriptData(input->vecExtractedFiles[i].first.c_str(), i, output->vecExtractedScript);
             // 추출된 스크립트에서 의미 있는 스크립트만 추출한다.
             return true;
         }
-        // 만약 받은 파일이 docm, xlsm, ppsm(매크로 탑제 파일)), otm, xltm, pptm(템플릿 파일)
-        else if(filetype == "docm" | filetype == "xlsm" | filetype == "ppsm" |
-                filetype == "dotm" | filetype == "xltm" | filetype == "pptm")
+        // 만약 받은 파일이 docm, xlsm, ppsm(매크로 탑제 파일)), dotm, xltm, pptm(템플릿 파일)
+        else if(filetype == "docm" || filetype == "xlsm" || filetype == "ppsm" |
+                filetype == "dotm" || filetype == "xltm" || filetype == "pptm")
         {
-            getMacroSciptData(input->vecInputFiles[i].first.c_str(), i, output->vecExtractedScript);
+            getMacroSciptData(input->vecExtractedFiles[i].first.c_str(), i, output->vecExtractedScript);
             return true;
         }
+        // 만약 컴파운드 파일이라면?
+        else if (filetype == "doc" || filetype == "xls" || filetype == "ppt")
+        {
+            return false;
+        }
+        
         // 아무것도 해당하지 않는다면 
         else
-            throw engine_Exception("ScriptExtraction", "ss", filetype, "형식은 현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
+            throw engine_Exception("ScriptExtraction", "ss", filetype.c_str(), "형식은 현재 스크립트를 추출엔진에서 지원하지 않는 파일입니다.");
     }
     
-    // 만약 추출된 스크립트가 아무것도 없다면 에러 발생
+    // 만약 추출된 스크립트가 아무것도 없다면 false리턴
     if(output->vecExtractedScript.empty())
-        throw engine_Exception("ScriptExtraction", "s", "엔진에서 추출된 스크립트 파일이 아무것도 없습니다.");
+        return false;
     return true;
 }

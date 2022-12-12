@@ -118,7 +118,7 @@ void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
     std::string macroData;
-    std::string pszFile = input->vecInputFiles[0].first;
+    std::string pszFile = input->vecInputFiles[0];
 
     if(extractFileExetoPath(pszFile).front() == 'd' 
       | extractFileExetoPath(pszFile).front() == 'D'

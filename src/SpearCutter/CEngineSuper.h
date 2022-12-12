@@ -17,7 +17,8 @@ typedef struct ST_BEHAVIOR{
  * 정적엔진에 입력되는 입력값들에 대한 Parameter 객체
 */
 typedef struct ST_ANALYZE_PARAM{
-    std::vector<std::pair<std::string, int> >vecInputFiles;                     // 검사할 문서 또는 다운로드 파일
+    std::vector<std::string>vecInputFiles;                                      // 검사할 문서
+    std::vector<std::pair<std::string, int> >vecExtractedFiles;                 // 다운받은 파일위치와 타입
     std::vector<std::string> vecURLs;                                           // C&C URL 리스트
     std::vector<std::pair<std::string, std::pair<int, int>> >vecScriptFIles;    // 문서파일에서 추출한 스크립트 파일, URL 벡터 위치, 스크립트 타입을 담고 있다.
 } ST_ANALYZE_PARAM;
