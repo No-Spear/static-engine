@@ -38,23 +38,23 @@ ECODE CSampleFileInfo::Init(std::tstring strOriginName, std::tstring strFile)
 		// 먼약 파일이 잠겨있다면?
 		if(0 == memcmp(&m_vecFileContents[1152], BEncryptionInfo, 28) && 0 == memcmp(&m_vecFileContents[1280], BEncryptedPackage, 32))
 		{
-			std::cout << "파일이 잠겨있다." << std::endl;
-			std::tstring msoffcrypto_tool;
-			std::regex space(R"( )");
-    		std::regex leftbracket(R"(\()");
-    		std::regex rightbracket(R"(\))");
-    		std::regex andName(R"(\&)");
-			msoffcrypto_tool.append("msoffcrypto-tool ");
-			std::tstring unspace = TCSFromMBS(std::regex_replace(strFile, space, "\\ "));
-    		std::tstring unleft = TCSFromMBS(std::regex_replace(unspace, leftbracket, "\\("));
-    		std::tstring unright = TCSFromMBS(std::regex_replace(unleft, rightbracket, "\\)"));
-    		msoffcrypto_tool.append(std::regex_replace(unright, andName, "\\&"));
-			msoffcrypto_tool.append(" ../temp/Decrypted/");
-			msoffcrypto_tool.append(m_strFileHash+".");
-			msoffcrypto_tool.append(m_strExt);
-			msoffcrypto_tool.append(" -p VelvetSweatshop");
-			std::cout << msoffcrypto_tool << std::endl;
-			system(msoffcrypto_tool.c_str());
+			// std::cout << "파일이 잠겨있다." << std::endl;
+			// std::tstring msoffcrypto_tool;
+			// std::regex space(R"( )");
+    		// std::regex leftbracket(R"(\()");
+    		// std::regex rightbracket(R"(\))");
+    		// std::regex andName(R"(\&)");
+			// msoffcrypto_tool.append("msoffcrypto-tool ");
+			// std::tstring unspace = TCSFromMBS(std::regex_replace(strFile, space, "\\ "));
+    		// std::tstring unleft = TCSFromMBS(std::regex_replace(unspace, leftbracket, "\\("));
+    		// std::tstring unright = TCSFromMBS(std::regex_replace(unleft, rightbracket, "\\)"));
+    		// msoffcrypto_tool.append(std::regex_replace(unright, andName, "\\&"));
+			// msoffcrypto_tool.append(" ../temp/Decrypted/");
+			// msoffcrypto_tool.append(m_strFileHash+".");
+			// msoffcrypto_tool.append(m_strExt);
+			// msoffcrypto_tool.append(" -p VelvetSweatshop");
+			// std::cout << msoffcrypto_tool << std::endl;
+			// system(msoffcrypto_tool.c_str());
 		}
 		
 		BYTE OOXMLSignature[4] = { 0x50, 0x4B, 0x03, 0x04 };
