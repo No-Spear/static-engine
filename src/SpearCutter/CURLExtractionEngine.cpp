@@ -44,7 +44,7 @@ std::vector<std::string> CURLExtractEngine::GetOOXMLFormat_ExternalURL()
             if(stRels.vecRelationship[i].strTargetMode == "External" && std::regex_search(stRels.vecRelationship[i].strType, match, externalObjectsRe))
             {
                 std::cout << strRelsPath << "에서 외부개체 Url 발견" << std::endl;
-                std::regex extractUrlRe(R"((h|H)(t|T)(t|T)(p|P)s?[\w.%/?=:@_-]*)");
+                std::regex extractUrlRe(R"((h|H)(t|T)(t|T)(p|P)s?[\w.%/?=:+@_-]*)");
                 std::regex_search(stRels.vecRelationship[i].strTarget, match, extractUrlRe);
                 extractedURLList.push_back(match.str());
             }
