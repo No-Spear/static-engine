@@ -1,5 +1,6 @@
 #pragma once
 #include "../DocumentParser/DocumentParser.h"
+#include <regex>
 
 using namespace core;
 
