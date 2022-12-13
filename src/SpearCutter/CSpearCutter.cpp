@@ -132,7 +132,7 @@ void CSpearCutter::MakeOutputReportForDB(const ST_ANALYZE_RESULT result, ST_REPO
                     break;
                 }
                 else
-                    continue;
+                    outReport.strDetectName = "MalwareFile";
             }
         }
         if(fileError == false)
