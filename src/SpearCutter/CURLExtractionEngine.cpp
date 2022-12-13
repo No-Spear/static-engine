@@ -29,12 +29,12 @@ std::vector<std::string> CURLExtractEngine::GetOOXMLFormat_ExternalURL()
         std::vector<BYTE> vecRelsBinary;
         nRet = pParser->QueryData(strRelsPath, vecRelsBinary);
         if(EC_SUCCESS != nRet)
-            throw engine_Exception("URLExtraction", "ss", strRelsPath,"를 QuertData에 실패했습니다.");
+            throw engine_Exception("URLExtraction", "ss", strRelsPath.c_str(),"를 QuertData에 실패했습니다.");
         
         ST_RELS stRels;
         // xml.rels 파일을 읽어온다.
         if(!ReadXmlFromString(&stRels, TCSFromUTF8((LPCSTR)vecRelsBinary.data(), vecRelsBinary.size())))
-            throw engine_Exception("URLExtraction", "ss", strRelsPath, "를 ReadFromUTF8을 통해 읽기 실패했습니다");
+            throw engine_Exception("URLExtraction", "ss", strRelsPath.c_str(), "를 ReadFromUTF8을 통해 읽기 실패했습니다");
 
         for(int i =0; i < stRels.vecRelationship.size(); i++)
         {   
