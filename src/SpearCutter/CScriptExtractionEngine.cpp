@@ -215,7 +215,7 @@ bool CScriptExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_
         // 받아온 파일에 대해 1차적으로 검증
         try{
             // 만약 다운로드 엔진에서 다운로드 된 파일이 없을 경우
-            if(input->vecExtractedFiles[i].first == "../temp")
+            if(input->vecExtractedFiles[i].first == "../temp/Download")
                 throw engine_Exception("ScriptExtraction", "isss", i, "번째 Url인 ", input->vecURLs[i].c_str(), "에서 다운로드 된 파일이 없습니다.");
 
             checkFileDownloadStatus(input->vecExtractedFiles[i].first, i);

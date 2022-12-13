@@ -219,7 +219,7 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
         std::cout << "No File or No URL" <<std::endl;
         Response.count = 0;
         Response.fileName = "NoFile";
-        Response.path = "../temp";
+        Response.path = "../temp/Download";
         Response.response = nullptr;
         return Response;
     }
@@ -227,7 +227,7 @@ ST_RESPONSE CDownloadFromUrlEngine::getFileFromUrl(string url)
         std::cout << "No File or No URL" <<std::endl;
         Response.count = 0;
         Response.fileName = "NoFile";
-        Response.path = "../temp";
+        Response.path = "../temp/Download";
         Response.response = nullptr;
         return Response;
     }
