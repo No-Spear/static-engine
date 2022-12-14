@@ -84,12 +84,11 @@ ECODE CCVE_2017_11882_COM::Analyze(const std::vector<std::tstring> vecExtractFil
 		if (vecStream.empty())
 			return EC_SUCCESS;
 		
-		HANDLE hFile = nullptr;
-		std::vector<BYTE> vecStreamBinary;
 		for (std::tstring& strStream : vecStream)
 		{
 			try
 			{
+				std::vector<BYTE> vecStreamBinary;
 				nRet = pParser->QueryData(strStream, vecStreamBinary);
 				if (EC_SUCCESS != nRet)
 					throw exception_format(TEXT("QueryData(%s) in Failure"), strStream.c_str());
@@ -103,21 +102,15 @@ ECODE CCVE_2017_11882_COM::Analyze(const std::vector<std::tstring> vecExtractFil
 					continue;
 				
 				std::tstring strExtractedFile = Format(TEXT("../temp/Extracted/%s.spearcutter"), ExtractFileName(strStream).c_str());
-				hFile = CreateFile(strExtractedFile.c_str(), GENERIC_WRITE_, CREATE_ALWAYS_, FILE_ATTRIBUTE_NORMAL_);
-				if (nullptr == hFile)
-					throw exception_format(TEXT("CreateFile(%s) Failure, %d"), strExtractedFile.c_str(), GetLastError());
 
 				nRet = WriteFileContents(strExtractedFile, vecStreamBinary);
 				if (EC_SUCCESS != nRet)
 					throw exception_format(TEXT("WriteFileContents(%s) Failure"), strExtractedFile.c_str());
 
-				CloseFile(hFile);
 				output->vecExtractedFiles.push_back(std::make_pair(strExtractedFile,ASF)); // 추출된 파일
 			}
 			catch (const std::exception& e)
 			{
-				if (nullptr != hFile)
-					CloseFile(hFile);
 				Log_Warn("%s", e.what());
 				continue;
 			}
