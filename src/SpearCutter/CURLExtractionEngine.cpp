@@ -21,7 +21,8 @@ std::vector<std::string> CURLExtractEngine::GetOOXMLFormat_ExternalURL()
     COoxmlParser* pParser = (COoxmlParser*)Sample()->m_pDocumentParser;
     
     std::vector<std::tstring> vecRels;
-    pParser->QueryStreamPath(TEXT("*/*/*.xml.rels"), vecRels);
+    pParser->QueryStreamPath(TEXT("*.xml.rels"), vecRels);
+
     for(std::tstring& strRelsPath : vecRels)
     {
         std::cout << "현재 분석하는 파일: " << strRelsPath << std::endl;
