@@ -348,15 +348,34 @@ ECODE CSpearCutter::Analyze(const std::tstring strFileName, const std::tstring s
                     std::cout << "현재 엔진으로부터 추출된 결과가 없습니다.\n" << std::endl;
                     this->m_Engines.clear();
                     this->m_Engines.shrink_to_fit();
+                    
+                    if(output.vecExtractedScript.size() == 0)
+                        continue;
+                    
                     for(int i  = 0; i < output.vecExtractedFiles.size(); i++)
                     {
-                        std::string fileExt = ExtractFileExt(output.vecExtractedFiles[i].first);
-                        if(fileExt == "doc" || fileExt == "xls" || fileExt == "ppt")
-                        {
+                        try{
+                            std::vector<BYTE> vecStreamBinary;
+                            ECODE nRet = EC_SYSTEM_ERROR;
+                            ReadFileContents(output.vecExtractedFiles[i].first, vecStreamBinary);
+                            if(nRet != EC_SUCCESS)
+                                throw engine_Exception("SpearCutter", "ss", output.vecExtractedFiles[i].first.c_str(), "파일을 읽는데 실패했습니다.");
+                            
+                            // 해당 파일이 ooxml, compound시그니처를 가진 문서라면?
+                            BYTE OOXMLSignature[4] = { 0x50, 0x4B, 0x03, 0x04 };
+				            BYTE COMSignature[8] = { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 };
+				            if (memcmp(&vecStreamBinary[0], OOXMLSignature, 4) != 0 && memcmp(&vecStreamBinary[0], COMSignature, 8) != 0)
+					            continue;
+                        
+                            std::cout << "다운받은 " << output.vecExtractedFiles[i].first.c_str() << "은 문서파일이므로 분석대상에 포함" << std::endl;
                             ST_ANALYZE_FILES extractedSample;
                             extractedSample.strFileName = TCSFromMBS(ExtractFileNameWithoutExt(output.vecExtractedFiles[i].first));
                             extractedSample.strSampleFilePath = TCSFromMBS(output.vecExtractedFiles[i].first);
                             sampleFiles.push_back(extractedSample);
+                        }catch(std::exception& e)
+                        {
+                            std::cout << e.what() << "\n" << std::endl;
+                            continue;
                         }
                     }
                     continue;
