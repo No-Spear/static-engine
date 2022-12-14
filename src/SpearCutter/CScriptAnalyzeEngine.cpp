@@ -1,35 +1,5 @@
 #include "CScriptAnalyzeEngine.h"
 
-std::string base64_decoder(const std::string& input)
-{
-    static const std::string b = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
- 
-    std::string result;
-    std::vector<int> T(256, -1);
- 
-    for (int i = 0; i < 64; i++)
-        T[b[i]] = i;
- 
-    int val = 0;
-    int valb = -8;
- 
-    for (u_char c : input) 
-    {
-        if (T[c] == -1)
-            break;
- 
-        val = (val << 6) + T[c];
-        valb += 6;
- 
-        if (valb >= 0) 
-        {
-            result.push_back(char((val >> valb) & 0xFF));
-            valb -= 8;
-        }
-    }
-    return result;
-}
-
 // 엔진 객체 생성자
 CScriptAnalyzeEngine::CScriptAnalyzeEngine() : CEngineSuper(4, "ScriptAnalyze")
 {
@@ -164,7 +134,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
 {
     /* 
         악성매크로 의심 리스트
-        "AutoOpen", "Workbook_Open", "Document_Open", "DocumentOpen", "Open"
+        "AutoOpen", "Workbook_Open", "Document_Open", "DocumentOpen", "Open"(제외), "auto_open()"
         "AutoExec", "AutoExit", "Auto_Close", "AutoClose", "DocumentChange",
         "AutoNew", "Document_New", "NewDocument", "CreateObject()", "allocateMemory",
         "copyMemory", "shellExecute", "Environ", "Write", "Put", "Binary", "Shell"
@@ -179,30 +149,9 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     else
         url.append(urlorNot);
 
-    std::string replaceScript = script;
-
-    std::regex sBytes(R"(sBytes = )");
-    if(std::regex_search(replaceScript, match, sBytes))
-    {
-        // sBytes = sByte 를 모두 제거
-        std::regex remove(R"(\nsBytes = sBytes  )");
-        replaceScript = std::regex_replace(replaceScript, remove, "");
-
-        // 제거된 내용에서 sByte에 해당하는 내용을 찾아낸다.
-        std::regex Encode(R"(sBytes = [\w]*)");
-        std::regex_search(replaceScript, match, Encode);
-
-        std::string sbyte = match.str();
-        // sByte = 을 제거
-        sbyte.erase(0,9);
-        sbyte = base64_decoder(sbyte);
-
-        replaceScript = std::regex_replace(replaceScript, Encode, sbyte);
-    }
-
     std::regex macro0(R"(AutoOpen)");
     // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
-    if(std::regex_search(replaceScript, match, macro0))
+    if(std::regex_search(script, match, macro0))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append(url);
@@ -214,7 +163,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro1(R"(Workbook_Open)");
-    if(std::regex_search(replaceScript, match, macro1))
+    if(std::regex_search(script, match, macro1))
     {
         ST_BEHAVIOR Workbook_Open;
         Workbook_Open.strUrl.append(url);
@@ -226,7 +175,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro2(R"(Document_Open)");
-    if(std::regex_search(replaceScript, match, macro2))
+    if(std::regex_search(script, match, macro2))
     {
         ST_BEHAVIOR Document_Open;
         Document_Open.strUrl.append(url);
@@ -238,7 +187,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro3(R"(DocumentOpen)");
-    if(std::regex_search(replaceScript, match, macro3))
+    if(std::regex_search(script, match, macro3))
     {
         ST_BEHAVIOR DocumentOpen;
         DocumentOpen.strUrl.append(url);
@@ -250,7 +199,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro4(R"(AutoExec)");
-    if(std::regex_search(replaceScript, match, macro4))
+    if(std::regex_search(script, match, macro4))
     {
         ST_BEHAVIOR AutoExec;
         AutoExec.strUrl.append(url);
@@ -262,7 +211,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro5(R"(AutoExit)");
-    if(std::regex_search(replaceScript, match, macro5))
+    if(std::regex_search(script, match, macro5))
     {
         ST_BEHAVIOR AutoExit;
         AutoExit.strUrl.append(url);
@@ -274,7 +223,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro6(R"(Auto_Close)");
-    if(std::regex_search(replaceScript, match, macro6))
+    if(std::regex_search(script, match, macro6))
     {
         ST_BEHAVIOR Auto_Close;
         Auto_Close.strUrl.append(url);
@@ -286,7 +235,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro7(R"(AutoClose)");
-    if(std::regex_search(replaceScript, match, macro7))
+    if(std::regex_search(script, match, macro7))
     {
         ST_BEHAVIOR autoOpen;
         autoOpen.strUrl.append(url);
@@ -298,7 +247,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro8(R"(DocumentChange)");
-    if(std::regex_search(replaceScript, match, macro8))
+    if(std::regex_search(script, match, macro8))
     {
         ST_BEHAVIOR DocumentChange;
         DocumentChange.strUrl.append(url);
@@ -310,7 +259,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro9(R"(AutoNew)");
-    if(std::regex_search(replaceScript, match, macro9))
+    if(std::regex_search(script, match, macro9))
     {
         ST_BEHAVIOR AutoNew;
         AutoNew.strUrl.append(url);
@@ -322,7 +271,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro10(R"(Document_New)");
-    if(std::regex_search(replaceScript, match, macro10))
+    if(std::regex_search(script, match, macro10))
     {
         ST_BEHAVIOR Document_New;
         Document_New.strUrl.append(url);
@@ -334,7 +283,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro11(R"(NewDocument)");
-    if(std::regex_search(replaceScript, match, macro11))
+    if(std::regex_search(script, match, macro11))
     {
         ST_BEHAVIOR NewDocument;
         NewDocument.strUrl.append(url);
@@ -346,7 +295,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro12(R"(CreateObject)");
-    if(std::regex_search(replaceScript, match, macro12))
+    if(std::regex_search(script, match, macro12))
     {
         ST_BEHAVIOR CreateObject;
         CreateObject.strUrl.append(url);
@@ -358,7 +307,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro13(R"(allocateMemory)");
-    if(std::regex_search(replaceScript, match, macro13))
+    if(std::regex_search(script, match, macro13))
     {
         ST_BEHAVIOR allocateMemory;
         allocateMemory.strUrl.append(url);
@@ -370,7 +319,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro14(R"(copyMemory)");
-    if(std::regex_search(replaceScript, match, macro14))
+    if(std::regex_search(script, match, macro14))
     {
         ST_BEHAVIOR copyMemory;
         copyMemory.strUrl.append(url);
@@ -382,7 +331,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     }
 
     std::regex macro15(R"(shellExecute)");
-    if(std::regex_search(replaceScript, match, macro15))
+    if(std::regex_search(script, match, macro15))
     {
         ST_BEHAVIOR shellExecute;
         shellExecute.strUrl.append(url);
@@ -393,8 +342,32 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
         count++;
     }
 
+    // std::regex macro16(R"(auto_open())");
+    // if(std::regex_search(script, match, macro16))
+    // {
+    //     ST_BEHAVIOR auto_open;
+    //     auto_open.strUrl.append(url);
+    //     auto_open.Severity=8;
+    //     auto_open.strName="Calling auto_open function used in a malicious macro";
+    //     auto_open.strDesc="악성 매크로에서 사용되는 auto_open 함수를 호출";
+    //     vecBehaviors.push_back(auto_open);
+    //     count++;
+    // }
+
+    // std::regex macro17(R"(auto_close())");
+    // if(std::regex_search(script, match, macro16))
+    // {
+    //     ST_BEHAVIOR auto_close;
+    //     auto_close.strUrl.append(url);
+    //     auto_close.Severity=8;
+    //     auto_close.strName="Calling auto_close function used in a malicious macro";
+    //     auto_close.strDesc="악성 매크로에서 사용되는 auto_close 함수를 호출";
+    //     vecBehaviors.push_back(auto_close);
+    //     count++;
+    // }
+
     // std::regex macro16(R"(Environ)");
-    // if(std::regex_search(replaceScript, match, macro16))
+    // if(std::regex_search(script, match, macro16))
     // {
     //     ST_BEHAVIOR Environ;
     //     Environ.strUrl.append(url);
@@ -406,7 +379,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     // }
 
     // std::regex macro17(R"(Open)");
-    // if(std::regex_search(replaceScript, match, macro17))
+    // if(std::regex_search(script, match, macro17))
     // {
     //     ST_BEHAVIOR Open;
     //     Open.strUrl.append(url);
@@ -418,7 +391,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     // }
 
     // std::regex macro18(R"(Write)");
-    // if(std::regex_search(replaceScript, match, macro18))
+    // if(std::regex_search(script, match, macro18))
     // {
     //     ST_BEHAVIOR Write;
     //     Write.strUrl.append(url);
@@ -430,7 +403,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     // }
 
     // std::regex macro19(R"(Put)");
-    // if(std::regex_search(replaceScript, match, macro19))
+    // if(std::regex_search(script, match, macro19))
     // {
     //     ST_BEHAVIOR Put;
     //     Put.strUrl.append(url);
@@ -442,7 +415,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     // }
     
     // std::regex macro20(R"(Binary)");
-    // if(std::regex_search(replaceScript, match, macro20))
+    // if(std::regex_search(script, match, macro20))
     // {
     //     ST_BEHAVIOR Binary;
     //     Binary.strUrl.append(url);
@@ -454,7 +427,7 @@ bool CScriptAnalyzeEngine::checkVBAMacro(std::string script, std::string urlorNo
     // }
     
     // std::regex macro21(R"(Shell)");
-    // if(std::regex_search(replaceScript, match, macro21))
+    // if(std::regex_search(script, match, macro21))
     // {
     //     ST_BEHAVIOR Shell;
     //     Shell.strUrl.append(url);
@@ -482,9 +455,21 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
     else
         url.append(urlorNot);
 
-    std::regex xlm0(R"(URLDownloadToFileA)");
+    std::regex xlm0(R"((u|U)(r|R)(l|L)(m|M)(o|O)(n|N))");
+     if(std::regex_search(script, match, xlm0))
+    {
+        ST_BEHAVIOR URLMon;
+        URLMon.strUrl.append(url);
+        URLMon.Severity=7;
+        URLMon.strName="Use URLMon Lib";
+        URLMon.strDesc="악성 XLM 매크로에서 외부파일 다운에 사용되는 URLMon 라이브러리를 호출";
+        vecBehaviors.push_back(URLMon);
+        count++;
+    }
+
+    std::regex xlm1(R"(URLDownloadToFileA)");
     // 해당 리스트에 맞게 하나씩 검사하며 결과 전송.
-    if(std::regex_search(script, match, xlm0))
+    if(std::regex_search(script, match, xlm1))
     {
         ST_BEHAVIOR URLDownload;
         URLDownload.strUrl.append(url);
@@ -495,8 +480,8 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         count++;
     }
 
-    std::regex xlm1(R"(https?[\w.%/?=:-]*)");
-    if(std::regex_search(script, match, xlm1))
+    std::regex xlm2(R"(https?[\w.%/?=:-]*)");
+    if(std::regex_search(script, match, xlm2))
     {
         // 다운받는 파일에 대해 추출하기 위해
         int loc = match.str().find_last_of('/');
@@ -514,8 +499,8 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         count++;
     }
     
-    std::regex xlm2(R"(run)");
-    if(std::regex_search(script, match, xlm2))
+    std::regex xlm3(R"(run)");
+    if(std::regex_search(script, match, xlm3))
     {
         ST_BEHAVIOR run;
         run.strUrl.append(url);
@@ -526,8 +511,8 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         count++;
     }
 
-    std::regex xlm3(R"(EXEC)");
-    if(std::regex_search(script, match, xlm3))
+    std::regex xlm4(R"(EXEC)");
+    if(std::regex_search(script, match, xlm4))
     {
         ST_BEHAVIOR EXEC;
         EXEC.strUrl.append(url);
@@ -538,8 +523,8 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         count++;
     }
 
-    std::regex xlm4(R"(CALL)");
-    if(std::regex_search(script, match, xlm4))
+    std::regex xlm5(R"(CALL))");
+    if(std::regex_search(script, match, xlm5))
     {
         ST_BEHAVIOR CALL;
         CALL.strUrl.append(url);

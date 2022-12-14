@@ -1,4 +1,5 @@
 #include "CScriptExtractionEngine.h"
+#include "HelpFunc.h"
 
 // 엔진 객체 생성자
 CScriptExtractionEngine::CScriptExtractionEngine() : CEngineSuper(3,"ScriptExtraction")
@@ -73,14 +74,33 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script, std::string 
     }
     else if(type == "vba")
     {
-        // olevba 결과 출력 정제용
-        // - - - 를 제거하기 위한 정규표현식
-        std::regex first(R"(\s?(- ){38}\s?)");
-        std::regex second(R"(\n?\n?(-------------------------------------------------------------------------------[\w\s:./'-]*))");
-        std::regex last(R"([&()]|(,\d)|["])");
-        script = std::regex_replace(script, first, "");
-        script = std::regex_replace(script, second, "");
-        script = std::regex_replace(script, last, "");
+         // Sbyte를 위해 사용하는 match
+        std::smatch match;
+
+        // """,숫자) 또는 & 또는 " & "을 제거하는 정규식
+        std::regex trashRe(R"(("""",[\d]*\)\&)|(&)|(" & "))");
+        script = std::regex_replace(script, trashRe, "");
+    
+        // 만약 sByte가 있다면 base64로 디코딩 해본다.
+        std::regex sBytes(R"(sBytes = )");
+        if(std::regex_search(script, match, sBytes))
+        {
+            //" sBytes = sByte  "를 모두 제거
+            std::regex removesByte(R"("\nsBytes = sBytes  ")");
+            script = std::regex_replace(script, removesByte, "");
+
+            // 제거된 내용에서 sByte에 해당하는 내용을 찾아낸다.
+            std::regex Encode(R"(sBytes = "[\w]*")");
+            std::regex_search(script, match, Encode);
+
+            std::string sbyte = match.str();
+            // sByte = 을 제거
+            sbyte.erase(0,10);
+            sbyte = base64_decoder(sbyte);
+
+            script = std::regex_replace(script, Encode, sbyte);
+        }
+    
         // 스트링 객체 사이즈 조정
         script.resize(script.size());
         // 메모리 재할당을 통한 낭비 메모리 제거
@@ -177,30 +197,46 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
     if(remove("./result.log") != 0)
         throw engine_Exception("MacroExtractio","s","다운받은 파일에서 추출된 매크로 분석 파일을 삭제할 수 없습니다.");
 
-    // 추출된 매크로 데이터를 스크립트 리스트에 집어 넣는다.
-    // 스크립트 데이터, url의 위치, 추출된 스크립트 타입 순으로 넣는다.
+    // 시작에 나오는 내용을 제거하기 위한 정규표현식
+    std::regex removeFrontPywinRe(R"(XLMMacroDeobfuscator: pywin[0-9]{2} is not installed \(only is required if you want to use MS Excel\))");
+    std::regex removeFrontOlevbaRe(R"([\s]olevba [0-9]*.[0-9]*.[0-9]* on Python [0-9]*.[0-9]*.[0-9]* - http:\/\/decalage.info\/python\/oletools)");
+    std::regex removeFrontEqualRe(R"([\s]={79}[\s]*)");
+    macroData = std::regex_replace(macroData, removeFrontPywinRe, "");
+    macroData = std::regex_replace(macroData, removeFrontOlevbaRe, "");
+    macroData = std::regex_replace(macroData, removeFrontEqualRe, "");
+
+    std::smatch match;
+    std::regex emptyRe(R"(\(empty macro\))");
+    // 매크로 정재 및 분리
+    // 지금의 방식은 어떠한 매크로인지 확인이 가능하다.
     int curr;
     int prev = 0;
-    curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+    curr = macroData.find("-------------------------------------------------------------------------------");
     while(curr != std::string::npos)
     {
         if(prev == 0)
         {
             prev = curr +1;
-            curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+            curr = macroData.find("-------------------------------------------------------------------------------", prev);
             continue;
         }
-        std::string split = macroData.substr(prev, curr-prev);
-        getMeanfulScript(split,"vba");
-        scriptlist.push_back(std::make_pair(split, std::make_pair(i, VBS)));
+        std::string sub = macroData.substr(prev, curr-prev);
+        // (empty macro) 이면 저장하지 않고 넘어간다.
+        if(std::regex_search(sub, match, emptyRe))
+        {
+            prev = curr +1;
+            curr = macroData.find("-------------------------------------------------------------------------------", prev);
+            continue;
+        }
+        std::cout << "매크로 시작" << std::endl;
+        
+        std::cout << std::endl;
         prev = curr +1;
-        curr = macroData.find("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ", prev);
+        curr = macroData.find("-------------------------------------------------------------------------------", prev);
     }
     std::string lastsplit = macroData.substr(prev, curr-prev);
     getMeanfulScript(lastsplit, "vba");
-    lastsplit.pop_back();
-    lastsplit.pop_back();
-    lastsplit.pop_back();
+
     scriptlist.push_back(std::make_pair(lastsplit, std::make_pair(i, VBS)));
 
     return true;
