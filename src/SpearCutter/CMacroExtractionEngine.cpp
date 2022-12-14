@@ -72,10 +72,12 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
     std::regex removeFrontPywinRe(R"(XLMMacroDeobfuscator: pywin[0-9]{2} is not installed \(only is required if you want to use MS Excel\))");
     std::regex removeFrontOlevbaRe(R"([\s]olevba [0-9]*.[0-9]*.[0-9]* on Python [0-9]*.[0-9]*.[0-9]* - http:\/\/decalage.info\/python\/oletools)");
     std::regex removeFrontEqualRe(R"([\s]={79}[\s]*)");
+    std::regex removeTypeRe(R"(Type: (OpenXML|OLE))");
     macroData = std::regex_replace(macroData, removeFrontPywinRe, "");
     macroData = std::regex_replace(macroData, removeFrontOlevbaRe, "");
     macroData = std::regex_replace(macroData, removeFrontEqualRe, "");
-
+    macroData = std::regex_replace(macroData, removeTypeRe, "");
+    
     std::smatch match;
     std::regex emptyRe(R"(\(empty macro\))");
     // 매크로 정재 및 분리
