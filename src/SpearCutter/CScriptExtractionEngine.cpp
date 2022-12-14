@@ -72,7 +72,7 @@ void CScriptExtractionEngine::getMeanfulScript(std::string& script, std::string 
         // 메모리 재할당을 통한 낭비 메모리 제거
         script.shrink_to_fit();
     }
-    else if(type == "vba")
+    else if(type == "vbs")
     {
          // Sbyte를 위해 사용하는 match
         std::smatch match;
@@ -220,21 +220,26 @@ bool CScriptExtractionEngine::getMacroSciptData(const char* fpath, int i, std::v
             curr = macroData.find("-------------------------------------------------------------------------------", prev);
             continue;
         }
-        std::string sub = macroData.substr(prev, curr-prev);
+        std::string split = macroData.substr(prev, curr-prev);
         // (empty macro) 이면 저장하지 않고 넘어간다.
-        if(std::regex_search(sub, match, emptyRe))
+        if(std::regex_search(split, match, emptyRe))
         {
             prev = curr +1;
             curr = macroData.find("-------------------------------------------------------------------------------", prev);
             continue;
         }
-        
+         // 매크로 스크립트 정제
+        getMeanfulScript(split, "vbs");
+        // 매크로 스크립트를 저장한다.
+        scriptlist.push_back(std::make_pair(split, std::make_pair(i, VBS)));
+
         prev = curr +1;
         curr = macroData.find("-------------------------------------------------------------------------------", prev);
     }
     std::string lastsplit = macroData.substr(prev, curr-prev);
-    getMeanfulScript(lastsplit, "vba");
-
+    // 마지막 매크로 스크립트 정제
+    getMeanfulScript(lastsplit, "vbs");
+    // 마지막 매크로 스크립트 저장
     scriptlist.push_back(std::make_pair(lastsplit, std::make_pair(i, VBS)));
 
     return true;
