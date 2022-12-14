@@ -99,9 +99,7 @@ bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vec
             curr = macroData.find("-------------------------------------------------------------------------------", prev);
             continue;
         }
-        std::cout << "매크로 시작" << std::endl;
         
-        std::cout << std::endl;
         prev = curr +1;
         curr = macroData.find("-------------------------------------------------------------------------------", prev);
     }
