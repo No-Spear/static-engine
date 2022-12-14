@@ -124,8 +124,9 @@ void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
 
     // """,숫자) 또는 & 또는 " & "을 제거하는 정규식
     std::regex trashRe(R"(("""",[\d]*\)\&)|(&)|(" & "))");
+    std::regex splitRe(R"(------------------------------------------------------------------------------)");
     script = std::regex_replace(script, trashRe, "");
-    
+    script = std::regex_replace(script, splitRe, "");
     // 만약 sByte가 있다면 base64로 디코딩 해본다.
     std::regex sBytes(R"(sBytes = )");
     if(std::regex_search(script, match, sBytes))
