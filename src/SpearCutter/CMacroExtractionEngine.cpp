@@ -13,16 +13,6 @@ CMacroExtractionEngine::~CMacroExtractionEngine()
 
 }
 
-// 문서의 위치로부터 문서 타입을 가져오기 위한 함수
-std::string CMacroExtractionEngine::extractFileExetoPath(const std::string docpath)
-{
-    // 파일 형식자를 찾기위해 마지막 .의 위치를 찾는다.
-    int location = docpath.find_last_of('.');
-    // 해당 파일형식자를 새로운 스트링에 담는다.
-    std::string doctype(docpath.substr(location+1));
-    // 해당 파일 형식자를 vector에 넣어둔다.
-    return doctype;
-}
 
 // 분석을 의뢰한 파일에서 매크로 파일을 가져오는 함수
 bool CMacroExtractionEngine::getMacroDataFromFile(const char* location, std::vector<std::pair<std::string, std::pair<int, int>> >& scriptlist)
@@ -157,19 +147,13 @@ void CMacroExtractionEngine::getMeanFulMacroData(std::string& script)
 
 bool CMacroExtractionEngine::Analyze(const ST_ANALYZE_PARAM* input, ST_ANALYZE_RESULT* output)
 {
-    std::string macroData;
     std::string pszFile = input->vecInputFiles[0];
 
-    if(extractFileExetoPath(pszFile).front() == 'd' 
-      | extractFileExetoPath(pszFile).front() == 'D'
-      | extractFileExetoPath(pszFile).front() == 'x'
-      | extractFileExetoPath(pszFile).front() == 'X'
-      | extractFileExetoPath(pszFile).front() == 'p'
-      | extractFileExetoPath(pszFile).front() == 'P' 
-      )
-        getMacroDataFromFile(pszFile.c_str(), output->vecExtractedScript);
-    else
-        throw engine_Exception("MacroExtraction", "s", "매크로 추출을 지원하지않는 형식의 문서 입니다.");
+    /*
+     * 엔진이 동작하기 전에 먼저 파일이 문서가 맞는지 확인하므로
+     * 추가로 문서파일이 맞는지 확인할 필요가 없다.
+    */ 
+    getMacroDataFromFile(pszFile.c_str(), output->vecExtractedScript);
 
     return true;
 }
