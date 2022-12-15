@@ -37,14 +37,14 @@ std::string CSpearCutter::MakeValue(const ST_REPORT& outReport)
         }else{
         vecValues = vecValues + ", 'Behavior_" + std::to_string(i) + "' :" + "{";    
         }
-        vecValues = vecValues + "'serverity' : " + "'" +std::to_string(outReport.vecBehaviors[i].Severity)+ "'";
+        vecValues = vecValues + "'severity' : " + "'" +std::to_string(outReport.vecBehaviors[i].Severity)+ "'";
         vecValues = vecValues + ", 'Desc' : " + "'" + outReport.vecBehaviors[i].strDesc + "'";
         vecValues = vecValues + ", 'Name' : " + "'" + tempName + "'";
         vecValues = vecValues + "}";
     }
     vecValues = vecValues + "}\"";
 
-    values = values + vecValues + ")";
+    values = values + vecValues + ");";
 
     return values;
 }
@@ -184,7 +184,8 @@ bool CSpearCutter::SaveResultToDB(const ST_REPORT& outReport)
 
     std::string values = MakeValue(outReport);
 
-    std::string sql ="REPLACE INTO analysisResultTable(nserverity,detectName,sha256,name,behaviors) VALUES" + values;
+    std::string sql ="REPLACE INTO analysisResultTable(nSeverity,detectName,sha256,name,behaviors) VALUES " + values;
+    std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
     }

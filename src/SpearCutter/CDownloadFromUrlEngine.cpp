@@ -2,14 +2,14 @@
 
 CDownloadFromUrlEngine::CDownloadFromUrlEngine() : CEngineSuper(2, "DownloadFromUrl")
 {
-    // char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
-    // char DBUser[] = "nospear";
-    // char DBPass[] = "nospear!";
-    // char DBName[] = "cncDB";
-    char DBHost[] = "localhost";
-    char DBUser[] = "root";
-    char DBPass[] = "DBPW1234";
-    char DBName[] = "VSERVER";
+    char DBHost[] = "nospear.c9jy6dsf1qz4.ap-northeast-2.rds.amazonaws.com";
+    char DBUser[] = "nospear";
+    char DBPass[] = "nospear!";
+    char DBName[] = "cncDB";
+    // char DBHost[] = "localhost";
+    // char DBUser[] = "root";
+    // char DBPass[] = "DBPW1234";
+    // char DBName[] = "VSERVER";
     mysql_init(&connect);
     conn = mysql_real_connect(&connect, DBHost, DBUser , DBPass, DBName, 3306, (char *)NULL, 0);
   
