@@ -185,7 +185,6 @@ bool CSpearCutter::SaveResultToDB(const ST_REPORT& outReport)
     std::string values = MakeValue(outReport);
 
     std::string sql ="REPLACE INTO analysisResultTable(nSeverity,detectName,sha256,name,behaviors) VALUES " + values;
-    std::cout << sql << std::endl;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
     }
