@@ -546,7 +546,7 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         run.Severity = 6;
         run.strName = "Call run";
         run.strDesc = macroLocation.c_str();
-        run.strDesc.append(" 매크로 파일에 파일을 실행하기 위해 호출되는 키워드이다.");
+        run.strDesc.append(" 매크로 파일에 악성 파일 또는 스크립트 등을 실행하기 위한 명령어가 사용되었습니다.");
         vecBehaviors.push_back(run);
         count++;
     }
@@ -559,7 +559,7 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         EXEC.Severity = 6;
         EXEC.strName = "Call EXEC";
         EXEC.strDesc = macroLocation.c_str();
-        EXEC.strDesc.append(" 매크로 파일에 파일을 실행하기 위해 호출되는 키워드이다.");
+        EXEC.strDesc.append(" 매크로 파일에 파일 또는 악성행위를 실행하기 위한 명령어가 사용되었습니다.");
         vecBehaviors.push_back(EXEC);
         count++;
     }
@@ -572,7 +572,7 @@ bool CScriptAnalyzeEngine::checkXLMMacro(std::string script, std::string urlorNo
         CALL.Severity = 6;
         CALL.strName = "Call CALL";
         CALL.strDesc = macroLocation.c_str();
-        CALL.strDesc.append(" 매크로 파일에 파일을 실행하기 위해 호출되는 키워드이다.");
+        CALL.strDesc.append(" 매크로 파일에 악성 파일을 실행하기 위해 호출되는 키워드를 사용했습니다.");
         vecBehaviors.push_back(CALL);
         count++;
     }
