@@ -184,7 +184,7 @@ bool CSpearCutter::SaveResultToDB(const ST_REPORT& outReport)
 
     std::string values = MakeValue(outReport);
 
-    std::string sql ="INSERT INTO analysisResultTable(nserverity,detectName,sha256,name,behaviors) VALUES" + values;
+    std::string sql ="REPLACE INTO analysisResultTable(nserverity,detectName,sha256,name,behaviors) VALUES" + values;
     if(mysql_query(conn,sql.c_str()) !=0){
         return false;
     }
@@ -351,7 +351,6 @@ ECODE CSpearCutter::Analyze(const std::tstring strFileName, const std::tstring s
                     
                     if(output.vecExtractedScript.size() == 0)
                         continue;
-                    
                     for(int i  = 0; i < output.vecExtractedFiles.size(); i++)
                     {
                         try{
