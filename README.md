@@ -25,7 +25,7 @@ Contact: profrog</br>
 14. mkdir Download && mkdir Extracted
 
 
-## Version
+## Version History
 #### 1.0.0 : CVE-2022-30190(Follina)를 잡을 수 있도록 엔진 구성</br>
 #### 1.0.1 : 파일이 제대로 다운받아지지 않는 문제 해결 및 예외처리 추가</br>
 #### 1.1.0 : 문서내에 악성 매크로를 잡을 수 있도록 엔진 추가</br>
@@ -49,4 +49,8 @@ Contact: profrog</br>
 #### 1.5.5 : 전 엔진 리펙토링 및 성능개선 작업</br>
 #### 2.0.0 : CPPCORE, DocumentParser를 사용하는 새로운 엔진으로 리펙토링 Nospear -> SpearCutter </br>
 #### 2.0.1 : 엔진에서 서버로 보내는 정보가 누락되는 문제 해결</br>
-#### 2.0.2 : 각종 버그사항 및 CheckInternalCVE엔진 탐지 및 </br>
+#### 2.0.2 : 각종 버그사항 및 CheckInternalCVE엔진 탐지</br>
+#### 2.0.3 : URL이 정상적으로 표시되지 않는 문제 해결</br>
+#### 2.0.4 : Macro 파일을 정상적으로 잡지 못하는 문제 해결</br>
+#### 2.0.5 : 각종 버그사항 패치 및 악성매크로 탐지 룰 추가</br>
+#### 2.0.6 : 매크로가 정상적으로 추출 되지 않는 버그 수정</br>
