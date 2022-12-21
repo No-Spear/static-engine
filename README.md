@@ -24,6 +24,9 @@ Contact: profrog</br>
 13. mkdir temp && cd temp
 14. mkdir Download && mkdir Extracted
 
+# Lastist Verstion
+## 2.0.6
+
 
 ## Version History
 #### 1.0.0 : CVE-2022-30190(Follina)를 잡을 수 있도록 엔진 구성</br>
